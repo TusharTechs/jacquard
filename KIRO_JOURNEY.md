@@ -29,6 +29,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - **Kiro credits used:** 0.
 - **Evidence:** `research/01` to `research/11`, `PLAN.md`.
 
+### 2026-11-16 — Repo setup, steering files, journey tooling
+
+- Surface: IDE
+- Goal: Put the project under version control, write steering files, and set up journey logging (steering rule, Stop hook, journey-scribe agent).
+- Kiro features used: none from specs, MCP, Powers or property tests. Steering files were created, not yet exercised. A hook and a custom agent were created, not yet fired. No checkpoints.
+- Model / credits (start → end):
+- What worked: Private GitHub repo created and pushed (`origin/main`). Steering files written in `.kiro/steering/`: `product.md`, `tech.md`, `structure.md`, `weaving-domain.md` (file-matched to `packages/engine/**`), `design-language.md` (file-matched to `apps/web/**`), `journey.md`. Hook `.kiro/hooks/journey-entry-on-stop.json` (Stop, agent action). Agent `.kiro/agents/journey-scribe.json`.
+- What failed or surprised: Lines ignoring `research/`, `PLAN.md` and `BUILD_PLAYBOOK.md` appeared in `.gitignore` after I wrote it, and I removed them. The cause is unknown. Later `.gitignore` and `LICENSE` were deleted from disk (not by me) and I restored them from git on request. The `journey-scribe` write restriction uses a `permissions.rules` shape taken from the research notes; the `match` syntax for paths is unverified, so confirm in the IDE that the agent cannot write other files. Hook trigger name `Stop` and the `fileMatch` front matter were not tested in a live session either. Weaving facts about real looms are marked "to verify" and four questions to the user are open (default loom source, hook count and card size, lacing direction, binding weaves).
+- Spec versus vibe note: vibe; setup work with no spec.
+- Evidence: commits `8d5ffdc`, `66bec3c`; files under `.kiro/`.
+
 ### Template
 
 ```
@@ -51,9 +62,9 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 |---|---|---|
 | Specs (feature / bugfix) | 0 / 0 | |
 | Property-based tests / bugs they caught | 0 / 0 | |
-| Hooks | 0 | |
-| Steering files | 0 | |
-| Custom agents | 0 | |
+| Hooks | 1 | journey-entry-on-stop (not yet fired) |
+| Steering files | 6 | 4 always-on, 2 file-matched |
+| Custom agents | 1 | journey-scribe (not yet invoked) |
 | MCP servers (third-party / our own) | 0 / 0 | |
 | Powers (used / shipped) | 0 / 0 | |
 | Workflows | 0 | |

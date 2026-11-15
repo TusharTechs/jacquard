@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Write journey entry on stop",
+      "trigger": "Stop",
+      "description": "When an agent session stops, prompt the agent to append an entry to KIRO_JOURNEY.md.",
+      "action": {
+        "type": "agent",
+        "prompt": "The session is ending. Append an entry for it to KIRO_JOURNEY.md using the template in that file, following .kiro/steering/journey.md: list only Kiro features actually used, record failures and user corrections honestly, copy any shrunk property-test counterexample with its requirement, leave \"Model / credits\" blank, and update the running tally table. If this session made no changes and used no Kiro features (a pure question), skip the entry and say so."
+      }
+    }
+  ]
+}
