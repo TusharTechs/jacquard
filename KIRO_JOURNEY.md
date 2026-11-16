@@ -432,6 +432,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec; the design's Property 23 and the 4.6 ordering key were specific enough to test without questions.
 - Evidence: `packages/engine/test/float-oracle.property.test.ts`, `float-ring-picks`, `float-ring-ends`, `float-complement`, `float-face-down` and `float-violations` property tests, `.kiro/specs/weave-engine/tasks.md` (wave 10 tasks checked), `.kiro/specs/weave-engine/tasks.meta.json` (`pbtResults` for 10.4 to 10.9), `.kiro/hook-runs.log` (local, ignored by git; lines at 09:23:21Z to 09:23:41Z), commit `ea7c4bd` for 9.2, 9.3 and 11.1. Files in `media/journey/`: `2026-11-16-save-hook-catches-type-error.png` (committed; I viewed it: `tail -f .kiro/hook-runs.log` showing `typecheck=1` at 09:23:22Z then `typecheck=0` at 09:23:41Z, next to task 10.5's report, which names the wrong import); `2026-11-16-clip-save-hook-catches-type-error.mp4` (27 MB; 50 s according to the user); `2026-11-16-wave10-float-properties.mp4` (307 MB, the user's full recording of wave 10). Both MP4s are kept out of git, and I have not watched them.
 
+### 2026-11-16 — Main chat session: wave 10 write-up
+
+- Surface: IDE
+- Goal: Complete and commit the wave 10 entry (done above, commit `5d20b28`).
+- Kiro features used: hook `journey-entry-on-stop` (fired at the end of this turn; this entry is the response). I read Kiro's own records (`tasks.meta.json`, `.kiro/hook-runs.log`, session records) for the wave 10 entry. No spec task was run in this session, no agent, MCP tool, property test or checkpoint.
+- Model / credits (start → end):
+- What worked: The records confirmed every fact the user asked me to record, including the `typecheck=1` save at 09:23:22Z and the fix at 09:23:41Z. They also showed which import was wrong and that all three hooks fired in task 10.5.
+- What failed or surprised: My previous main-session entry wrongly put tasks 9.4 to 9.7 in wave 10. I caught it while writing this wave's entry and recorded the correction there. I did not edit the earlier entry.
+- Spec versus vibe note: n/a.
+- Evidence: commit `5d20b28`.
+
 ### Template
 
 ```
