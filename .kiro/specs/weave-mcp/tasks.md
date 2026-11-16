@@ -171,11 +171,11 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - **Property 16: Unexpected exceptions become INTERNAL_ERROR**
     - **Validates: Requirements 8.3, 8.4, 11.6**
 
-- [ ] 14. Example tests and fuzz
-  - [ ] 14.1 Write protocol-level example tests
+- [x] 14. Example tests and fuzz
+  - [x] 14.1 Write protocol-level example tests
     - File `test/protocol-examples.test.ts`: unknown tool name then a valid call (1.5); `arguments` omitted or an array; `list_profiles` with no arguments (2.5); `auto_fix` with an extra `maxIterations` argument rejected and `autoFix` called with plan and profile only (5.5, 5.6); profile `"360"` lists `"120"`, `"240"`, `"400"` (9.3); profile object without `hookCount` names `profile.hookCount` (9.4); `AUTOFIX_FAILED` stub preserves `reason`, `maxIterations` and `remaining` (5.3); `PROFILE_400.cardFillOrder` label is `[to verify]` in the `list_profiles` result
     - _Requirements: 1.5, 2.5, 5.3, 5.5, 5.6, 9.3, 9.4_
-  - [ ] 14.2 Write the robustness fuzz test
+  - [x] 14.2 Write the robustness fuzz test
     - File `test/robustness.test.ts`: arguments from `fc.jsonValue()` to every tool; no result is `INTERNAL_ERROR` and no call rejects. A failure is reported as an engine bug or a missing shape check, and is not hidden by catching the exception
     - _Requirements: 8.3, 9.8_
 

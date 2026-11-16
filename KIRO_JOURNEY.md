@@ -930,6 +930,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/test/weave-keys.property.test.ts`, `determinism.property.test.ts`, `arguments-unmodified.property.test.ts`, `internal-error.property.test.ts`.
 
+### 2026-11-16 — weave-mcp wave 14 (tasks 14.1, 14.2)
+
+- Surface: IDE
+- Goal: Protocol-level example tests and the robustness fuzz.
+- Kiro features used: spec `weave-mcp` (tasks 14.1, 14.2; `design.md` corrected). No hook output observed, no MCP tool, no custom agent.
+- Model / credits (start → end):
+- What worked: `test/protocol-examples.test.ts` (9 tests: unknown tool then a valid call, `list_profiles` with no arguments field, omitted arguments, array arguments, extra `auto_fix` argument with a spy showing `autoFix` got only plan and profile, profile `"360"`, profile without `hookCount`, `AUTOFIX_FAILED` stub fields, and the `[to verify]` label on `PROFILE_400.cardFillOrder`). `test/robustness.test.ts`: 300 calls with `fc.jsonValue()` noise, alone or mixed into valid calls. No `INTERNAL_ERROR` and no rejected call. `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine `148 passed`; mcp `19 passed` files, `75 passed` tests).
+- What failed or surprised: **spec finding.** The design's example-test list said a call whose `arguments` is an array returns `ARGUMENT_INVALID`. With SDK 1.32.2 that call never reaches our handler: the SDK rejects it as invalid params (`-32602`). The test now asserts the SDK rejection and that the next call is served. The design text is corrected and marked as a finding from task 14.1. This was first seen when reading the SDK types in wave 9.
+- Spec versus vibe note: spec. The spec was wrong about the SDK's behaviour; writing the test showed it.
+- Evidence: `packages/mcp/test/protocol-examples.test.ts`, `packages/mcp/test/robustness.test.ts`, `.kiro/specs/weave-mcp/design.md` (Protocol-level example tests).
+
 ### Template
 
 ```

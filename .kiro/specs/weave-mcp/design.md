@@ -410,7 +410,7 @@ Pure-function modules with no protocol content are the only exceptions: `canonic
 Run through the in-memory client unless noted:
 
 - Unknown tool name (1.5): `callTool({ name: "nope" })` returns a Tool_Error whose message contains `nope`; the next valid call works.
-- Invalid arguments: calls with `arguments` omitted entirely, `arguments: null`-like shapes the SDK allows, and arrays instead of objects each return `ARGUMENT_INVALID`.
+- Invalid arguments: a call with `arguments` omitted entirely returns `ARGUMENT_INVALID` for the first required argument. A call whose `arguments` is an array never reaches the server's handler: SDK 1.32.2 validates `tools/call` params against `arguments: z.record(z.string(), z.unknown()).optional()` and answers with an invalid-params protocol error. The test checks that rejection and that the next call is served. (Finding from task 14.1; the earlier text said arrays return `ARGUMENT_INVALID`.)
 - `list_profiles` called with no `arguments` field (2.5).
 - `auto_fix` with an extra argument (5.6), with `maxIterations` as the example, and a spy check that `autoFix` is called with the plan and profile only (5.5).
 - Profile string `"360"` lists `"120"`, `"240"`, `"400"` (9.3); profile object without `hookCount` names `profile.hookCount` (9.4).
