@@ -46,17 +46,17 @@ All 14 correctness properties have their own property test task. Every property 
   - [x] 3.13 Write example tests (hand-drawn motif with known cells, each forbidden construct by name, a 400-end repeat) and the source scan (no DOM, Node or network globals in `src`)
     - _Requirements: 4.3, 5.2, 13.1_
 
-- [ ] 4. Backend
-  - [ ] 4.1 Implement `core.ts` (`handleMotifRequest`, `Generator`, `GeneratorUnavailable`), `prompt.ts`, `bedrock-generator.ts`, `handler.ts`, `dev-server.ts`, and the esbuild bundle script
+- [x] 4. Backend
+  - [x] 4.1 Implement `core.ts` (`handleMotifRequest`, `Generator`, `GeneratorUnavailable`), `prompt.ts`, `bedrock-generator.ts`, `handler.ts`, `dev-server.ts`, and the esbuild bundle script
     - _Requirements: 1.1 to 1.5, 2.2, 2.3, 3.1 to 3.5, 13.4_
-  - [ ] 4.2 Write property test: **Property 13: Backend outcomes** — **Validates: Requirements 1.2, 1.3, 1.4, 1.5, 2.3, 3.1 to 3.5, 13.4**
-  - [ ] 4.3 Write example tests for the Lambda adapter and for the Bedrock generator with a fake client (SVG extraction, error mapping)
+  - [x] 4.2 Write property test: **Property 13: Backend outcomes** — **Validates: Requirements 1.2, 1.3, 1.4, 1.5, 2.3, 3.1 to 3.5, 13.4**
+  - [x] 4.3 Write example tests for the Lambda adapter and for the Bedrock generator with a fake client (SVG extraction, error mapping)
     - _Requirements: 2.2, 3.4_
 
-- [ ] 5. Web state and libraries
-  - [ ] 5.1 Implement `state/editor-state.ts`, `state/setup-state.ts`, `lib/default-weaves.ts`, `lib/palette.ts`, `lib/engine-check.ts`, `lib/motif-client.ts`
+- [x] 5. Web state and libraries
+  - [x] 5.1 Implement `state/editor-state.ts`, `state/setup-state.ts`, `lib/default-weaves.ts`, `lib/palette.ts`, `lib/engine-check.ts`, `lib/motif-client.ts`
     - _Requirements: 3.6, 3.7, 9.2, 9.3, 9.7, 9.8, 10.1, 10.3, 10.5, 10.6_
-  - [ ] 5.2 Write property test: **Property 14: Editor state** — **Validates: Requirements 9.2, 9.3, 9.7, 9.8**
+  - [x] 5.2 Write property test: **Property 14: Editor state** — **Validates: Requirements 9.2, 9.3, 9.7, 9.8**
 
 - [ ] 6. Web UI
   - [ ] 6.1 Shared components (Button, Field, Panel, Dialog, Toast, Tabs) and `styles.css` per `design-language.md`

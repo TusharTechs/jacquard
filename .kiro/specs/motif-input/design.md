@@ -34,7 +34,7 @@ Dev dependencies follow the versions already in the workspace: `typescript` 7.0.
 
 ### Local development
 
-`pnpm --filter @jacquard/backend dev` starts `backend/src/dev-server.ts` on `127.0.0.1:8787` with the Stand_In generator, unless `MOTIF_GENERATOR=bedrock` is set. `pnpm --filter @jacquard/web dev` starts Vite, which proxies `/api` to `127.0.0.1:8787`. In production the SPA and the API share an origin through CloudFront, or the build sets `VITE_API_BASE` (2.1). Deployment is out of scope for this phase.
+`pnpm --filter @jacquard/backend dev` bundles with esbuild and starts `dist/dev-server.js` on `127.0.0.1:8787` (Node's strip-types mode cannot load the workspace TypeScript packages; finding from task 4.1) with the Stand_In generator, unless `MOTIF_GENERATOR=bedrock` is set. `pnpm --filter @jacquard/web dev` starts Vite, which proxies `/api` to `127.0.0.1:8787`. In production the SPA and the API share an origin through CloudFront, or the build sets `VITE_API_BASE` (2.1). Deployment is out of scope for this phase.
 
 ## Components and Interfaces
 

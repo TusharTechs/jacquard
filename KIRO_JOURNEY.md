@@ -1062,6 +1062,28 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/motif/test/*.ts`, `media/journey/2026-11-16-motif-input-property-12-failure.log`, `.kiro/specs/motif-input/requirements.md` (1.3, 4.6).
 
+### 2026-11-16 — motif-input wave 3 (tasks 4.1, 4.2, 4.3, 5.1, 5.2)
+
+- Surface: IDE
+- Goal: The backend model proxy (Lambda handler, Bedrock generator, stand-in, dev server) and the web app's pure state and library modules.
+- Kiro features used: spec `motif-input` (tasks 4.1 to 4.3 and 5.1 to 5.2, run by two `general-task-execution` sub-agents in parallel, one per package; I reran the checks); property tests (Properties 13 and 14); hook `block-engine-fixture-edits` (checked the file writes). No MCP tool, no custom agent.
+- Model / credits (start → end):
+- What worked:
+  - `backend/src`: `core.ts` (`handleMotifRequest`, checks in the design's order), `bedrock-generator.ts` (Converse API, SVG extraction, error-name mapping to `GeneratorUnavailable`), `stand-in-generator.ts`, `generator-from-env.ts`, `handler.ts` (HTTP API payload 2.0, `POST …/api/motif` only, `cache-control: no-store`), `prompt.ts`, `dev-server.ts`, `build.mjs`.
+  - Property 13 passed on its first run, and it also checks that all six statuses (200, 400, 500, 502, 503, 504) occur across the 100 runs. 45 backend tests in total.
+  - The backend sub-agent started the dev server, sent one real POST and got `HTTP_STATUS=200` with `source=standIn` and a 4-colour palette, then stopped it. `pgrep` matched nothing afterwards; I checked again myself.
+  - `apps/web/src/state` (`editor-state.ts`, with undo capped at 200; `setup-state.ts`) and `apps/web/src/lib` (`default-weaves.ts`, `palette.ts`, `engine-check.ts`, `motif-client.ts`, `motif-design.ts`). Property 14 passed on its first run. 37 web tests in total.
+  - Rerun by me: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 88, motif 75, backend 45, web 37 passed).
+- What failed or surprised:
+  - Node 22's `--experimental-strip-types` cannot load the workspace TypeScript packages: `@jacquard/motif` uses `.js` import specifiers for `.ts` files, giving `ERR_MODULE_NOT_FOUND`. The backend `dev` script now bundles with esbuild first (`node build.mjs && node dist/dev-server.js`). The design said `node --experimental-strip-types`.
+  - The backend sub-agent reported that a `sed -i` edit of `backend/package.json` was blocked by a tool permission (not by our fixture hook), and redid the edit with `str_replace`.
+  - Neither property found a real bug. Both sub-agents planted a bug on purpose to check their property could fail; both restored the files and checked with `diff`. Backend: the 500 message leaked the generator's error text, and Property 13 failed after 17 tests with seed `20261117`, path `"16:0:0:0:0:0:0:0"`, counterexample `["{\"input\":{\"kind\":\"sketch\",\"mediaType\":\"image/png\",\"data\":\"AA==\"},\"colourCount\":2,\"symmetry\":\"none\",\"repeat\":{\"ends\":8,\"picks\":8}}",{"kind":"throws","value":new Error("bad: planted-secret-7c41e9b2-must-not-leak"),"sync":false},"model"]`. Web: an edit stopped clearing `redo`, and Property 14 failed with seed `1414`, path `"33:10:0:…"` (the sub-agent shortened the path and the counterexample: a 25 by 17 design with `paint(19,0)`, `undo`, `replace(...)`). Planted, so not counted.
+  - All three built-in profiles have `regionLimit` 4, so the colour count in the loom setup is 2 to 4, not up to 8.
+  - The two sub-agents made about 25 small decisions between them (error wording, network-error names, `replace` accepting a new size for a changed repeat, client timeout mapping to `network`). They are in their reports and consistent with the requirements.
+  - The Bedrock path has run only against a fake client.
+- Spec versus vibe note: spec.
+- Evidence: `backend/src/*.ts`, `backend/test/*.ts`, `apps/web/src/state/*.ts`, `apps/web/src/lib/*.ts`, `apps/web/test/*.ts`.
+
 ### Template
 
 ```
