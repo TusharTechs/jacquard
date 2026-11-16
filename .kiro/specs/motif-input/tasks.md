@@ -30,20 +30,20 @@ All 14 correctness properties have their own property test task. Every property 
   - [x] 2.3 Implement `motif-to-design.ts`, `request.ts` (`validateMotifRequest`, request and response types) and `stand-in.ts`; export everything from `src/index.ts`
     - _Requirements: 1.1, 1.3, 7.6, 8.1 to 8.4_
 
-- [ ] 3. Motif properties and examples
-  - [ ] 3.1 Write property test: **Property 1: parseMotif is total and deterministic** — **Validates: Requirements 4.8**
-  - [ ] 3.2 Write property test: **Property 2: Forbidden constructs are rejected** — **Validates: Requirements 4.1, 4.2, 4.3**
-  - [ ] 3.3 Write property test: **Property 3: Parse matches the drawn shapes** — **Validates: Requirements 4.5, 4.6, 4.7**
-  - [ ] 3.4 Write property test: **Property 4: Size limits** — **Validates: Requirements 4.4**
-  - [ ] 3.5 Write property test: **Property 5: Raster shape and range** — **Validates: Requirements 5.1, 5.5**
-  - [ ] 3.6 Write property test: **Property 6: Raster matches an independent oracle** — **Validates: Requirements 5.2, 5.3, 5.4**
-  - [ ] 3.7 Write property test: **Property 7: Speck removal postconditions** — **Validates: Requirements 6.1, 6.2, 6.4, 6.5, 6.6**
-  - [ ] 3.8 Write property test: **Property 8: Speck merge choice** — **Validates: Requirements 6.3**
-  - [ ] 3.9 Write property test: **Property 9: Symmetry** — **Validates: Requirements 7.1 to 7.5**
-  - [ ] 3.10 Write property test: **Property 10: Pipeline output** — **Validates: Requirements 5.1, 7.6, 10.5, 11.1** (uses `@jacquard/engine` as a dev dependency of the motif tests only)
-  - [ ] 3.11 Write property test: **Property 11: Stand_In** — **Validates: Requirements 8.1 to 8.4**
-  - [ ] 3.12 Write property test: **Property 12: Request validation** — **Validates: Requirements 1.1, 1.3**
-  - [ ] 3.13 Write example tests (hand-drawn motif with known cells, each forbidden construct by name, a 400-end repeat) and the source scan (no DOM, Node or network globals in `src`)
+- [x] 3. Motif properties and examples
+  - [x] 3.1 Write property test: **Property 1: parseMotif is total and deterministic** — **Validates: Requirements 4.8**
+  - [x] 3.2 Write property test: **Property 2: Forbidden constructs are rejected** — **Validates: Requirements 4.1, 4.2, 4.3**
+  - [x] 3.3 Write property test: **Property 3: Parse matches the drawn shapes** — **Validates: Requirements 4.5, 4.6, 4.7**
+  - [x] 3.4 Write property test: **Property 4: Size limits** — **Validates: Requirements 4.4**
+  - [x] 3.5 Write property test: **Property 5: Raster shape and range** — **Validates: Requirements 5.1, 5.5**
+  - [x] 3.6 Write property test: **Property 6: Raster matches an independent oracle** — **Validates: Requirements 5.2, 5.3, 5.4**
+  - [x] 3.7 Write property test: **Property 7: Speck removal postconditions** — **Validates: Requirements 6.1, 6.2, 6.4, 6.5, 6.6**
+  - [x] 3.8 Write property test: **Property 8: Speck merge choice** — **Validates: Requirements 6.3**
+  - [x] 3.9 Write property test: **Property 9: Symmetry** — **Validates: Requirements 7.1 to 7.5**
+  - [x] 3.10 Write property test: **Property 10: Pipeline output** — **Validates: Requirements 5.1, 7.6, 10.5, 11.1** (uses `@jacquard/engine` as a dev dependency of the motif tests only)
+  - [x] 3.11 Write property test: **Property 11: Stand_In** — **Validates: Requirements 8.1 to 8.4**
+  - [x] 3.12 Write property test: **Property 12: Request validation** — **Validates: Requirements 1.1, 1.3**
+  - [x] 3.13 Write example tests (hand-drawn motif with known cells, each forbidden construct by name, a 400-end repeat) and the source scan (no DOM, Node or network globals in `src`)
     - _Requirements: 4.3, 5.2, 13.1_
 
 - [ ] 4. Backend

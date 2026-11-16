@@ -1039,6 +1039,29 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/motif/src/*.ts`, `packages/motif/test/smoke.test.ts`, `.kiro/specs/motif-input/design.md` (Speck removal, Property 8), `.gitignore`.
 
+### 2026-11-16 — motif-input wave 2 (tasks 3.1 to 3.13)
+
+- Surface: IDE
+- Goal: Property tests 1 to 12 and the example and source-scan tests for `@jacquard/motif`.
+- Kiro features used: spec `motif-input` (tasks 3.1 to 3.13, run by the `general-task-execution` sub-agent; I reran the checks); property tests (Properties 1 to 12); hook `block-engine-fixture-edits` (checked the file writes). No MCP tool, no custom agent.
+- Model / credits (start → end):
+- What failed or surprised:
+  - **Property 12 failed during the task** (reported by the sub-agent before the fix; the full fast-check output is saved as `media/journey/2026-11-16-motif-input-property-12-failure.log`).
+    - Property: 12, "Request validation", test "rejects a valid request with one corrupted field, naming that field".
+    - Requirement: 1.3 (prompt longer than 500 characters).
+    - Seed: `4812`, path `"39:0:0:0:0:0:0:0:0"`, failed after 40 tests, shrunk 8 times.
+    - Shrunk counterexample, verbatim (the prompt is 251 peacock emoji):
+      `Counterexample: [{"body":{"input":{"kind":"text","prompt":"🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚🦚"},"colourCount":2,"symmetry":"none","repeat":{"ends":8,"picks":8}},"field":"input.prompt"}]`
+    - Encountered failures: 10 lines in the saved log; their prompts are 279 or 251 emoji, with repeats 12 by 189, 8 by 189 and 8 by 8, and symmetry `mirrorBoth` or `none`.
+    - Assertion: `expected true to be false`.
+    - Cause: the test generator. "Over-long" prompts were built with 251 to 400 emoji, which is 251 to 400 code points and therefore valid; `src` was right to accept them. Fix: 501 to 600 emoji. An example test still checks that exactly 500 emoji are accepted. Not counted as a bug caught.
+  - **Spec findings, fixed in `requirements.md`:** 1.3 did not say what a "character" is; it now says Unicode code points, as the code does. 4.6 said "first shape that covers the whole viewBox", while the design said `rect` and the code skips `fill="none"` shapes; 4.6 now says the first drawn shape, when it is a covering `rect`.
+  - Property 10 hit vitest's 5 s default timeout at 100 runs with repeats up to 400 by 400. No counterexample was produced. That one test's timeout was raised to 60 s; runs and ranges are unchanged.
+  - The sub-agent ran a mutation check: it flipped the speck tie rule and the pick orientation in `src`. Six tests failed, P6, both parts of P8, two examples and a smoke test, and it then restored both files byte for byte. It did not keep that fast-check output, so those failures are not recorded here.
+- What worked: Properties 1 to 11 passed. Property 8 compares `removeSpecks` with `test/specks-oracle.ts`, a literal relabel-every-step implementation of 6.3 written without `src` imports. Final run, rerun by me: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (motif `16 passed` files / `75 passed` tests; engine 148, mcp 88, backend 3, web 3).
+- Spec versus vibe note: spec.
+- Evidence: `packages/motif/test/*.ts`, `media/journey/2026-11-16-motif-input-property-12-failure.log`, `.kiro/specs/motif-input/requirements.md` (1.3, 4.6).
+
 ### Template
 
 ```
