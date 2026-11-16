@@ -909,6 +909,27 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/test/build-cards-numbering.property.test.ts`, `card-round-trip.property.test.ts`, `engine-errors.property.test.ts`, `keeps-answering.property.test.ts`, `first-malformed-argument.property.test.ts`.
 
+### 2026-11-16 — weave-mcp wave 13 (tasks 13.4, 13.5, 13.6, 13.7)
+
+- Surface: IDE
+- Goal: Property tests for weave keys, determinism, unmodified arguments and INTERNAL_ERROR.
+- Kiro features used: spec `weave-mcp` (tasks 13.4 to 13.7); property tests (Properties 13 to 16). No hook output observed, no MCP tool, no custom agent.
+- Model / credits (start → end):
+- What failed or surprised:
+  - **Property 15 failed on the first run** (recorded before any fix).
+    - Property: 15, "Arguments are never modified".
+    - Requirements: 4.3, 5.4, 6.5, 7.2, 10.5.
+    - Seed: `1515`, path `"5:0:0"`, failed after 6 tests, shrunk 2 times.
+    - Shrunk counterexample, verbatim: `[{"name":"list_profiles","args":{__proto__:null}}]`
+    - Encountered failures, verbatim: `[{"name":"decode_cards","args":{__proto__:null,"K4X":[]}}]`, `[{"name":"list_profiles","args":{__proto__:null,"K4X":[]}}]`, `[{"name":"list_profiles","args":{__proto__:null}}]`.
+    - Assertion: `expected {} to strictly equal {}`.
+    - Cause: the test, not the server. `fc.dictionary` builds objects with a null prototype, `structuredClone` returns an ordinary object, and `toStrictEqual` compares prototypes. Nothing was modified. This is the same snapshot mistake that engine Property 32 hit in weave-engine wave 14, made again here. Fix: compare `structuredClone(args)` taken after the call with the one taken before, so both sides have the same prototype and `toStrictEqual` still sees added `undefined` members and changed values. Not counted as a bug caught.
+  - I changed the `weaves` key message in `src/arguments.ts` to quote the key as sent (`"${key}"`) instead of `JSON.stringify(key)`. With escaping, a key containing `"` or `\` would not appear in the message as sent, and 9.5 says the message quotes the offending key.
+  - Ordering slip: I sent the journal write, the test fix and a test run as one parallel batch. The run in that batch already passed, so it probably ran after the fix, but I cannot show that. I reran the suite on its own after checking the file.
+- What worked: Properties 13, 14 and 16 passed on the first run. Property 16 throws `Error` values whose message and stack look like file paths, plain strings and objects, from each engine function the tool uses (including `defineProfile` and `validateProfile` for custom profiles). The text is always exactly `{"code":"INTERNAL_ERROR","message":"Internal error."}`, and the next `list_profiles` on the same connection is answered. Final run: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine `148 passed`; mcp `17 passed` files, `65 passed` tests).
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/test/weave-keys.property.test.ts`, `determinism.property.test.ts`, `arguments-unmodified.property.test.ts`, `internal-error.property.test.ts`.
+
 ### Template
 
 ```

@@ -119,7 +119,7 @@ function checkWeaves(value: unknown, path: string): ArgumentError | undefined {
     if (!CANONICAL_INTEGER.test(key)) {
       return argumentError(
         path,
-        `Argument "${path}" has the key ${JSON.stringify(key)}, which is not a region index: ` +
+        `Argument "${path}" has the key "${key}", which is not a region index: ` +
           "keys must be non-negative integers written in decimal digits with no sign or leading zeros.",
       );
     }

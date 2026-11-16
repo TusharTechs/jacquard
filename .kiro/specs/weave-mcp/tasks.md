@@ -141,7 +141,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - **Property 9: Round trip through the server**
     - **Validates: Requirements 7.5**
 
-- [ ] 13. Error handling, argument and determinism tests
+- [x] 13. Error handling, argument and determinism tests
   - [x] 13.1 Write property test for engine errors
     - File `test/engine-errors.property.test.ts`; includes the spy-engine check that the operation did not run on an invalid profile, and the `AUTOFIX_FAILED` stub case
     - **Property 10: Engine errors come back unchanged**
@@ -154,19 +154,19 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - File `test/first-malformed-argument.property.test.ts`; spy engine shows no engine call
     - **Property 12: The first malformed argument is the one reported**
     - **Validates: Requirements 3.5, 4.4, 7.4, 9.1, 9.2, 9.6, 9.7**
-  - [ ] 13.4 Write property test for weave key handling
+  - [x] 13.4 Write property test for weave key handling
     - File `test/weave-keys.property.test.ts`; spy engine records what `buildLiftPlan` received
     - **Property 13: Weave key handling**
     - **Validates: Requirements 3.3, 3.4, 9.5**
-  - [ ] 13.5 Write property test for determinism
+  - [x] 13.5 Write property test for determinism
     - File `test/determinism.property.test.ts`; same connection and two separate servers; error text has no timestamp, stack, absolute path or process id
     - **Property 14: Determinism**
     - **Validates: Requirements 2.6, 4.5, 6.4, 7.6, 11.1, 11.6, 12.4**
-  - [ ] 13.6 Write property test for unmodified arguments
+  - [x] 13.6 Write property test for unmodified arguments
     - File `test/arguments-unmodified.property.test.ts`; compares with a `structuredClone` taken before the call
     - **Property 15: Arguments are never modified**
     - **Validates: Requirements 4.3, 5.4, 6.5, 7.2, 10.5**
-  - [ ] 13.7 Write property test for INTERNAL_ERROR
+  - [x] 13.7 Write property test for INTERNAL_ERROR
     - File `test/internal-error.property.test.ts`; throwing engine with arbitrary thrown values
     - **Property 16: Unexpected exceptions become INTERNAL_ERROR**
     - **Validates: Requirements 8.3, 8.4, 11.6**
