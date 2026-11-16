@@ -754,6 +754,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `.kiro/steering/autopilot.md`, `packages/mcp/package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`.
 
+### 2026-11-16 — weave-mcp wave 1 (task 1.2)
+
+- Surface: IDE
+- Goal: Verify the dependency pins in the real workspace and add the package smoke test.
+- Kiro features used: spec `weave-mcp` (task 1.2); steering `tech.md` (exit-code rule). No hook output observed, no property test, no MCP tool, no custom agent.
+- Model / credits (start → end):
+- What worked: `packages/mcp/test/package.test.ts` (6 tests) checks the workspace engine dependency, exact pins with SDK `1.32.2`, no `zod` in `dependencies` or imports, SDK `1.32.2` in `pnpm-lock.yaml` with no other lockfile, the `typecheck`/`test`/`pretest` scripts, and an engine `package.json` with no runtime dependencies. `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine `35 passed` / `148 passed`, mcp `1 passed` / `6 passed`).
+- What failed or surprised: nothing in this wave.
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/test/package.test.ts`.
+
 ### Template
 
 ```

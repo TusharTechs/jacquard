@@ -21,7 +21,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
 
 ## Tasks
 
-- [ ] 1. Set up the `packages/mcp` package
+- [x] 1. Set up the `packages/mcp` package
   - [x] 1.1 Create the package skeleton
     - `packages/mcp/package.json`: name `@jacquard/mcp`, `private`, `type: module`; `dependencies`: `@jacquard/engine` as `workspace:*` and `@modelcontextprotocol/sdk` as exactly `1.32.2`; `devDependencies`: `esbuild` exactly `0.28.2`, and `fast-check`, `typescript`, `vitest`, `@types/node` at the exact resolved versions that `packages/engine` already uses (read them from the installed engine packages or `pnpm-lock.yaml`; write them without `^` or `~`)
     - Scripts: `build` (`node build.mjs`), `pretest` (`pnpm run build`), `test` (`vitest --run`), `typecheck` (`tsc -p tsconfig.json && tsc -p tsconfig.test.json`)
@@ -29,7 +29,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - Make sure `dist/` is git-ignored without touching `.kiro` entries in `.gitignore`
     - Do not add `zod`
     - _Requirements: 13.1, 13.4, 13.5, 13.8, 14.9_
-  - [ ] 1.2 Install, verify the pins and add the dependency smoke test
+  - [x] 1.2 Install, verify the pins and add the dependency smoke test
     - Run `pnpm install; echo "EXIT_CODE=$?"` in the real workspace and read the whole output. If it reports a missing or unmet `zod` peer, STOP and report it to the user. Do not add `zod`
     - Confirm the lockfile resolves `@modelcontextprotocol/sdk` to `1.32.2`, `pnpm-lock.yaml` is the only lockfile, and no `^` or `~` appears in the `dependencies` of `packages/mcp/package.json`
     - Create `test/package.test.ts` checking: `@jacquard/engine` is `workspace:*`; every other `dependencies` entry is an exact version (digits and dots only) and the SDK is `1.32.2`; `zod` is not under `dependencies`; no file in `src` or `test` imports `zod`; the lockfile records `1.32.2`; `typecheck`, `test` and `pretest` scripts exist; `packages/engine/package.json` has no `dependencies` and no `@jacquard/mcp` entry; `git diff --stat` is not used here (13.6 is checked by the final task report)
