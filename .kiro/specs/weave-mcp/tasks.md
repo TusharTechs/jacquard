@@ -72,8 +72,8 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - Extra-argument check for `auto_fix` only
     - _Requirements: 3.3, 3.4, 3.5, 4.4, 5.6, 7.3, 7.4, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8_
 
-- [ ] 6. Profile resolution
-  - [ ] 6.1 Implement `src/profile.ts`
+- [x] 6. Profile resolution
+  - [x] 6.1 Implement `src/profile.ts`
     - `resolveProfile(profileArgument, engine)`: built-in name returns the engine's profile unmodified; an object goes through `defineProfile` then `validateProfile`, and an `Err` is returned as the Tool_Error (`PROFILE_INVALID`); the tool operation does not run on error
     - _Requirements: 7.3, 8.6, 9.3, 9.4_
 

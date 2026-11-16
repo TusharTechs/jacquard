@@ -798,6 +798,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/test/canonical-json-order.property.test.ts`, `canonical-json-round-trip.property.test.ts`, `label-table.property.test.ts`, `packages/mcp/src/results.ts`.
 
+### 2026-11-16 — weave-mcp wave 4 (task 6.1)
+
+- Surface: IDE
+- Goal: Profile resolution.
+- Kiro features used: spec `weave-mcp` (task 6.1). No hook output observed, no property test written in this wave.
+- Model / credits (start → end):
+- What worked: `src/profile.ts` returns the engine's frozen built-in profile for `"120"`, `"240"`, `"400"`, and runs `defineProfile` then `validateProfile` for a custom object, passing `PROFILE_INVALID` through unchanged. `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148 passed, mcp 43 passed).
+- What failed or surprised: nothing. The module has no test of its own yet; Property 10 covers it through the server in wave 12.
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/src/profile.ts`.
+
 ### Template
 
 ```
