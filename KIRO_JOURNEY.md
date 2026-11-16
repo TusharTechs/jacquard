@@ -820,6 +820,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/src/handlers.ts`.
 
+### 2026-11-16 — weave-mcp wave 6 (task 7.2)
+
+- Surface: IDE
+- Goal: `check_floats` and `auto_fix` handlers.
+- Kiro features used: spec `weave-mcp` (task 7.2). No hook output observed, no property test in this wave.
+- Model / credits (start → end):
+- What worked: `checkFloatsTool` returns `{ violations }`; `autoFixTool` calls `autoFix(plan, profile)` with no options and returns the engine's `{ plan, flips }` or its error unchanged. `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 43 passed).
+- What failed or surprised: I committed and pushed wave 5 (`450c7f9`) before writing its journal entry, so the wave 5 entry is in this wave's commit instead. Process slip, no code effect.
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/src/handlers.ts`.
+
 ### Template
 
 ```

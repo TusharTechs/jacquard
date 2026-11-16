@@ -2,7 +2,7 @@
 // No weaving logic lives here (10.3). Arguments reach this module only after checkArguments, and
 // are passed to the engine as they are, never copied or changed.
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
-import type { Design, LoomProfile, WeaveAssignment } from "@jacquard/engine";
+import type { Design, LiftPlan, LoomProfile, WeaveAssignment } from "@jacquard/engine";
 import type { EngineApi } from "./engine-api.js";
 import { LABEL_TABLE } from "./labels.js";
 import type { BuiltInName } from "./labels.js";
@@ -40,5 +40,23 @@ export const buildLiftPlanTool: Handler = (args, engine) => {
   });
   if (!result.ok) return toolError(result.error);
   // The engine's BuildOutput is { plan, idleHooks, warnings }; it is returned as it is.
+  return toolResult(result.value);
+};
+
+/** check_floats (Requirement 4): `{ violations }`; an empty list is a success. */
+export const checkFloatsTool: Handler = (args, engine) => {
+  const resolved = resolveProfile(args["profile"], engine);
+  if (!resolved.ok) return toolError(resolved.error);
+  const result = engine.checkFloats(args["plan"] as LiftPlan, resolved.profile);
+  if (!result.ok) return toolError(result.error);
+  return toolResult({ violations: result.value });
+};
+
+/** auto_fix (Requirement 5): engine defaults only; `{ plan, flips }` or the engine error unchanged. */
+export const autoFixTool: Handler = (args, engine) => {
+  const resolved = resolveProfile(args["profile"], engine);
+  if (!resolved.ok) return toolError(resolved.error);
+  const result = engine.autoFix(args["plan"] as LiftPlan, resolved.profile);
+  if (!result.ok) return toolError(result.error);
   return toolResult(result.value);
 };
