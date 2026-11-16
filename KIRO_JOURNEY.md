@@ -304,6 +304,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/engine/src/lift-plan.ts`, `packages/engine/src/index.ts`, `packages/engine/test/lift-plan.test.ts`, `.kiro/specs/weave-engine/tasks.meta.json`; Kiro's log lines at 13:46:22 to 13:48:56; recordings in `media/journey/` (not watched by me, kept out of git): `2026-11-16-guard-test-and-wave6.mp4`, `2026-11-16-hooks-live-test.mp4`.
 
+### 2026-11-16 — Hooks write run markers to disk
+
+- Surface: IDE
+- Goal: Make both hooks leave evidence on disk, because their output appears nowhere the user can see.
+- Kiro features used: hooks `engine-typecheck-and-test-on-save` and `block-engine-fixture-edits` (edited, not fired in this session as far as I can see).
+- Model / credits (start → end):
+- What changed: The save hook's command now starts with `echo "$(date -u +%FT%TZ) save-hook fired" >> .kiro/hook-runs.log;`. The guard script appends `<UTC time> guard fired: <tool name>` to `.kiro/hook-runs.log` before it decides anything, then `<UTC time> blocked` or `<UTC time> allowed`. The script finds the log file from its own location, not from the working directory, and a failure to write the log never changes its decision. `.kiro/hook-runs.log` is in `.gitignore` (it was already covered by `*.log`; it is now listed explicitly).
+- Checked by hand: three sample inputs to the script wrote six log lines (`guard fired: fs_append` then `blocked`; `guard fired: fs_write` then `allowed` for a new file; `guard fired: unreadable input` then `allowed`, run from `/tmp`). The save hook's JSON parses. I deleted the test log afterwards, so any line in `.kiro/hook-runs.log` from now on comes from a real hook run.
+- What failed or surprised: The save hook's marker uses a relative path, so it depends on Kiro running the command in the project root, which the documentation says it does.
+- Evidence: `.kiro/hooks/engine-typecheck-and-test-on-save.json`, `.kiro/hooks/block-engine-fixture-edits.py`, `.gitignore`.
+
 ### Template
 
 ```
