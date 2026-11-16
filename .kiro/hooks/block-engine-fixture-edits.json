@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Block edits to engine test fixtures",
+      "trigger": "PreToolUse",
+      "description": "Block any file-editing tool call whose path is under packages/engine/test/fixtures. Exit 2 blocks the call.",
+      "matcher": "fs_write|fs_append|str_replace|delete_file|smart_relocate|semantic_rename",
+      "action": {
+        "type": "command",
+        "command": "python3 .kiro/hooks/block-engine-fixture-edits.py",
+        "timeout": 10
+      }
+    }
+  ]
+}

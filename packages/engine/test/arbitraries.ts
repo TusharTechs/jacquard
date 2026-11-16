@@ -1,13 +1,12 @@
 // fast-check generators for the weave-engine property tests.
 // See design.md, "Testing Strategy", Generators. This file imports only types from `src`, so the
-// generators do not depend on the code under test.
-//
-// Not yet included: a lift-plan generator "built from a design". It needs `buildLiftPlan`
-// (task 7.1). `liftPlanArb` below builds random plans directly and is biased toward long runs.
+// generators do not depend on the code under test, except `liftPlanFromDesignArb`, which calls
+// `buildLiftPlan`.
 
 import * as fc from "fast-check";
 
 import type { EngineErrorCode } from "../src/errors.js";
+import { buildLiftPlan } from "../src/lift-plan.js";
 import type { Design, LiftPlan, LoomProfile, Weave, WeaveAssignment } from "../src/types.js";
 
 /** Throws when a value is missing. Only for states that the generators make impossible. */
@@ -241,6 +240,17 @@ export function liftPlanArb(options: ValidInputOptions = {}): fc.Arbitrary<PlanC
         });
     }),
   );
+}
+
+/**
+ * A valid lift plan built from a valid design (random regions and weaves) by `buildLiftPlan`.
+ */
+export function liftPlanFromDesignArb(options: ValidInputOptions = {}): fc.Arbitrary<PlanCase> {
+  return validInputArb(options).map((input) => {
+    const result = buildLiftPlan(input);
+    if (!result.ok) throw new Error(`arbitraries: valid input rejected: ${result.error.code}`);
+    return { profile: input.profile, repeatAcross: input.repeatAcross, plan: result.value.plan };
+  });
 }
 
 // ---------------------------------------------------------------------------------------------

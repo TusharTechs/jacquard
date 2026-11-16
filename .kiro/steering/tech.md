@@ -30,6 +30,12 @@ inclusion: always
 - For test runs, also read the test runner's summary line (passed and failed counts).
 - Never report tests as passing unless both `EXIT_CODE=0` and the summary line show success.
 
+## Finishing a spec task
+
+- Every spec task must finish by running both `pnpm typecheck` and `pnpm test`, each with `; echo "EXIT_CODE=$?"`.
+- A task is not complete unless both show success: `EXIT_CODE=0` for each, and for the tests a summary line with a non-zero passed count and no failures.
+- A task that finds errors in a file it did not touch must either fix them or stop and report them to the user. It never leaves them behind.
+
 ## Commands (update when the scripts exist)
 
 - Install: `pnpm install`

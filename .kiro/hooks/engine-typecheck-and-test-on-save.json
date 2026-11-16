@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Typecheck and test the engine on save",
+      "trigger": "PostFileSave",
+      "description": "When a file under packages/engine is saved, run the engine typecheck and then the engine tests once, printing each exit code.",
+      "matcher": "packages/engine/",
+      "action": {
+        "type": "command",
+        "command": "pnpm --filter @jacquard/engine typecheck; echo \"TYPECHECK_EXIT_CODE=$?\"; pnpm --filter @jacquard/engine test; echo \"TEST_EXIT_CODE=$?\"",
+        "timeout": 180
+      }
+    }
+  ]
+}

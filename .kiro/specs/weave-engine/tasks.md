@@ -72,19 +72,19 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - **Property 6: Satin facings are complements**
     - **Validates: Requirements 2.3**
 
-- [ ] 6. Input validation
+- [x] 6. Input validation
   - [x] 6.1 Implement `src/validate.ts`
     - `validateInput` with the nine steps in design Error Handling, Validation order; reads the caller's arrays without copying
     - _Requirements: 1.5, 1.7, 2.6, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
-  - [ ] 6.2 Write property test for validation order
+  - [x] 6.2 Write property test for validation order
     - **Property 16: First error follows the validation order**
     - **Validates: Requirements 3.7**
-  - [ ] 6.3 Write property test for error fields
+  - [x] 6.3 Write property test for error fields
     - **Property 17: Errors carry their named fields**
     - **Validates: Requirements 1.5, 1.7, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.8**
 
 - [ ] 7. Lift plan builder
-  - [ ] 7.1 Implement `buildLiftPlan` in `src/lift-plan.ts`
+  - [x] 7.1 Implement `buildLiftPlan` in `src/lift-plan.ts`
     - Runs `validateInput`, evaluates each cell from its own region's weave anchored at the origin, sets idle hooks unlifted and lists them, tiles with `repeatAcross`
     - Add the design-based lift-plan generator to test/arbitraries.ts, as Design specifies, and remove the note at the top of that file.
     - _Requirements: 2.1, 2.2, 2.4, 2.5, 2.6_
