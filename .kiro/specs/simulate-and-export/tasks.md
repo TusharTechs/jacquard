@@ -52,7 +52,7 @@ All 11 correctness properties have their own property test task. Every property 
   - [x] 4.3 Component tests for both panels
     - _Requirements: 2.4, 2.5, 6.2 to 6.5_
 
-- [ ] 5. Checkpoint and visual check: `pnpm typecheck`, `pnpm test`; run the app, view the simulator at 360 px and 1280 px through the Chrome DevTools MCP server, export each file and check the downloads; stop the servers and confirm no process listens on 5173 or 8787
+- [x] 5. Checkpoint and visual check: `pnpm typecheck`, `pnpm test`; run the app, view the simulator at 360 px and 1280 px through the Chrome DevTools MCP server, export each file and check the downloads; stop the servers and confirm no process listens on 5173 or 8787
   - _Requirements: 2.5, 6.1_
 
 ## Notes

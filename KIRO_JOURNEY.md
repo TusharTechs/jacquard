@@ -1256,6 +1256,24 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `apps/web/src/components/simulator-panel.tsx`, `export-panel.tsx`, `apps/web/src/lib/draw-cloth.ts`, `export-files.ts`, `download.ts`, `yarns.ts`, `apps/web/test/simulator-panel.test.tsx`, `export-panel.test.tsx`, `app.test.tsx`, `scans.test.ts`.
 
+### 2026-11-16 — simulate-and-export wave 4 (task 5: checkpoint and visual check)
+
+- Surface: IDE
+- Goal: Checkpoint, then run the app and check the simulator and an export through the Chrome DevTools MCP server.
+- Kiro features used: spec `simulate-and-export` (task 5); MCP server `chrome-devtools` (`new_page`, `emulate`, `evaluate_script`).
+- Model / credits (start → end):
+- What worked:
+  - Checkpoint: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 88, export 52, motif 75, backend 45, web 110).
+  - At the default desktop width, after a stand-in motif for "peacock border", the simulator showed "Showing the lift plan of the current design", the not-a-photograph note and "240 ends by 48 picks". Its canvas backing was 1,920 px wide, so all 240 hooks are drawn. All four export buttons were enabled and the float check read "No floats over the limit".
+  - At 360 px (`360x780x2,mobile,touch`), `scrollWidth` was 360. Clicking "WIF file" produced a 619-line WIF, captured by wrapping `URL.createObjectURL`. It starts `[WIF]`, `Version=1.1`, and has `Shafts=240`, `Treadles=0`, `Rising Shed=true`, and `[LIFTPLAN]` line 1 `1=1,5,9,13,15,…`. No dialog opened, because there were no violations.
+  - Servers stopped. `lsof -nP -iTCP:5173 -iTCP:8787 -sTCP:LISTEN` printed nothing (exit 1). I read it before writing this.
+- What failed or surprised:
+  - My first export script ran in the same batch as an `emulate` call. The emulation reloaded the page, the script found no WIF button and threw (`Cannot read properties of undefined (reading 'click')`). Rerun in order, it worked.
+  - The page from wave 6 of motif-input had gone ("No page found"), so a new page was opened.
+  - The WIF has not been opened in any weaving tool. That is the user's manual step.
+- Spec versus vibe note: n/a (check).
+- Evidence: this entry.
+
 ### Template
 
 ```
