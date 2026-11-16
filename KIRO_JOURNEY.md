@@ -1431,6 +1431,17 @@ Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md
 - Spec versus vibe note: n/a.
 - Evidence: `docs/kiro-writeup-draft.md`; "Status for Tushar" at the top of this file; tag `phase-H`.
 
+### 2026-11-16 — Main chat session: Stop hook after the autopilot run
+
+- Surface: IDE
+- Goal: Respond to the `journey-entry-on-stop` hook at the end of the autopilot session.
+- Kiro features used: hook `journey-entry-on-stop` (fired at session end).
+- Model / credits (start → end):
+- What worked: The session's work is already recorded in the wave and phase entries above. The last of them is "Phase H: write-up draft; end of the autopilot run" (commit `02a1323`, tag `phase-H`). No code or spec changed after that commit, so the tally needed no change.
+- What failed or surprised: nothing new. The open stop questions (deploy, Bedrock access, making the repo public) are listed under "Status for Tushar".
+- Spec versus vibe note: n/a.
+- Evidence: commit `02a1323`.
+
 ### Template
 
 ```
