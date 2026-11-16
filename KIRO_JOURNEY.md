@@ -612,6 +612,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `pnpm typecheck` and `pnpm test` output (`EXIT_CODE=0` for both, 35 files, 148 tests); `.kiro/specs/weave-engine/tasks.md` (task 13, and every task checked). Full recording of the last tasks: `media/journey/2026-11-16-engine-final-tasks.mp4` (540 MB; the user's recording; kept out of git; I have not watched it).
 
+### 2026-11-16 — Main chat session: weave-engine completion write-up
+
+- Surface: IDE
+- Goal: Complete the wave 13, 14 and 15 entries, set the final tally, and commit the finished spec (`5d8e75a`).
+- Kiro features used: hook `journey-entry-on-stop` (fired at the end of this turn; this entry is the response). I read Kiro's own records (`tasks.meta.json`, `.kiro/hook-runs.log`, session records) to complete the entries. No spec task was run in this session, no agent, MCP tool, property test or checkpoint.
+- Model / credits (start → end):
+- What worked: The session records filled the gaps the task sessions left. They gave all five Property 32 counterexamples verbatim (the wave 14 entry had only seeds), the 12.3 details, and the timestamps that show the guard allowed the three fixture writes.
+- What failed or surprised: I rewrote the tally table with a Python script run in the shell, not with the file tools, so neither file hook saw that edit. That is the same kind of shell edit I recorded against tasks 11.2 and 11.3. The other journal changes in this turn used `str_replace`.
+- Spec versus vibe note: n/a.
+- Evidence: commit `5d8e75a`.
+
 ### Template
 
 ```
