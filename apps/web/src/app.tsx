@@ -1,4 +1,5 @@
-// The JACQUARD app: loom setup, motif step, point paper, weaves and the float check.
+// The JACQUARD app: loom setup, motif step, point paper, weaves, the float check, the cloth
+// simulator and the exports.
 // State lives in editorReducer and setupReducer; every lift plan, float list and fix comes from
 // the engine through engine-check.ts (10.6). The check reruns when the design, the weaves or the
 // setup change, memoised and deferred so painting stays smooth.
@@ -7,12 +8,14 @@ import { checkFloats } from "@jacquard/engine";
 import type { Weave, WeaveAssignment } from "@jacquard/engine";
 import type { MotifRequest, MotifResponse } from "@jacquard/motif";
 import { EditorToolbar } from "./components/editor-toolbar";
+import { ExportPanel } from "./components/export-panel";
 import { FloatPanel } from "./components/float-panel";
 import { LoomSetupPanel } from "./components/loom-setup-panel";
 import { MotifPanel } from "./components/motif-panel";
 import { PointPaper, clampCell } from "./components/point-paper";
 import type { TouchMode } from "./components/point-paper";
 import { RegionLegend } from "./components/region-legend";
+import { SimulatorPanel } from "./components/simulator-panel";
 import { Button } from "./components/ui/button";
 import { Dialog } from "./components/ui/dialog";
 import { Panel } from "./components/ui/panel";
@@ -31,6 +34,8 @@ import { regionColours } from "./lib/palette";
 import { useMotifRequest } from "./lib/use-motif-request";
 import { useOnline } from "./lib/use-online";
 import { errorCell, flipCells, violationMarks } from "./lib/violation-marks";
+import { DEFAULT_WARP, yarnColours } from "./lib/yarns";
+import type { YarnChoice } from "./lib/yarns";
 import { editorReducer, initialEditorState } from "./state/editor-state";
 import { DEFAULT_SETUP, resolveProfile, setupReducer } from "./state/setup-state";
 import type { SetupAction } from "./state/setup-state";
@@ -76,6 +81,8 @@ export function App() {
   const [layer, setLayer] = useState<PaperLayer>("violations");
   // The loom setup is open on wide screens and folded to its summary below 768px.
   const [setupOpen, setSetupOpen] = useState(() => mediaMatches("(min-width: 768px)", true));
+  // Yarn colours (2.3). A null weft follows region 0's display colour until the user picks one.
+  const [yarnChoice, setYarnChoice] = useState<{ readonly warp: string; readonly weft: string | null }>({ warp: DEFAULT_WARP, weft: null });
   const [motifFocus, setMotifFocus] = useState<{ kind: "text" | "sketch"; id: number } | null>(null);
   const profileRef = useRef<HTMLSelectElement | null>(null);
   const toastId = useRef(0);
@@ -145,6 +152,14 @@ export function App() {
   );
   const noMarks = useMemo(() => new Map<string, never>(), []);
   const marks = shownLayer === "fixes" ? noMarks : allMarks;
+
+  // ---- Plan for the simulator and the exports (2.4, 6.3): the fixed plan while it is current. ----
+  const fixCurrent = fixed !== null && sameSource(fixed.source, currentSource);
+  const yarns: YarnChoice = useMemo(
+    () => ({ warp: yarnChoice.warp, weft: yarnChoice.weft ?? colours[0] ?? DEFAULT_WARP }),
+    [yarnChoice, colours],
+  );
+  const exportYarns = useMemo(() => yarnColours(yarns), [yarns]);
 
   const runAutoFix = (): void => {
     if (!check.ok) return;
@@ -293,6 +308,9 @@ export function App() {
   else if (!check.ok) paperStatus = "error";
   else if (!started && editor.undo.length === 0 && allZero(design)) paperStatus = "empty";
   const sizeMismatch = size.ends !== setup.repeat.ends || size.picks !== setup.repeat.picks;
+  const blankStart = paperStatus === "empty" || size.ends === 0 || size.picks === 0;
+  const planInUse = blankStart ? null : fixCurrent ? fixed.plan : check.ok ? check.plan : null;
+  const planSource = fixCurrent ? "fixed" : "design";
 
   return (
     <div className="app">
@@ -466,12 +484,35 @@ export function App() {
             onTurnOffRepeatAcross={() => changeSetup({ type: "setRepeatAcross", repeatAcross: false })}
             onChooseProfile={focusProfile}
           />
+          <SimulatorPanel
+            plan={planInUse}
+            planSource={planSource}
+            profile={profile}
+            yarns={yarns}
+            onYarnsChange={(next) => setYarnChoice({ warp: next.warp, weft: next.weft })}
+            onResetYarns={() => setYarnChoice({ warp: DEFAULT_WARP, weft: null })}
+            emptyReason={blankStart ? "blank" : "engineError"}
+            onStartBlank={startBlank}
+          />
           <WeavePanel
             regions={weaveRegions}
             colours={colours}
             weaves={weaves}
             warnings={check.ok ? check.warnings : []}
             onChange={changeWeave}
+          />
+          <ExportPanel
+            profileName={setup.profile}
+            profile={profile}
+            plan={planInUse}
+            planSource={planSource}
+            design={design}
+            colours={colours}
+            yarns={exportYarns}
+            violationCount={check.ok ? check.violations.length : 0}
+            blank={blankStart}
+            onAutoFix={runAutoFix}
+            onStartBlank={startBlank}
           />
         </div>
       </main>

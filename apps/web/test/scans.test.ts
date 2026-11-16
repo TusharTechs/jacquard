@@ -101,10 +101,10 @@ describe("imports in apps/web/src (13.3)", () => {
     expect(names.has("@jacquard/motif")).toBe(true);
   });
 
-  it("imports @jacquard/engine and @jacquard/motif only by their bare package names", () => {
+  it("imports @jacquard/engine, @jacquard/motif and @jacquard/export only by their bare package names", () => {
     const bad = specifiers
-      .filter(({ specifier }) => /(^|\/)@jacquard\//.test(specifier) || /(^|[/.])(engine|motif)\/src(\/|$)/.test(specifier))
-      .filter(({ specifier }) => specifier !== "@jacquard/engine" && specifier !== "@jacquard/motif")
+      .filter(({ specifier }) => /(^|\/)@jacquard\//.test(specifier) || /(^|[/.])(engine|motif|export)\/src(\/|$)/.test(specifier))
+      .filter(({ specifier }) => specifier !== "@jacquard/engine" && specifier !== "@jacquard/motif" && specifier !== "@jacquard/export")
       .map(({ file, specifier }) => `${relative(webRoot, file)}: ${specifier}`);
     expect(bad).toEqual([]);
   });

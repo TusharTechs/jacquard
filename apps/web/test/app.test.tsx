@@ -164,4 +164,39 @@ describe("app", () => {
     drag(2);
     expect(button("Undo").disabled).toBe(false);
   });
+  it("shows the cloth simulator and the export panel, empty until there is a design (2.5, 6.1)", () => {
+    render(<App />);
+    const simulator = screen.getByRole("heading", { name: "Cloth simulation" }).closest("section")!;
+    const exports = screen.getByRole("heading", { name: "Export" }).closest("section")!;
+    expect(textOf(simulator)).toContain("No cloth to show yet");
+    expect(textOf(exports)).toContain("Nothing to export yet");
+    fireEvent.click(within(exports).getByRole("button", { name: "Start from a blank grid" }));
+    expect(textOf(simulator)).toContain("Showing the lift plan of the current design");
+    expect(simulator.querySelector("canvas")).not.toBeNull();
+    expect(within(exports).getByRole("button", { name: "Cards (PDF)" })).toBeTruthy();
+    // The weft yarn starts as region 0's display colour; the warp is a dark neutral.
+    const [warp, weft] = [...simulator.querySelectorAll<HTMLInputElement>('input[type="color"]')];
+    expect(warp!.value).toBe("#2b2b2b");
+    expect(weft!.value).toBe("#f3ead8");
+  });
+  it("after auto-fix the simulator and the exports use the fixed lift plan (2.4, 6.3)", async () => {
+    render(<App />);
+    // Region 0 warp-faced satin 8 with one end of region 1 gives floats past the limit of 8.
+    const weaves = screen.getByRole("heading", { name: "Weave per region" }).closest("section")!;
+    fireEvent.change(within(weaves).getByLabelText("Region 0"), { target: { value: "satin-8-3-warp" } });
+    const canvas = screen.getByRole("application");
+    fireEvent.keyDown(window, { key: "2" });
+    fireEvent.pointerDown(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, button: 0, buttons: 1, clientX: 164, clientY: 4 });
+    fireEvent.pointerMove(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, buttons: 1, clientX: 164, clientY: 380 });
+    fireEvent.pointerUp(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, clientX: 164, clientY: 380 });
+    const floats = screen.getByRole("heading", { name: "Float check" }).closest("section")!;
+    const autoFix = await waitFor(() => within(floats).getByRole("button", { name: "Auto-fix" }));
+    const simulator = screen.getByRole("heading", { name: "Cloth simulation" }).closest("section")!;
+    const exports = screen.getByRole("heading", { name: "Export" }).closest("section")!;
+    expect(textOf(simulator)).toContain("Showing the lift plan of the current design");
+    expect(textOf(exports)).toMatch(/\d+ float violations? in the lift plan/);
+    fireEvent.click(autoFix);
+    await waitFor(() => expect(textOf(simulator)).toContain("Showing the fixed lift plan from auto-fix"));
+    expect(textOf(exports)).toContain("Exports use the fixed lift plan from auto-fix");
+  });
 });

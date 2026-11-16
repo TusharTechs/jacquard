@@ -1238,6 +1238,24 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/export/test/*.ts`, `packages/export/test/expected/two-pick.wif`.
 
+### 2026-11-16 — simulate-and-export wave 3 (tasks 4.1, 4.2, 4.3)
+
+- Surface: IDE
+- Goal: The simulator panel and the export panel in the web app, with component tests.
+- Kiro features used: spec `simulate-and-export` (tasks 4.1 to 4.3, run by a `general-task-execution` sub-agent; I reran the checks); steering `design-language.md` ("never silently export"); hook `block-engine-fixture-edits`.
+- Model / credits (start → end):
+- What worked:
+  - `simulator-panel.tsx` with `lib/draw-cloth.ts`: face/back, zoom 1 to 16, warp and weft colour inputs, a line saying which plan is shown, the "not a photograph" note, drawing one frame at a time, and the canvas capped at 8192 px.
+  - `export-panel.tsx` with `lib/export-files.ts`, `lib/download.ts` and `lib/yarns.ts`: four downloads, a violation gate with "Run auto-fix" or "Export anyway", the fixed-plan note, a separate export-failure state, and the untested-format and WIF `[to verify]` notes.
+  - 30 new web tests, among them an app test where auto-fix makes both panels switch to the fixed plan.
+  - Rerun by me: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (web `13 passed` files / `110 passed` tests; engine 148, mcp 88, export 52, motif 75, backend 45).
+- What failed or surprised:
+  - The existing import scan in `apps/web/test/scans.test.ts` failed on the new `@jacquard/export` imports, because it listed only the engine and motif as allowed names. The sub-agent added `@jacquard/export` to the allowed names and `export/src` to the forbidden deep-import pattern. This changed an existing test; I checked that it is not weaker.
+  - The first auto-fix app test used a weft-faced satin 8 that produced no violations, so the test checked nothing. It was switched to warp-faced satin 8.
+  - The 360 px layout of the new panels was checked only in jsdom.
+- Spec versus vibe note: spec.
+- Evidence: `apps/web/src/components/simulator-panel.tsx`, `export-panel.tsx`, `apps/web/src/lib/draw-cloth.ts`, `export-files.ts`, `download.ts`, `yarns.ts`, `apps/web/test/simulator-panel.test.tsx`, `export-panel.test.tsx`, `app.test.tsx`, `scans.test.ts`.
+
 ### Template
 
 ```

@@ -44,12 +44,12 @@ All 11 correctness properties have their own property test task. Every property 
   - [x] 3.12 Example tests (expected 2-pick WIF, one-card PDF, `PROFILE_400` card with 416 positions in 52 rows of 8) and the source scan
     - _Requirements: 3.1, 4.3, 4.6, 7.1_
 
-- [ ] 4. Web
-  - [ ] 4.1 `simulator-panel.tsx`, `lib/draw-cloth.ts`, yarn colour state
+- [x] 4. Web
+  - [x] 4.1 `simulator-panel.tsx`, `lib/draw-cloth.ts`, yarn colour state
     - _Requirements: 2.1 to 2.5_
-  - [ ] 4.2 `export-panel.tsx`, `lib/download.ts`, wiring in `app.tsx`
+  - [x] 4.2 `export-panel.tsx`, `lib/download.ts`, wiring in `app.tsx`
     - _Requirements: 6.1 to 6.5_
-  - [ ] 4.3 Component tests for both panels
+  - [x] 4.3 Component tests for both panels
     - _Requirements: 2.4, 2.5, 6.2 to 6.5_
 
 - [ ] 5. Checkpoint and visual check: `pnpm typecheck`, `pnpm test`; run the app, view the simulator at 360 px and 1280 px through the Chrome DevTools MCP server, export each file and check the downloads; stop the servers and confirm no process listens on 5173 or 8787
