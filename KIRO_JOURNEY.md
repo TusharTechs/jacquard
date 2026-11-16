@@ -1084,6 +1084,30 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `backend/src/*.ts`, `backend/test/*.ts`, `apps/web/src/state/*.ts`, `apps/web/src/lib/*.ts`, `apps/web/test/*.ts`.
 
+### 2026-11-16 — motif-input wave 4 (tasks 6.1, 6.2, 6.3): web UI, editor feel in vibe mode
+
+- Surface: IDE
+- Goal: The React UI: shared components, loom setup, motif input, weave and float panels, and the point-paper editor.
+- Kiro features used: spec `motif-input` (tasks 6.1 to 6.3, run by one `general-task-execution` sub-agent); vibe mode for the editor's interaction feel (task 6.3, as `BUILD_PLAYBOOK.md` asks); steering `design-language.md` and `product.md` (both given to the sub-agent as binding); hook `block-engine-fixture-edits` (checked file writes). The sub-agent reports that it loaded the page in Chrome DevTools at 360 px and 1280 px and measured `scrollWidth`. I have not seen that session, so I cannot say which tool it used.
+- Model / credits (start → end):
+- What worked:
+  - `apps/web/src`: `app.tsx`, `styles.css`, the shared set in `components/ui/` (Button, Field, Panel, Dialog, Toast, Tabs), 11 feature components and 8 display/plumbing helpers in `lib/` (3,375 lines in all under `src`).
+  - The first line of the header says punch cards are dead as a computing medium. The loom setup carries the untested-card-format note. Model output is labelled "Suggestion from the model — edit it freely", and stand-in output "Stand-in motif (model not connected)".
+  - Point paper: canvas with pick 0 at the bottom; violations drawn as an outline plus a corner triangle; pointer painting that fills the cells between moves; two-finger pinch zoom; keyboard cursor; undo and redo shortcuts; a monospace readout.
+  - Reported browser check: a stand-in motif with region 0 set to twill 3/1 S gave 18 violations, and auto-fix flipped 19 lift-plan cells leaving 0. Through the Vite proxy, `POST /api/motif` returned a stand-in SVG.
+  - Rerun by me: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 88, motif 75, backend 45, web 37 passed). The web build passed in the sub-agent's run.
+- What failed or surprised:
+  - **Vibe-mode findings, from the reported 360 px check:**
+    - The page scrolled sideways by 3 px (`scrollWidth` 363), because a grid column sized itself to the canvas. Fixed with `minmax(0, 1fr)`.
+    - Toolbar labels wrapped and the region chips stacked; both fixed.
+    - A keyboard-cursor bug: several quick arrow presses all moved from the old position. Fixed with a ref.
+    None of these came from the spec. They showed up only by looking.
+  - A design question the spec did not settle: auto-fix flips lift-plan cells, not regions, so after auto-fix the point paper still shows the pre-fix violations. The fixed plan is kept and discarded on the next edit, with a note. It is reasonable, but a designer may find it confusing; it is left for the design-reviewer.
+  - `app.tsx` calls the engine's `checkFloats` directly to count violations on the fixed plan. That is an engine call, not weaving logic.
+  - No component tests yet; they are wave 5.
+- Spec versus vibe note: spec gave the behaviour (paint, undo, zoom, keyboard, states). Vibe found the problems you only see on screen: the 3 px overflow, wrapping labels and the cursor race. The spec would not have caught them, and vibe alone would not have produced the undo cap or the keyboard path.
+- Evidence: `apps/web/src/**`.
+
 ### Template
 
 ```

@@ -58,12 +58,12 @@ All 14 correctness properties have their own property test task. Every property 
     - _Requirements: 3.6, 3.7, 9.2, 9.3, 9.7, 9.8, 10.1, 10.3, 10.5, 10.6_
   - [x] 5.2 Write property test: **Property 14: Editor state** — **Validates: Requirements 9.2, 9.3, 9.7, 9.8**
 
-- [ ] 6. Web UI
-  - [ ] 6.1 Shared components (Button, Field, Panel, Dialog, Toast, Tabs) and `styles.css` per `design-language.md`
+- [x] 6. Web UI
+  - [x] 6.1 Shared components (Button, Field, Panel, Dialog, Toast, Tabs) and `styles.css` per `design-language.md`
     - _Requirements: 12.1_
-  - [ ] 6.2 `loom-setup-panel.tsx`, `motif-panel.tsx`, `weave-panel.tsx`, `float-panel.tsx`, `region-legend.tsx`, `term.tsx`, `app.tsx`
+  - [x] 6.2 `loom-setup-panel.tsx`, `motif-panel.tsx`, `weave-panel.tsx`, `float-panel.tsx`, `region-legend.tsx`, `term.tsx`, `app.tsx`
     - _Requirements: 3.6, 3.7, 8.5, 10.1 to 10.5, 11.1 to 11.3, 12.1 to 12.4_
-  - [ ] 6.3 `point-paper.tsx` and `editor-toolbar.tsx` (vibe mode for the interaction feel: drag painting, zoom, pinch, cursor)
+  - [x] 6.3 `point-paper.tsx` and `editor-toolbar.tsx` (vibe mode for the interaction feel: drag painting, zoom, pinch, cursor)
     - _Requirements: 9.1 to 9.6, 10.2, 10.4_
 
 - [ ] 7. Web tests

@@ -1,0 +1,132 @@
+// Loom setup (11.1 to 11.3): profile, colour count, repeat, minimum feature, symmetry and
+// "repeat across". Every limit comes from the engine's profiles through setup-state.ts.
+import { useId } from "react";
+import type { Symmetry } from "@jacquard/motif";
+import { PROFILE_NAMES, SYMMETRIES, resolveProfile, setupLimits } from "../state/setup-state";
+import type { ProfileName, SetupAction, SetupState } from "../state/setup-state";
+import { NumberSetting } from "./number-setting";
+import { Term } from "./term";
+import { Field } from "./ui/field";
+import { Panel } from "./ui/panel";
+
+const SYMMETRY_LABELS: Readonly<Record<Symmetry, string>> = {
+  none: "None",
+  mirrorEnds: "Mirror left to right",
+  mirrorPicks: "Mirror top to bottom",
+  mirrorBoth: "Mirror both ways",
+};
+
+export interface LoomSetupPanelProps {
+  readonly setup: SetupState;
+  readonly onChange: (action: SetupAction) => void;
+  /** The engine's REPEAT_NOT_DIVISIBLE message, when the current check returned it. */
+  readonly repeatAcrossMessage: string | null;
+}
+
+export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage }: LoomSetupPanelProps) {
+  const limits = setupLimits(setup.profile);
+  const profile = resolveProfile(setup.profile);
+  const switchId = useId();
+  const switchMessageId = useId();
+
+  return (
+    <Panel title="Loom setup">
+      <div className="stack">
+        <p className="small muted">
+          The repeat is counted in <Term name="end">ends</Term> across and <Term name="pick">picks</Term> up. Colour count,
+          symmetry and minimum feature apply to the next motif you generate.
+        </p>
+        <Field label="Loom profile" hint={<>Up to <span className="mono">{profile.regionLimit}</span> regions on this profile.</>}>
+          {(control) => (
+            <select
+              {...control}
+              className="select"
+              value={setup.profile}
+              onChange={(event) => onChange({ type: "setProfile", profile: event.target.value as ProfileName })}
+            >
+              {PROFILE_NAMES.map((name) => (
+                <option key={name} value={name}>
+                  {name} hooks
+                </option>
+              ))}
+            </select>
+          )}
+        </Field>
+        <NumberSetting
+          label="Colour count"
+          value={setup.colourCount}
+          min={limits.colourCount.min}
+          max={limits.colourCount.max}
+          hint={<>Regions, background included. From <span className="mono">{limits.colourCount.min}</span> to <span className="mono">{limits.colourCount.max}</span>.</>}
+          onCommit={(colourCount) => onChange({ type: "setColourCount", colourCount })}
+        />
+        <div className="grid-2">
+          <NumberSetting
+            label="Repeat ends"
+            value={setup.repeat.ends}
+            min={limits.ends.min}
+            max={limits.ends.max}
+            onCommit={(ends) => onChange({ type: "setRepeatEnds", ends })}
+          />
+          <NumberSetting
+            label="Repeat picks"
+            value={setup.repeat.picks}
+            min={limits.picks.min}
+            max={limits.picks.max}
+            onCommit={(picks) => onChange({ type: "setRepeatPicks", picks })}
+          />
+        </div>
+        <NumberSetting
+          label="Minimum feature"
+          value={setup.minFeature}
+          min={limits.minFeature.min}
+          max={limits.minFeature.max}
+          unit="cells"
+          hint={<>Smaller areas in a generated motif are merged into a neighbour. From <span className="mono">{limits.minFeature.min}</span> to <span className="mono">{limits.minFeature.max}</span> cells.</>}
+          onCommit={(minFeature) => onChange({ type: "setMinFeature", minFeature })}
+        />
+        <Field label="Symmetry">
+          {(control) => (
+            <select
+              {...control}
+              className="select"
+              value={setup.symmetry}
+              onChange={(event) => onChange({ type: "setSymmetry", symmetry: event.target.value as Symmetry })}
+            >
+              {SYMMETRIES.map((symmetry) => (
+                <option key={symmetry} value={symmetry}>
+                  {SYMMETRY_LABELS[symmetry]}
+                </option>
+              ))}
+            </select>
+          )}
+        </Field>
+        <div className="field">
+          <div className="switch-row">
+            <input
+              id={switchId}
+              type="checkbox"
+              role="switch"
+              checked={setup.repeatAcross}
+              aria-describedby={repeatAcrossMessage === null ? undefined : switchMessageId}
+              onChange={(event) => onChange({ type: "setRepeatAcross", repeatAcross: event.target.checked })}
+            />
+            <label className="field-label" htmlFor={switchId}>
+              Repeat across all <span className="mono">{profile.hookCount}</span> hooks
+            </label>
+          </div>
+          {repeatAcrossMessage === null ? (
+            <p className="field-hint">Off: hooks past the repeat width stay down.</p>
+          ) : (
+            <p className="field-error" id={switchMessageId} role="alert">
+              {repeatAcrossMessage}
+            </p>
+          )}
+        </div>
+        <p className="note">
+          The card format is a configurable loom profile. It has not been tested on a working loom.
+        </p>
+      </div>
+    </Panel>
+  );
+}
