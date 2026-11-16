@@ -16,10 +16,10 @@ All 14 correctness properties have their own property test task. Every property 
 
 ## Tasks
 
-- [ ] 1. Scaffolding
-  - [ ] 1.1 Create `packages/motif`, `backend` and `apps/web` package skeletons with exact pins (design, Packages), add `backend` to `pnpm-workspace.yaml`, install, and add a package smoke test to each (pins, scripts, no runtime dependencies in motif, engine `dependencies` still empty)
+- [x] 1. Scaffolding
+  - [x] 1.1 Create `packages/motif`, `backend` and `apps/web` package skeletons with exact pins (design, Packages), add `backend` to `pnpm-workspace.yaml`, install, and add a package smoke test to each (pins, scripts, no runtime dependencies in motif, engine `dependencies` still empty)
     - _Requirements: 13.1, 13.2, 13.3, 13.5_
-  - [ ] 1.2 Update `.kiro/steering/structure.md` to list `packages/motif` and `@jacquard/motif`
+  - [x] 1.2 Update `.kiro/steering/structure.md` to list `packages/motif` and `@jacquard/motif`
     - _Requirements: 13.1_
 
 - [ ] 2. Motif package

@@ -1019,6 +1019,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
   - **Bedrock:** `aws bedrock list-foundation-models` in `us-west-2` lists `anthropic.claude-sonnet-5-5`, and inference profile `us.anthropic.claude-sonnet-5-5` exists. Listing does not show whether invocation access is granted. An `InvokeModel` call costs money, so it was not made (stop condition). The motif step is built behind a `Generator` interface with the deterministic Stand_In.
   - The `tasks.md` dependency graph puts all 13 motif property tasks in one wave. That is a lot for one journal entry, but they share one generator file.
   - Phase B tag `phase-B` was pushed before the Phase B end journal entry was committed. The tag is on the commit with the reviewer fix (`e021bdb`); the entry is in the next commit.
+  - Third ordering slip: the scaffolding commit `9517373` went out before this entry was written; the entry and the task ticks are in the commit after it.
 - Spec versus vibe note: spec. The editor's interaction feel is marked for vibe mode in task 6.3.
 - Evidence: `.kiro/specs/motif-input/requirements.md`, `design.md`, `tasks.md`; `.kiro/steering/structure.md`; `packages/motif/package.json`, `backend/package.json`, `apps/web/package.json`.
 
