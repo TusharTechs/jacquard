@@ -853,6 +853,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/src/tools.ts`.
 
+### 2026-11-16 — weave-mcp wave 9 (task 8.2)
+
+- Surface: IDE
+- Goal: `createServer` and the `tools/call` dispatcher.
+- Kiro features used: spec `weave-mcp` (task 8.2). No hook output observed, no property test in this wave.
+- Model / credits (start → end):
+- What worked: `src/server.ts` registers `tools/list` and `tools/call` on the low-level SDK `Server`. The dispatcher runs: unknown name gives `TOOL_UNKNOWN` with the name as sent; then `checkArguments`; then the handler. A thrown value is logged to stderr and becomes the fixed `INTERNAL_ERROR`. `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 43 passed).
+- What failed or surprised: reading the SDK 1.32.2 types showed that `CallToolRequestSchema` declares `arguments` as `z.record(z.string(), z.unknown()).optional()`. The SDK validates every incoming request against it, so a call whose `arguments` is an array is rejected as a protocol error before our handler runs. The design's example test expects `ARGUMENT_INVALID` for array arguments. Task 14.1 will have to test the SDK's real behaviour and the design must be corrected (see wave 14).
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/src/server.ts`; `node_modules/@modelcontextprotocol/sdk/dist/esm/types.js` (`CallToolRequestParamsSchema`).
+
 ### Template
 
 ```

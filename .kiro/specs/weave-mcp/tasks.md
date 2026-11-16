@@ -93,7 +93,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
   - [x] 8.1 Implement `src/tools.ts`
     - `TOOL_DEFS` in the order of the design table: name, description (non-empty, at most 1000 characters; `build_cards` and `decode_cards` say "The card format has not been tested on a working loom."), hand-written JSON Schema `inputSchema`, `annotations: { readOnlyHint: true }`, and the ordered `ArgSpec` list from which the schema is derived, plus the handler
     - _Requirements: 1.1, 1.3, 1.4, 12.5_
-  - [ ] 8.2 Implement `src/server.ts`
+  - [x] 8.2 Implement `src/server.ts`
     - `createServer(engine: EngineApi)` using the low-level SDK `Server`; `tools/list` returns `TOOL_DEFS` without handlers; `tools/call` dispatch: unknown name gives `TOOL_UNKNOWN` with the name as sent, then `checkArguments`, then the handler; a thrown value is logged to stderr with `console.error` and returns `INTERNAL_ERROR`; no state kept between calls
     - _Requirements: 1.1, 1.5, 8.2, 8.3, 8.4, 8.5, 11.2_
   - [ ] 8.3 Implement `test/harness.ts`
