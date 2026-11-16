@@ -161,6 +161,30 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec; both tasks followed `design.md` closely. The fault injectors are the hardest part of this wave, and the design's one-paragraph description left real decisions open: how each injector picks its variant, and which fields it expects. I settled those in the code.
 - Evidence: `packages/engine/src/errors.ts`, `packages/engine/test/arbitraries.ts`, `.kiro/specs/weave-engine/tasks.md` (2, 2.2, 3, 3.1 checked).
 
+### 2026-11-16 — weave-engine wave 3 (tasks 4.1, 5.1, 10.1 and 10.3)
+
+- Surface: IDE
+- Goal: Implement loom profiles (`src/profiles.ts`, 4.1), weaves (`src/weaves.ts`, 5.1), run extraction (`src/runs.ts`, 10.1) and the naive float oracle (`test/oracle.ts`, 10.3).
+- Kiro features used: spec `weave-engine` (tasks 4.1, 5.1, 10.1, 10.3; `design.md` Profiles, Weaves, Runs and Property 18 were the sources); steering `weaving-domain.md` (rule 2: every loom fact is a labelled profile field), `journey.md` and `tech.md` (the `EXIT_CODE` rule). I ran the four tasks myself in this chat session, one after another, not in parallel and not through Kiro's task execution. No hook fired that I observed, no custom agent, no MCP tool, no property test, no checkpoint.
+- Model / credits (start → end):
+- What worked:
+  - `profiles.ts`: `PROFILE_120`, `PROFILE_240` and `PROFILE_400` (frozen), `defineProfile`, `validateProfile`. Every default line carries a bracketed label; the `[sourced]` lines quote S1 with the quotes the user relayed.
+  - `weaves.ts`: `evaluateWeave`, `weavePeriod`, `validateWeave`, with the satin moves as the table `{ 5: [2, 3], 8: [3, 5] }`.
+  - `runs.ts`: `extractRuns(cells, ring)`.
+  - `oracle.ts`: `naiveCheckFloats(plan, profile)`. It tiles each ring line three times, scans left to right, keeps runs that start in the middle tile and subtracts the tile length from the start. A search of its imports shows one line, `import type { LiftPlan, LoomProfile, Violation } from "../src/types.js"`. It imports no `runs.ts`, no `floats.ts` and no other engine code, as the user required. It has its own scan, its own side rule and its own sort.
+  - `pnpm typecheck` printed both `tsc` steps with `EXIT_CODE=0` after the wave. A search of `src/` for `Date`, `Math.random`, `Intl`, `toLocale`, `process`, `globalThis` and `fetch` found nothing.
+  - Tasks 4.1, 5.1, 10.1 and 10.3 are marked `[x]`. Before the wave, task 7.1 was extended, at the user's request, with adding the design-based lift-plan generator to `arbitraries.ts` and removing the note at the top of that file.
+- What failed or surprised:
+  - **Not exercised:** nothing but the typechecker has looked at any of these files. No test imports them. Every function here is unchecked until the property tests in waves 4 and later.
+  - **Defaults I had to choose for custom profiles (needs the user's eye):** `defineProfile` has to fill omitted fields, and 1.2 gives defaults only for the three built-in sizes. I used `hooksPerCardRow` 8 and `spareHookCount` 0 as the fallback, labelled `[to verify]`, because only `PROFILE_400` has spare hooks from S1. A custom profile with `hookCount: 400` therefore gets 0 spare hooks, not 16. That follows the design's "Property 34" wording (only omitted fields are filled from fixed defaults) but could surprise a user.
+  - **`validateProfile` choices:** a value that is not an object fails as `PROFILE_INVALID` with `field: "profile"`. Extra, unknown fields are ignored. On success it returns the same object, not a copy.
+  - **`validateWeave` choices:** a weave that is not an object, or has an unknown `kind`, fails with `parameter: "kind"`. An invalid satin `size` stops the check before `move`, so a wrong size is reported as the size, not the move.
+  - **`extractRuns` differs from the design text:** the design says the function turns a line into runs; I return either `{ kind: "constant" }` or `{ kind: "runs" }`, so the unbound case is explicit and cannot be mistaken for a run longer than the limit. A constant line is constant whether or not it is a ring.
+  - **Labels versus task text:** task 4.1 says `[to verify]` defaults say `// to verify`. The code says `// [to verify] ...`, which contains those words. The task 4.2 test must match the bracketed form. I also rewrote the file header and one line so that only real default lines contain the token `[sourced]`, because the 4.2 test will check that every `[sourced]` line quotes S1.
+  - **Typecheck passed first time for all four files.** That is weak evidence for code written against a design with no tests yet.
+- Spec versus vibe note: spec; the oracle in particular followed the design's description closely, and having the independence rule stated up front kept it from reusing `runs.ts`.
+- Evidence: `packages/engine/src/profiles.ts`, `weaves.ts`, `runs.ts`, `packages/engine/test/oracle.ts`, `.kiro/specs/weave-engine/tasks.md` (4.1, 5.1, 10.1, 10.3 checked; 7.1 extended).
+
 ### Template
 
 ```
@@ -181,7 +205,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 2 done, tasks 1.1, 1.2, 2.1, 2.2 and 3.1) |
+| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 3 done, tasks 1.1, 1.2, 2.1, 2.2, 3.1, 4.1, 5.1, 10.1 and 10.3) |
 | Property-based tests / bugs they caught | 0 / 0 | |
 | Hooks | 1 | journey-entry-on-stop (wrote no entry after wave 0; unreliable for spec waves) |
 | Steering files | 6 | 4 always-on, 2 file-matched |

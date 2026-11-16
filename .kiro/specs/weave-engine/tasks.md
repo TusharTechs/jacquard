@@ -34,7 +34,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - _Requirements: 1.2, 1.6, 3.7_
 
 - [ ] 4. Loom profiles
-  - [ ] 4.1 Implement `src/profiles.ts`
+  - [x] 4.1 Implement `src/profiles.ts`
     - `PROFILE_120`, `PROFILE_240`, `PROFILE_400` (frozen), `defineProfile()`, `validateProfile()` in 1.2 field order
     - Every default has a label comment; `[sourced]` defaults quote S1; `[to verify]` defaults say `// to verify`
     - _Requirements: 1.2, 1.3, 1.4, 1.5_
@@ -48,7 +48,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - _Requirements: 1.5_
 
 - [ ] 5. Weaves
-  - [ ] 5.1 Implement `src/weaves.ts`
+  - [x] 5.1 Implement `src/weaves.ts`
     - `evaluateWeave`, `weavePeriod`, `validateWeave`; satin moves as the table `{ 5: [2, 3], 8: [3, 5] }`
     - _Requirements: 1.6, 1.7, 2.3_
   - [ ] 5.2 Write property test for weave periodicity
@@ -84,6 +84,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
 - [ ] 7. Lift plan builder
   - [ ] 7.1 Implement `buildLiftPlan` in `src/lift-plan.ts`
     - Runs `validateInput`, evaluates each cell from its own region's weave anchored at the origin, sets idle hooks unlifted and lists them, tiles with `repeatAcross`
+    - Add the design-based lift-plan generator to test/arbitraries.ts, as Design specifies, and remove the note at the top of that file.
     - _Requirements: 2.1, 2.2, 2.4, 2.5, 2.6_
   - [ ] 7.2 Implement seam warnings
     - `WEAVE_PERIOD_SEAM` per used region, ordered by region then picks before ends; never blocks output
@@ -136,13 +137,13 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - **Validates: Requirements 2.11, 2.13**
 
 - [ ] 10. Float checker
-  - [ ] 10.1 Implement `src/runs.ts`
+  - [x] 10.1 Implement `src/runs.ts`
     - Constant, linear and ring run extraction; a ring run starts where its ring predecessor differs
     - _Requirements: 4.2, 4.4_
   - [ ] 10.2 Implement `checkFloats` in `src/floats.ts`
     - Analysed unit only, side labels with `wovenFaceDown`, separate warp and weft limits, unbound lines, 4.6 ordering as confirmed in the design
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
-  - [ ] 10.3 Implement the naive oracle in `test/oracle.ts`
+  - [x] 10.3 Implement the naive oracle in `test/oracle.ts`
     - Tiles the unit 3 times (along picks, and along ends with repeat on) and scans linearly; imports only types from `src`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
   - [ ] 10.4 Write property test against the oracle
