@@ -51,6 +51,22 @@
     "10.9 Write property test for violation shape and order": {
       "status": "passed",
       "lastRunTimestamp": 1794821294217
+    },
+    "9.4 Write property test for card count and layout": {
+      "status": "passed",
+      "lastRunTimestamp": 1794822176608
+    },
+    "9.5 Write property test for punching": {
+      "status": "passed",
+      "lastRunTimestamp": 1794822249082
+    },
+    "9.6 Write property test for the card round trip": {
+      "status": "passed",
+      "lastRunTimestamp": 1794822312008
+    },
+    "9.7 Write property test for bad card sets": {
+      "status": "passed",
+      "lastRunTimestamp": 1794822426250
     }
   },
   "executionHistory": {
@@ -410,6 +426,73 @@
         "executionId": "026dd912-ac0f-4aa8-afa6-308d6ebad32d",
         "chatSessionId": "sess_4e1d3cda-e818-47a8-a99d-569bc52011c5",
         "timestamp": 1794821304505
+      }
+    ],
+    "9.4 Write property test for card count and layout": [
+      {
+        "executionId": "0e71d948-d608-409b-a20a-6d2bd61a14be",
+        "chatSessionId": "sess_07ba599c-a4d9-4e3a-a1aa-cd798eb99cde",
+        "timestamp": 1794822146009
+      },
+      {
+        "executionId": "0e71d948-d608-409b-a20a-6d2bd61a14be",
+        "chatSessionId": "sess_07ba599c-a4d9-4e3a-a1aa-cd798eb99cde",
+        "timestamp": 1794822185991
+      }
+    ],
+    "9.5 Write property test for punching": [
+      {
+        "executionId": "850652fc-5685-4eb3-825c-6fe2a70ad8ef",
+        "chatSessionId": "sess_8a80b504-5eb3-4301-8d18-64d316289375",
+        "timestamp": 1794822217304
+      },
+      {
+        "executionId": "850652fc-5685-4eb3-825c-6fe2a70ad8ef",
+        "chatSessionId": "sess_8a80b504-5eb3-4301-8d18-64d316289375",
+        "timestamp": 1794822260486
+      }
+    ],
+    "9.6 Write property test for the card round trip": [
+      {
+        "executionId": "73471f2e-9d09-4893-99f6-611cd8c217ab",
+        "chatSessionId": "sess_ee096b90-d96e-4da5-a417-0ffb8aa7f46e",
+        "timestamp": 1794822282136
+      },
+      {
+        "executionId": "73471f2e-9d09-4893-99f6-611cd8c217ab",
+        "chatSessionId": "sess_ee096b90-d96e-4da5-a417-0ffb8aa7f46e",
+        "timestamp": 1794822337694
+      }
+    ],
+    "9.7 Write property test for bad card sets": [
+      {
+        "executionId": "6a940c13-da29-4476-b609-5b673c89c6ed",
+        "chatSessionId": "sess_ad4b6932-ac12-45e0-b9ef-37d6e2462c2a",
+        "timestamp": 1794822362152
+      },
+      {
+        "executionId": "6a940c13-da29-4476-b609-5b673c89c6ed",
+        "chatSessionId": "sess_ad4b6932-ac12-45e0-b9ef-37d6e2462c2a",
+        "timestamp": 1794822441155
+      }
+    ],
+    "9. Cards": [
+      {
+        "executionId": "6a940c13-da29-4476-b609-5b673c89c6ed",
+        "chatSessionId": "sess_ad4b6932-ac12-45e0-b9ef-37d6e2462c2a",
+        "timestamp": 1794822441183
+      }
+    ],
+    "11.2 Implement safe-flip detection and cell ranking": [
+      {
+        "executionId": "5b6db2c9-4dde-48ba-a0ff-d6249a16ce9a",
+        "chatSessionId": "sess_6cd318ad-c178-4f06-bde8-0ac3b09c375c",
+        "timestamp": 1794822474274
+      },
+      {
+        "executionId": "5b6db2c9-4dde-48ba-a0ff-d6249a16ce9a",
+        "chatSessionId": "sess_6cd318ad-c178-4f06-bde8-0ac3b09c375c",
+        "timestamp": 1794822613298
       }
     ]
   }

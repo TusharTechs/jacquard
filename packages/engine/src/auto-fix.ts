@@ -107,3 +107,165 @@ export function flipCell(unit: WorkUnit, end: number, pick: number): number {
   refreshWeft(unit, pick);
   return unit.badness - before;
 }
+
+// ---------------------------------------------------------------------------------------------
+// Safe flips and cell ranking (5.4, 5.7). See design.md, "Candidates and safe flips" and
+// "Choosing a cell".
+// ---------------------------------------------------------------------------------------------
+
+export type LineDirection = "warp" | "weft";
+
+/**
+ * A violation seen by auto-fix: a float run of `length` cells starting at ring index `start` of
+ * warp line `line` (an end) or weft line `line` (a pick), or a whole unbound line (`unbound`,
+ * `start` 0, `length` the line length).
+ */
+export interface FixTarget {
+  readonly direction: LineDirection;
+  readonly line: number;
+  readonly start: number;
+  readonly length: number;
+  readonly unbound: boolean;
+}
+
+/** One cell of a target run, with its offset from the run start in ring order. */
+export interface Candidate {
+  readonly end: number;
+  readonly pick: number;
+  readonly offset: number;
+}
+
+/** The satin lattice `(pick - step * end) mod size = 0` used to place flips (5.7). */
+export interface Lattice {
+  readonly size: number;
+  readonly step: number;
+}
+
+function gcd(a: number, b: number): number {
+  let x = a;
+  let y = b;
+  while (y !== 0) [x, y] = [y, x % y];
+  return x;
+}
+
+/**
+ * Lattice for float limit `limit`: `size` is the largest integer `<= limit + 1` that has a step `s`
+ * in `[2, size - 2]` coprime with it, and `step` is the smallest such `s`. When `limit + 1 < 5`
+ * the lattice is `size = limit + 1`, `step = 1`. For limit 8 this is size 9, step 2.
+ */
+export function latticeFor(limit: number): Lattice {
+  if (limit + 1 < 5) return { size: Math.max(1, limit + 1), step: 1 };
+  for (let size = limit + 1; size >= 5; size -= 1) {
+    for (let step = 2; step <= size - 2; step += 1) {
+      if (gcd(size, step) === 1) return { size, step };
+    }
+  }
+  // Unreachable: size 5 always has step 2.
+  return { size: 5, step: 2 };
+}
+
+/** True when cell (`end`, `pick`) lies on `lattice`, using a non-negative modulo. */
+export function onLattice(lattice: Lattice, end: number, pick: number): boolean {
+  const value = (pick - lattice.step * end) % lattice.size;
+  return (value + lattice.size) % lattice.size === 0;
+}
+
+function limitOf(unit: WorkUnit, direction: LineDirection): number {
+  return direction === "warp" ? unit.maxWarpFloat : unit.maxWeftFloat;
+}
+
+function lineLength(unit: WorkUnit, direction: LineDirection): number {
+  return direction === "warp" ? unit.pickCount : unit.designWidth;
+}
+
+function isRing(unit: WorkUnit, direction: LineDirection): boolean {
+  return direction === "warp" ? true : unit.repeatAcross;
+}
+
+/**
+ * True when flipping the cell at `index` of a line (cells `line`, a ring or not) would leave the
+ * line non-constant with the run through `index` no longer than `limit`.
+ */
+function lineStaysLegal(line: readonly boolean[], index: number, ring: boolean, limit: number): boolean {
+  const length = line.length;
+  const target = !(line[index] as boolean);
+  // Non-constant after the flip: some other cell must differ from the new state.
+  let different = false;
+  for (let other = 0; other < length; other += 1) {
+    if (other !== index && line[other] !== target) {
+      different = true;
+      break;
+    }
+  }
+  if (!different) return false;
+  // Run through the flipped cell: count equal neighbours each way, bounded by limit + 1.
+  let count = 1;
+  for (const step of [1, -1]) {
+    for (let distance = 1; distance < length && count <= limit; distance += 1) {
+      let at = index + step * distance;
+      if (ring) at = ((at % length) + length) % length;
+      else if (at < 0 || at >= length) break;
+      if (line[at] !== target) break;
+      count += 1;
+    }
+  }
+  return count <= limit;
+}
+
+/**
+ * Safe flip (design, Candidates and safe flips): flipping the cell at (`end`, `pick`) is safe when,
+ * in both lines through it, the run containing the cell (now merged with its new-state neighbours)
+ * is within that line's limit, and neither line is constant afterwards.
+ */
+export function isSafeFlip(unit: WorkUnit, end: number, pick: number): boolean {
+  const warpLine: boolean[] = [];
+  for (let at = 0; at < unit.pickCount; at += 1) {
+    warpLine.push((unit.cells[at] as boolean[])[end] as boolean);
+  }
+  const weftLine = unit.cells[pick] as boolean[];
+  return (
+    lineStaysLegal(warpLine, pick, true, unit.maxWarpFloat) &&
+    lineStaysLegal(weftLine, end, unit.repeatAcross, unit.maxWeftFloat)
+  );
+}
+
+/** Every cell of the target run or unbound line, in ring order from the run start. */
+export function candidatesOf(unit: WorkUnit, target: FixTarget): Candidate[] {
+  const length = lineLength(unit, target.direction);
+  const candidates: Candidate[] = [];
+  for (let offset = 0; offset < target.length; offset += 1) {
+    const index = (target.start + offset) % length;
+    candidates.push(
+      target.direction === "warp"
+        ? { end: target.line, pick: index, offset }
+        : { end: index, pick: target.line, offset },
+    );
+  }
+  return candidates;
+}
+
+/**
+ * Longest piece of the target left after flipping the candidate at `offset`: the two pieces of a
+ * float run, or for an unbound line one piece of `length - 1` on a ring and two pieces otherwise.
+ */
+export function longestRemainingPiece(unit: WorkUnit, target: FixTarget, offset: number): number {
+  if (target.unbound && isRing(unit, target.direction)) return target.length - 1;
+  return Math.max(offset, target.length - 1 - offset);
+}
+
+/**
+ * Safe candidates of `target`, best first: on the lattice of the line being fixed, then smaller
+ * longest remaining piece, then lower offset from the run start (5.7). Empty when none is safe.
+ */
+export function rankSafeCandidates(unit: WorkUnit, target: FixTarget): Candidate[] {
+  const lattice = latticeFor(limitOf(unit, target.direction));
+  return candidatesOf(unit, target)
+    .filter((candidate) => isSafeFlip(unit, candidate.end, candidate.pick))
+    .map((candidate) => ({
+      candidate,
+      off: onLattice(lattice, candidate.end, candidate.pick) ? 0 : 1,
+      piece: longestRemainingPiece(unit, target, candidate.offset),
+    }))
+    .sort((a, b) => a.off - b.off || a.piece - b.piece || a.candidate.offset - b.candidate.offset)
+    .map((entry) => entry.candidate);
+}

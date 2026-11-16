@@ -115,7 +115,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
 
 - [x] 8. Checkpoint: run the engine tests once and confirm everything so far passes; ask the user if questions arise
 
-- [ ] 9. Cards
+- [x] 9. Cards
   - [x] 9.1 Implement `buildCards`, `cardRows` and `nextCard` in `src/cards.ts`
     - Positions `hookCount + spareHookCount`, spare positions after the figuring hooks, punching by `holeMeans`, numbers from 1, chain successor by `nextCard`
     - _Requirements: 2.7, 2.8, 2.9_
@@ -125,16 +125,16 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
   - [x] 9.3 Example test: 400-hook card layout
     - `PROFILE_400` cards have 416 positions in 52 rows of 8 with no `null` slots; positions 400 to 415 are never punched under `holeMeans: "lift"`
     - _Requirements: 1.3, 2.8_
-  - [ ] 9.4 Write property test for card count and layout
+  - [x] 9.4 Write property test for card count and layout
     - **Property 12: Card count, numbering and layout**
     - **Validates: Requirements 2.7, 2.8, 2.9**
-  - [ ] 9.5 Write property test for punching
+  - [x] 9.5 Write property test for punching
     - **Property 13: Punching follows holeMeans**
     - **Validates: Requirements 2.7**
-  - [ ] 9.6 Write property test for the card round trip
+  - [x] 9.6 Write property test for the card round trip
     - **Property 14: Card round trip**
     - **Validates: Requirements 2.10**
-  - [ ] 9.7 Write property test for bad card sets
+  - [x] 9.7 Write property test for bad card sets
     - **Property 15: Bad card sets are rejected**
     - **Validates: Requirements 2.11, 2.13**
 
@@ -171,7 +171,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
   - [x] 11.1 Implement badness and incremental run tables in `src/auto-fix.ts`
     - Badness `B` as in design Auto-fix, Badness; recompute only the two lines through a flipped cell
     - _Requirements: 5.1_
-  - [ ] 11.2 Implement safe-flip detection and cell ranking
+  - [x] 11.2 Implement safe-flip detection and cell ranking
     - Safe-flip rule; ranking by the single lattice `(p − s·e) mod n = 0`, then smallest remaining piece, then ring offset
     - _Requirements: 5.4, 5.7_
   - [ ] 11.3 Implement the auto-fix loop
