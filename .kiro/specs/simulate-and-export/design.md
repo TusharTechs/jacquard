@@ -22,7 +22,7 @@ apps/web  ── plan (fixed plan if current, else design plan), profile, yarns,
 | `src/types.ts` | `YarnColours`, `ClothCell`, `ExportError`, `ExportResult<T>` |
 | `src/cloth.ts` | `clothModel(plan, profile, yarns, side)` |
 | `src/wif.ts` | `writeWif(plan, profile, yarns, options?)`, `readWif(text)` |
-| `src/card-sheet.ts` | `cardSheetLayout(cardSet, profile)` (shared geometry), `cardSheetSvg(plan, profile, options?)` |
+| `src/card-sheet.ts` | `cardSheetLayout(plan, profile)` (shared geometry), `cardSheetSvg(plan, profile, options?)` |
 | `src/pdf.ts` | `PdfWriter` (minimal object writer) and `cardSheetPdf(plan, profile, options?)` |
 | `src/point-paper.ts` | `pointPaperSvg(design, palette, options?)` |
 | `src/text.ts` | `escapeXml`, `pdfString`, `formatNumber` (fixed decimals, no locale) |
@@ -170,7 +170,7 @@ For any valid inputs, two calls of each of `clothModel`, `writeWif`, `cardSheetS
 
 ### Property 11: Engine errors pass through
 
-For any corrupted plan or invalid custom profile, `writeWif`, `cardSheetSvg` and `cardSheetPdf` return the same engine error as `validatePlan` or `buildCards`, unchanged.
+For any invalid custom profile, `writeWif`, `cardSheetSvg` and `cardSheetPdf` return the same `PROFILE_INVALID` error as the engine's `validateProfile`; for a valid profile and a corrupted plan they return the same error as `validatePlan` or `buildCards`; both unchanged. (Finding from task 2.3: the profile is checked first, because `validatePlan` reads only `hookCount`, and `cardRows` with `hooksPerCardRow` 0 would never end.)
 
 **Validates: Requirements 4.8**
 

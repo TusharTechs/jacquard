@@ -1188,6 +1188,23 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `.kiro/specs/simulate-and-export/*.md`, `packages/export/package.json`, `.kiro/steering/structure.md`.
 
+### 2026-11-16 — simulate-and-export wave 1 (tasks 2.1 to 2.4)
+
+- Surface: IDE
+- Goal: Implement `@jacquard/export`: cloth model, WIF writer and reader, card sheets in SVG and PDF, point-paper sheet.
+- Kiro features used: spec `simulate-and-export` (tasks 2.1 to 2.4, run by a `general-task-execution` sub-agent; I reran the checks); hook `block-engine-fixture-edits` (checked file writes).
+- Model / credits (start → end):
+- What worked:
+  - `packages/export/src`: `types.ts`, `text.ts` (with a hand-written UTF-8 encoder), `cloth.ts`, `wif.ts` (the mapping carries a `[to verify]` comment), `card-sheet.ts`, `pdf.ts` (a hand-written PDF 1.4 writer), `point-paper.ts`; 15 smoke tests.
+  - The sub-agent opened a 12-pick, 400-hook card PDF with `pdfinfo`: PDF 1.4, 2 pages, A4, no xref warnings. It also rendered a page with `pdftoppm`.
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, export 17, mcp 88, motif 75, backend 45, web 80).
+- What failed or surprised:
+  - **Design finding:** `validatePlan` reads only the profile's `hookCount`, so a custom profile with `hooksPerCardRow: 0` would reach `cardRows` and loop forever. Every export function now runs `validateProfile` first. Property 11 in `design.md` was rewritten to match. The design table also gave `cardSheetLayout(cardSet, profile)` where the text and code use `(plan, profile)`; the table is corrected.
+  - A 400-hook card is 228 mm long, wider than A4's printable width, so PDF cards are scaled down to fit. The sheets are schematics anyway.
+  - The 12-card PDF is about 1.09 MB, because every hole is four Bézier curves in an uncompressed stream. A 400-pick design will be large; not addressed in version 1.
+- Spec versus vibe note: spec.
+- Evidence: `packages/export/src/*.ts`, `packages/export/test/smoke.test.ts`, `.kiro/specs/simulate-and-export/design.md` (Property 11, file table).
+
 ### Template
 
 ```

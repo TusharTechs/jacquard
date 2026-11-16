@@ -19,14 +19,14 @@ All 11 correctness properties have their own property test task. Every property 
 - [x] 1. Scaffold `packages/export` (package shape as the engine, `@jacquard/engine` workspace dependency, exact dev pins) with a package smoke test; add `@jacquard/export` to `apps/web` dependencies; update `.kiro/steering/structure.md`
   - _Requirements: 7.1, 7.3_
 
-- [ ] 2. Export package
-  - [ ] 2.1 `types.ts`, `text.ts`, `cloth.ts`
+- [x] 2. Export package
+  - [x] 2.1 `types.ts`, `text.ts`, `cloth.ts`
     - _Requirements: 1.1 to 1.5_
-  - [ ] 2.2 `wif.ts` (`writeWif`, `readWif`, private `[JACQUARD]` section)
+  - [x] 2.2 `wif.ts` (`writeWif`, `readWif`, private `[JACQUARD]` section)
     - _Requirements: 3.1 to 3.7_
-  - [ ] 2.3 `card-sheet.ts` (`cardSheetLayout`, `cardSheetSvg`) and `pdf.ts` (`PdfWriter`, `cardSheetPdf`)
+  - [x] 2.3 `card-sheet.ts` (`cardSheetLayout`, `cardSheetSvg`) and `pdf.ts` (`PdfWriter`, `cardSheetPdf`)
     - _Requirements: 4.1 to 4.8_
-  - [ ] 2.4 `point-paper.ts` and `index.ts`
+  - [x] 2.4 `point-paper.ts` and `index.ts`
     - _Requirements: 5.1 to 5.3_
 
 - [ ] 3. Export properties and examples
