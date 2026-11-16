@@ -1125,6 +1125,23 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `apps/web/test/motif-panel.test.tsx`, `float-panel.test.tsx`, `loom-setup-panel.test.tsx`, `app.test.tsx`, `scans.test.ts`, `dom-setup.ts`.
 
+### 2026-11-16 — motif-input wave 6 (task 8: checkpoint and visual check)
+
+- Surface: IDE
+- Goal: Checkpoint, then look at the running app through the Chrome DevTools MCP server.
+- Kiro features used: spec `motif-input` (task 8); MCP server `chrome-devtools` (first use in this project: `new_page`, `emulate` with viewport `360x780x2,mobile,touch`, `evaluate_script`, `take_screenshot`).
+- Model / credits (start → end):
+- What worked:
+  - Checkpoint: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 88, motif 75, backend 45, web 74 passed).
+  - With the backend dev server (stand-in) and Vite running, a script typed "a lotus border with paisley" and pressed Generate at 360 px. The page showed "Stand-in motif (model not connected) — edit it freely", a 3-colour palette and "No floats over the limit".
+  - `document.documentElement.scrollWidth` was 360, so there was no horizontal scroll. The canvas was 288 by 288 px (48 cells at 6 px). The header's first sentence reads "Punch cards are dead as a computing medium."
+  - Both servers were stopped afterwards; `lsof -i :5173 -i :8787` printed nothing.
+- What failed or surprised:
+  - `take_screenshot` with `filePath` under `media/journey/` failed: "not within any of the configured workspace roots". The chrome-devtools server's roots do not include the repo, so the screenshots exist only in this chat, not in the repo.
+  - At 360 px the point paper sits below the whole loom setup and motif panels, a long scroll on a phone. Left for the design-reviewer.
+- Spec versus vibe note: n/a (check).
+- Evidence: this entry; no screenshot file saved (see above).
+
 ### Template
 
 ```

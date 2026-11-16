@@ -72,7 +72,7 @@ All 14 correctness properties have their own property test task. Every property 
   - [x] 7.2 Scans: no model endpoint in `apps/web/src`; no credentials in the built `dist`; imports only through package names; repository contains no AWS key pattern
     - _Requirements: 2.1, 2.4, 13.3_
 
-- [ ] 8. Checkpoint and visual check
+- [x] 8. Checkpoint and visual check
   - Run `pnpm typecheck` and `pnpm test`; start the backend dev server and Vite, load the app with the Chrome DevTools MCP server at 360 px and 1280 px widths, request a stand-in motif, paint, undo, run auto-fix, and record what was seen in the journey. Stop both servers afterwards.
   - _Requirements: 9.4, 12.1, 12.4_
 
