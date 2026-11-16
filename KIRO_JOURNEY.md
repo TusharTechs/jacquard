@@ -326,6 +326,30 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: vibe.
 - Evidence: `.kiro/hooks/engine-typecheck-and-test-on-save.json` (result line added); `.kiro/hook-runs.log` lines `08:27:11Z guard fired: fs_write` / `blocked`, `08:27:15Z guard fired: str_replace` / `allowed` / `save-hook fired`, `08:27:24Z` same pair for the undo; `git status --short` empty afterwards.
 
+### 2026-11-16 — weave-engine wave 7 (tasks 7.5 to 7.9)
+
+- Surface: IDE
+- Goal: Property tests for the lift plan: Property 7 (region weaves, 7.5), 8 (idle hooks, 7.6), 9 (repeat across, 7.7), 10 (seam warnings, 7.8) and 11 (plan validation, 7.9).
+- Kiro features used: spec `weave-engine` (five tasks, run through Kiro's task execution; task 7.9 was dispatched by the orchestrator to the `spec-task-execution` sub-agent); property-based tests (fast-check, Properties 7 to 11); steering `tech.md` (the `EXIT_CODE` rule and the finishing rule); the sub-agent marked 7.9 as passed with `update_pbt_status`. No custom agent, MCP tool or checkpoint (task 8 is next). I did not see the sessions for 7.5 to 7.8; their part of this entry comes from the files on disk and `tasks.md`.
+- Model / credits (start → end):
+- What worked:
+  - New files: `test/lift-plan-region-weaves.property.test.ts` (P7), `test/idle-hooks.property.test.ts` (P8), `test/lift-plan-repeat.property.test.ts` (P9), `test/lift-plan-seam.property.test.ts` (P10) and `test/plan-validation.property.test.ts` (P11, 11 properties at 300 runs each).
+  - Task 7.9 report: `pnpm typecheck` and `pnpm test` both `EXIT_CODE=0`; 10 test files and 73 tests passed, no failures. P11 checks that `validatePlan` accepts every built plan and rejects each single corruption (idle hook lifted, wrong row length, broken periodicity, `pickCount` of 0 or not an integer, missing or extra row, wrong `hookCount`, non-boolean cell, bad `designWidth`, non-dividing width with repeat) with the matching `problem`, and `pick` and `hook` where they apply.
+  - Tasks 7.5 to 7.9 and parent task 7 are marked `[x]`.
+- What failed or surprised:
+  - **No property failed in the reports I have, so there is no counterexample or seed to record.** For 7.5 to 7.8 I have no run output, so I cannot say whether any of them failed and was fixed earlier in the wave.
+  - Task 7.9 found `pnpm vitest --run` only works from `packages/engine`, because the workspace root has no vitest.
+  - Task 7.9 made a no-op `str_replace` on `src/errors.ts` (identical text); the file is unchanged.
+- **Added after the wave by the main chat session, from `.kiro/hook-runs.log`, `tasks.meta.json` and Kiro's session records** (the lines above were written by the 7.9 session, before these checks):
+  - **All five properties are recorded by Kiro.** `tasks.meta.json` `pbtResults` has `"status": "passed"` for 7.5, 7.6, 7.7, 7.8 and 7.9, so Properties 7 to 11 all passed in Kiro's own record, not only 11. No property failed, so there is no counterexample or seed to record.
+  - **The save hook fired after each of the six engine saves in the wave, and each run logged `typecheck=0 test=0`.** `.kiro/hook-runs.log` has `save-hook fired` followed about one second later by `save-hook result: typecheck=0 test=0` at 08:32:37Z (7.5), 08:33:39Z (7.6), 08:34:47Z (7.7), 08:35:51Z (7.8), and 08:36:58Z and 08:37:27Z (7.9). The 08:36:58Z save was the no-op `str_replace` on `src/errors.ts`. This is the first time the save hook has been seen to run during a spec wave.
+  - **The fixture guard fired before each of those six edits and allowed them**, which is correct: five created new test files with `fs_write` and one edited `src/errors.ts`, none under `test/fixtures`. Its one block so far is at 08:27:11Z, in the hook test session before the wave, already recorded above.
+  - **The Stop hook worked as intended for the first time.** Kiro's records show a `ContextualHookInvoked` event for "Write journey entry on stop" at the end of all five task sessions (08:33:05Z, 08:34:05Z, 08:35:12Z, 08:36:19Z, 08:38:01Z). In 7.5 to 7.8 the agent saw that later tasks in wave 7 had not started and wrote nothing. In 7.9 it wrote the entry above. So the "defer during a wave" prompt from earlier today held in every session. The entry itself was written with a Python script run in the shell, not with the file tools.
+  - **Checked by me afterwards:** `pnpm typecheck` printed both `tsc` steps with `EXIT_CODE=0`; `pnpm test` printed `Test Files  10 passed (10)` and `Tests  73 passed (73)` with `EXIT_CODE=0`.
+  - The hook command that logs the result line was changed and committed (`023c8f3`) before the wave, outside this chat session.
+- Spec versus vibe note: spec; the properties were fully stated in `design.md`, so the tests were direct translations.
+- Evidence: `packages/engine/test/plan-validation.property.test.ts` and the four sibling files above, `.kiro/specs/weave-engine/tasks.md` (7.5 to 7.9 checked), `.kiro/specs/weave-engine/tasks.meta.json` (`pbtResults` for 7.5 to 7.9), `.kiro/hook-runs.log` (local, ignored by git). Files in `media/journey/`: `2026-11-16-hooks-firing-live.png` (committed; I viewed it: a terminal running `tail -f ~/Projects/jacquard/.kiro/hook-runs.log` while task 7.7 runs, showing the 7.5 and 7.6 `save-hook result: typecheck=0 test=0` lines); `2026-11-16-clip-hooks-firing-live-wave7.mp4` (37 MB; 70 s according to the user, hooks firing live in the terminal during task 7.7); `2026-11-16-wave7-plan-properties.mp4` (345 MB, the user's full recording of wave 7). Both MP4s are kept out of git, and I have not watched them.
+
 ### Template
 
 ```
@@ -346,9 +370,9 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 6 done) |
-| Property-based tests / bugs they caught | 8 / 0 | Properties 1 to 6 (weaves) and 16, 17 (validation), all passed first run; Kiro recorded 16 and 17 |
-| Hooks | 3 | journey-entry-on-stop (wrote no entry after wave 0 or wave 5; unreliable for spec waves); engine-typecheck-and-test-on-save and block-engine-fixture-edits (did not fire in live tests on Nov 16 up to wave 6 because the workspace was untrusted, log line `hooks.v2.executionDisabledUntrustedWorkspace`; they fire after trusting the folder, and both logged in `.kiro/hook-runs.log` in the hook test session) |
+| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 7 done) |
+| Property-based tests / bugs they caught | 13 / 0 | Properties 1 to 11 (weaves, lift plan) and 16, 17 (validation); no failures; Kiro recorded 7 to 11, 16 and 17 as passed |
+| Hooks | 3 | All three did not run before the workspace was trusted (log line `hooks.v2.executionDisabledUntrustedWorkspace`). After trusting: journey-entry-on-stop fired in all five wave 7 task sessions, deferred in four and wrote the wave entry in the last; engine-typecheck-and-test-on-save fired on all six engine saves in wave 7, each logging `typecheck=0 test=0`; block-engine-fixture-edits blocked one edit (08:27:11Z, hook test session) and allowed six in wave 7 |
 | Steering files | 6 | 4 always-on, 2 file-matched |
 | Custom agents | 1 | journey-scribe (not yet invoked) |
 | MCP servers (third-party / our own) | 0 / 0 | |

@@ -7,6 +7,26 @@
     "6.3 Write property test for error fields": {
       "status": "passed",
       "lastRunTimestamp": 1794814862555
+    },
+    "7.5 Write property test for region weaves": {
+      "status": "passed",
+      "lastRunTimestamp": 1794817969839
+    },
+    "7.6 Write property test for idle hooks": {
+      "status": "passed",
+      "lastRunTimestamp": 1794818030215
+    },
+    "7.7 Write property test for repeat across": {
+      "status": "passed",
+      "lastRunTimestamp": 1794818094800
+    },
+    "7.8 Write property test for seam warnings": {
+      "status": "passed",
+      "lastRunTimestamp": 1794818164960
+    },
+    "7.9 Write property test for plan validation": {
+      "status": "passed",
+      "lastRunTimestamp": 1794818260324
     }
   },
   "executionHistory": {
@@ -118,6 +138,73 @@
         "executionId": "887738ea-b1fd-45d0-b3d6-9af90e570c2d",
         "chatSessionId": "sess_c8451f0f-a577-44ea-8dbe-d8fe6c564c21",
         "timestamp": 1794817145237
+      }
+    ],
+    "7.5 Write property test for region weaves": [
+      {
+        "executionId": "c66b4804-c6ee-4252-98eb-b8cd718549e1",
+        "chatSessionId": "sess_4af01cff-6e9c-4145-8a8f-35ad65ad3c9e",
+        "timestamp": 1794817924978
+      },
+      {
+        "executionId": "c66b4804-c6ee-4252-98eb-b8cd718549e1",
+        "chatSessionId": "sess_4af01cff-6e9c-4145-8a8f-35ad65ad3c9e",
+        "timestamp": 1794817979847
+      }
+    ],
+    "7.6 Write property test for idle hooks": [
+      {
+        "executionId": "a0c49938-ce80-403e-b1ef-49e0ffb62e83",
+        "chatSessionId": "sess_ad756097-ded2-47a1-9f21-663a6f82df85",
+        "timestamp": 1794818000643
+      },
+      {
+        "executionId": "a0c49938-ce80-403e-b1ef-49e0ffb62e83",
+        "chatSessionId": "sess_ad756097-ded2-47a1-9f21-663a6f82df85",
+        "timestamp": 1794818041015
+      }
+    ],
+    "7.7 Write property test for repeat across": [
+      {
+        "executionId": "51e2ba95-528d-4961-965b-5623c1ff3e7e",
+        "chatSessionId": "sess_c2043759-c546-437f-ad68-2073fa149fe6",
+        "timestamp": 1794818062680
+      },
+      {
+        "executionId": "51e2ba95-528d-4961-965b-5623c1ff3e7e",
+        "chatSessionId": "sess_c2043759-c546-437f-ad68-2073fa149fe6",
+        "timestamp": 1794818107066
+      }
+    ],
+    "7.8 Write property test for seam warnings": [
+      {
+        "executionId": "6107bca8-7405-4784-ad1c-3c87cdd77057",
+        "chatSessionId": "sess_2b242138-6aee-4a32-9356-27de66502f50",
+        "timestamp": 1794818128127
+      },
+      {
+        "executionId": "6107bca8-7405-4784-ad1c-3c87cdd77057",
+        "chatSessionId": "sess_2b242138-6aee-4a32-9356-27de66502f50",
+        "timestamp": 1794818175028
+      }
+    ],
+    "7.9 Write property test for plan validation": [
+      {
+        "executionId": "e283d644-9b8c-4981-a742-d3da95b4dd6c",
+        "chatSessionId": "sess_5c4a7056-a397-4eb5-b0c9-4993e8653764",
+        "timestamp": 1794818197851
+      },
+      {
+        "executionId": "e283d644-9b8c-4981-a742-d3da95b4dd6c",
+        "chatSessionId": "sess_5c4a7056-a397-4eb5-b0c9-4993e8653764",
+        "timestamp": 1794818276507
+      }
+    ],
+    "7. Lift plan builder": [
+      {
+        "executionId": "e283d644-9b8c-4981-a742-d3da95b4dd6c",
+        "chatSessionId": "sess_5c4a7056-a397-4eb5-b0c9-4993e8653764",
+        "timestamp": 1794818276537
       }
     ]
   }

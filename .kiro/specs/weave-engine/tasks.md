@@ -83,7 +83,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - **Property 17: Errors carry their named fields**
     - **Validates: Requirements 1.5, 1.7, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.8**
 
-- [ ] 7. Lift plan builder
+- [x] 7. Lift plan builder
   - [x] 7.1 Implement `buildLiftPlan` in `src/lift-plan.ts`
     - Runs `validateInput`, evaluates each cell from its own region's weave anchored at the origin, sets idle hooks unlifted and lists them, tiles with `repeatAcross`
     - Add the design-based lift-plan generator to test/arbitraries.ts, as Design specifies, and remove the note at the top of that file.
@@ -97,19 +97,19 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
   - [x] 7.4 Example test: design grid orientation
     - A 3-pick by 2-end design with distinct regions and contrasting weaves; `design[pick][end]` maps to `lifts[pick][hook]`, not the transpose
     - _Requirements: 1.1_
-  - [ ] 7.5 Write property test for region weaves
+  - [x] 7.5 Write property test for region weaves
     - **Property 7: Lift plan follows region weaves**
     - **Validates: Requirements 2.1, 2.2**
-  - [ ] 7.6 Write property test for idle hooks
+  - [x] 7.6 Write property test for idle hooks
     - **Property 8: Idle hooks never lift**
     - **Validates: Requirements 2.4**
-  - [ ] 7.7 Write property test for repeat across
+  - [x] 7.7 Write property test for repeat across
     - **Property 9: Repeat across tiles the design**
     - **Validates: Requirements 2.5, 2.6**
-  - [ ] 7.8 Write property test for seam warnings
+  - [x] 7.8 Write property test for seam warnings
     - **Property 10: Seam warnings are exact and non-blocking**
     - **Validates: Requirements 2.12**
-  - [ ] 7.9 Write property test for plan validation
+  - [x] 7.9 Write property test for plan validation
     - **Property 11: Plan validation accepts built plans and rejects corruptions**
     - **Validates: Requirements 2.13**
 
