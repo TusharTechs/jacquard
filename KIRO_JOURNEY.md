@@ -623,6 +623,121 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: n/a.
 - Evidence: commit `5d8e75a`.
 
+### 2026-11-16 — weave-mcp spec: requirements written and detailed
+
+- Surface: IDE
+- Goal: Start the `weave-mcp` spec (an MCP server over stdio in `packages/mcp` that exposes `@jacquard/engine` as six tools). Requirements only; Analyze Requirements, design, tasks and code come later.
+- Kiro features used: spec `weave-mcp` (requirements-first; `requirements.md` written by the requirements workflow sub-agent); 14 `requirement-detailer` sub-agent calls, one per requirement, run in parallel; the `validate_spec_format` tool (no issues, run by the sub-agent after each write); the `user_input` tool for the feature/workflow choice (answers: Build a Feature, Requirements); the hook `journey-entry-on-stop` (this entry is its response). No steering file was changed. No property test, MCP tool, custom agent or checkpoint was used, and no code was run.
+- Model / credits (start → end):
+- What worked: `.kiro/specs/weave-mcp/requirements.md` has 14 requirements covering the six tools, engine errors as tool errors, argument validation, fidelity to the engine, determinism, no side effects, package boundary, and the final configuration task (MCP registration and the `weave-auditor` and `design-reviewer` agents). Fidelity (10.1), determinism (11.1) and the card round trip (7.5) are stated as properties for the design.
+- What failed or surprised:
+  - The detailer sub-agents worked on one requirement each and disagreed with each other. Requirement 3 invented a region-index range of 0 to 65535 that nobody asked for, and Requirements 3, 4, 7 and 9 named different error kinds for the same malformed argument (a generic Tool_Error versus an Argument_Error). I caught both when reading the outputs and had them reconciled in the merge: the range is removed (range checks belong to the engine) and argument problems are `ARGUMENT_INVALID` errors.
+  - The sub-agent that merged the detailed text told me it did not re-read the file before writing and relied on the earlier read. It also made two additions I did not ask for (SDK-version and `auto_fix` wording in the decision log). I did not re-read the merged file myself; I relied on `validate_spec_format` passing and the sub-agent's report.
+  - The SDK version in the spec (`@modelcontextprotocol/sdk` 1.32.2, "npm latest") comes from the requirements sub-agent. I did not check it, and it has not been installed. The design and tasks must confirm it before it is pinned. The user later confirmed 1.32.2 as the current npm release.
+  - No property test ran, so there is no counterexample to record. No user correction in this session.
+  - Correction, added later: the requirements said design-language.md is empty (confirmation item 4). That was wrong; see the requirements review entry.
+- Spec versus vibe note: spec.
+- Evidence: `.kiro/specs/weave-mcp/requirements.md`.
+
+### 2026-11-16 — weave-mcp spec: requirements review changes
+
+- Surface: IDE
+- Goal: Apply the user's review of the `weave-mcp` requirements.
+- Kiro features used: spec `weave-mcp` (requirements revised by the requirements workflow sub-agent; `validate_spec_format`); `journey-scribe` (this entry).
+- Model / credits (start → end):
+- What worked: Eight review points were applied to `.kiro/specs/weave-mcp/requirements.md`:
+  1. 10.1 (byte-for-byte equality with the engine's serialised output) versus 11.4 (server sorts object keys) is resolved by comparing after Canonical_JSON.
+  2. Confirmation item 4 is removed.
+  3. 2.3 compares only the bracketed label token.
+  4. 2.7 is removed.
+  5. 13.8 is replaced by a pretest build step.
+  6. 14.4 and 14.6 are marked manual checks.
+  7. Confirmation items 1 to 3 are confirmed.
+  8. SDK 1.32.2 is confirmed and pinned exactly.
+- What failed or surprised:
+  - **User correction:** the spec said `.kiro/steering/design-language.md` is empty and recorded that as confirmation item 4. The claim first appeared in the requirements draft written by the requirements sub-agent, not in the user's brief (the user's prompt only described the design-reviewer agent). I relayed it in my reply to the user without opening the file. The file has 36 lines (visual language, component rules, required states). I did not check it before passing it on.
+  - **Review finding the earlier pass missed:** 10.1 contradicted 11.4. The two detailer sub-agents wrote them separately and I merged them without noticing.
+  - **2.7 was an unreachable criterion** that the refinement step added.
+  - **The earlier journal entry for this spec was written with a shell script**, so file hooks did not see that edit. The user asked for file tools this time.
+- Spec versus vibe note: spec.
+- Evidence: `.kiro/specs/weave-mcp/requirements.md`, `.kiro/steering/design-language.md` (36 lines).
+
+### 2026-11-16 — weave-mcp spec: Analyze Requirements
+
+- Surface: IDE
+- Goal: Run Analyze Requirements on the weave-mcp requirements before design, as the user asked.
+- Kiro features used: Kiro's built-in Analyze Requirements, run by the user on `weave-mcp` (the Requirements Analysis dialog). The weave-engine spec's analysis was done by hand, not with this tool. The agent made the `analyze_requirements` tool call at the user's request; the dialog was shown to the user, who answered it. The analysis found 1 item and asked 1 question. Also: spec `weave-mcp` (requirements revised by the requirements workflow sub-agent; `validate_spec_format` reported no issues); custom agent `journey-scribe` (this entry). No property test, hook or checkpoint that I observed.
+- Model / credits (start → end):
+- What worked: The one question was about Requirement 14.9: if the SDK version is pinned to 1.32.2 but the final task does not finish because of an unrelated failure, should the pinned version still be reported? The dialog showed two options: "Reporting is contingent on the final task finishing successfully" and "The pinned version should be reported regardless of overall task success". The user chose the second ("regardless"). 14.9 was split. 14.9 now only pins `1.32.2` exactly. New 14.10 says that when the final task ends, whether it completes or stops on a failure, it reports the pinned version to the user. 14.1 to 14.8 keep their numbers.
+- What failed or surprised:
+  - The analysis found only one item.
+  - The Decision log's SDK row still cites "13.4, 14.9" and was not updated to cite 14.10. I left it because the user asked only for the analysis answer to be applied, and flagged it in my reply.
+  - I did not re-read the requirements file after the edit. I relied on the sub-agent's report and `validate_spec_format`.
+  - No property test ran and no code changed.
+- Spec versus vibe note: spec.
+- Evidence: `.kiro/specs/weave-mcp/requirements.md` (14.9, 14.10); `media/journey/2026-11-16-analyze-requirements-weave-mcp.png` (the user's screenshot of the Requirements Analysis dialog, 932x790; I viewed it). It shows the dialog, the original 14.9 text (pin and report combined, "WHEN the final task finishes"), the question, and the two options, with the first option highlighted. Note: the screenshot was taken before submitting, and the highlight is on the first option, so the image does not show the chosen answer. The answer comes from the user's account and from the tool result. The PNG is committed with the next commit (not yet committed when this entry was written).
+
+### 2026-11-16 — weave-mcp spec: design
+
+- Surface: IDE
+- Goal: Fix the SDK row citations in the requirements Decision log, then generate the technical design for weave-mcp and stop for review.
+- Kiro features used: spec `weave-mcp` (requirements edit, and `design.md` written by the requirements-first workflow sub-agent; `validate_spec_format` run by the sub-agent and by me, no issues); `journey-scribe` (this entry). No property test ran, no code was written, no hook observed, no MCP tool, no custom agent, no checkpoint.
+- Model / credits (start → end):
+- What worked:
+  - The Decision log SDK row now cites 13.4, 14.9 and 14.10. The screenshot evidence `media/journey/2026-11-16-analyze-requirements-weave-mcp.png` was already in the Analyze Requirements entry, so nothing was added there.
+  - `design.md` has 16 correctness properties, each with a "Validates" line. The seven the user required map to these properties: fidelity (10.1) is 7, round trip (7.5) is 9, engine errors (8.1, 10.2) is 10, server keeps answering (8.5) is 11, first malformed argument (9.7) is 12, determinism (11.1) is 14, inputs never modified (10.5) is 15.
+  - Test approach: all server tests go through an SDK Client linked to the server over the SDK's in-memory transport (`callTool`, `listTools`). `canonicalJson` and the Label_Table are tested as plain functions. One process-level spawn test covers the built entry.
+  - The sub-agent reported that `@modelcontextprotocol/sdk` 1.32.2 exists on npm and that it read the type declarations from a scratch install. It pins `zod` 3.25.76 (SDK peer dependency) and `esbuild` 0.28.2 (dev dependency, to bundle the engine).
+- What failed or surprised:
+  - The design found 11 mismatches between the requirements and the engine or the SDK. They were listed to the user for decision and are not resolved yet:
+    1. Engine `cardRows` works per card, but requirement 6.1 says per Card_Set.
+    2. `structuredContent` must be an object, so results are wrapped.
+    3. `@jacquard/engine` points at TypeScript source, so the built entry bundles it with esbuild.
+    4. The stock stdio transport does not answer malformed input, so the design uses its own line transport, or 1.7 must be relaxed.
+    5. `McpServer` would produce its own argument errors, so the design uses the low-level `Server`.
+    6. 8.6 and 9.4 split on custom profiles.
+    7. `PROFILE_400.cardFillOrder` has two label tokens; the test uses the first.
+    8. The engine throws on missing containers.
+    9. Only `auto_fix` rejects extra arguments.
+    10. An unknown tool gives a `TOOL_UNKNOWN` Tool_Error.
+    11. Byte identity conflicts with integer-like keys.
+  - The design introduced two new dependencies, `zod` and `esbuild`, that the user did not name.
+  - I did not verify the sub-agent's scratch install of the SDK myself, and I did not read `design.md` in full before reporting.
+  - The sub-agent's first validate run showed three warnings that cleared on a rerun. The cause was not investigated.
+  - No user correction in this turn.
+- Spec versus vibe note: spec.
+- Evidence: `.kiro/specs/weave-mcp/design.md`, `.kiro/specs/weave-mcp/requirements.md` (Decision log SDK row).
+
+### 2026-11-16 — weave-mcp spec: design decisions applied, tasks.md
+
+- Surface: IDE
+- Goal: Apply the user's eight design decisions to the requirements and design, then generate the task list and stop.
+- Kiro features used: spec `weave-mcp` (requirements edit, design edit and `tasks.md` written by the requirements-first workflow sub-agent in three separate calls; `validate_spec_format` reported no issues on the design and the tasks); `journey-scribe` (this entry). No property test ran, no code was written, no hook observed, no MCP tool, no custom agent, no checkpoint run.
+- Model / credits (start → end):
+- What worked:
+  - The user's decisions were applied:
+    1. Requirement 1.7 relaxed. The SDK's `StdioServerTransport` replaces the own `LineTransport`, and the process-level test no longer asserts an error reply.
+    2. The low-level `Server` with hand-written JSON Schema is kept.
+    3. The engine is bundled into `dist/index.js` with esbuild 0.28.2 (dev dependency).
+    4. Requirement 6.1 reworded to one `cardRows` entry per card; the Glossary entry Card_Rows updated.
+    5. Object-shaped results kept.
+    6. Requirement 2.3 and Property 3: when a field comment has several tokens, the label is the least certain one ([to verify] < [decision] < [convention] < [sourced]), so `PROFILE_400.cardFillOrder` is [to verify].
+    7. The three smaller gaps kept and written to the Decision log.
+    8. `zod` is not a direct dependency.
+  - The design sub-agent installed SDK 1.32.2 with pnpm in a scratch folder outside the repo and reported that `zod` (version 4.6.7) resolved without being a direct dependency. The design no longer pins `zod`. Task 1.2 must read the real workspace install output and stop to report if a `zod` peer is missing.
+  - `tasks.md`: 17 top-level tasks; 16 property test tasks, one for every property in `design.md`, none optional; a checkpoint (task 16); a final configuration task (17: `mcp.json` registration, `weave-auditor` and `design-reviewer` agents, config scan, a report of SDK 1.32.2 whether the task succeeds or fails, with the manual checks for 14.4 and 14.6 left to the user); and a dependency graph of waves 0 to 17.
+- What failed or surprised:
+  - Requirement 1.5 contradicted the `TOOL_UNKNOWN` decision ("Tool_Error or a protocol error"). The sub-agent changed it to `TOOL_UNKNOWN` only, which the user had not listed.
+  - The design sub-agent did not re-read `requirements.md` after the edits and worked from its earlier read.
+  - The `zod` finding comes from the sub-agent's scratch install. I did not run or check it, and it has not been checked in the real workspace.
+  - The task plan differs from what the user described in three small ways, all reported to the user: the result envelope task comes before the handlers; the checkpoint is not in the dependency graph, unlike weave-engine's; the engine's dev dependencies are ranges, so task 1.1 pins the exact versions the engine resolves to.
+  - The first `validate_spec_format` call on `tasks.md` failed with a path error and passed on a second call.
+  - Tasks in the same wave each rebuild `dist/index.js` through `pretest`, which may collide with the process-level test when run in parallel. The task notes say to rerun once and report.
+  - I read only the sub-agent reports, not `design.md` or `tasks.md` in full, apart from checking that `tasks.md` has no optional markers.
+  - No user correction in this turn.
+- Spec versus vibe note: spec.
+- Evidence: `.kiro/specs/weave-mcp/requirements.md`, `.kiro/specs/weave-mcp/design.md`, `.kiro/specs/weave-mcp/tasks.md`.
+
 ### Template
 
 ```
@@ -643,7 +758,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 1 / 0 | weave-engine complete: requirements (6 requirements, 45 acceptance criteria), design (34 correctness properties) and tasks (all 13 top-level tasks and their sub-tasks checked), run in waves 0 to 15; final checkpoint (task 13) passed. The lattice example test (11.4) caught an error in `design.md`'s 5.7 testing note, which was corrected |
+| Specs (feature / bugfix) | 2 / 0 | weave-mcp: requirements (14 requirements), design (16 correctness properties) and tasks (17 top-level tasks); no tasks run yet. weave-engine complete: requirements (6 requirements, 45 acceptance criteria), design (34 correctness properties) and tasks (all 13 top-level tasks and their sub-tasks checked), run in waves 0 to 15; final checkpoint (task 13) passed. The lattice example test (11.4) caught an error in `design.md`'s 5.7 testing note, which was corrected |
 | Property-based tests / bugs they caught | 34 / 0 | All 34 properties in `design.md` have a fast-check test (27 `*.property.test.ts` files). Kiro recorded 28 as passed in `tasks.meta.json` (Properties 7 to 34); 1 to 6 ran in chat, so Kiro has no record of them. No property found an engine bug. Two properties failed on test mistakes, not engine bugs: Property 33 on a wrong import (`autoFix is not a function`) and Property 32 on a snapshot helper (`structuredClone` and null-prototype objects). A deliberately planted off-by-one in `checkFloats` was caught by Properties 18 and 23 and then undone (not counted) |
 | Engine tests (files / tests) | 35 / 148 | 27 property-test files and 8 example-test files under `packages/engine/test/`, 3 golden fixtures in `test/fixtures/`. Last run: `Test Files  35 passed (35)`, `Tests  148 passed (148)`, typecheck `EXIT_CODE=0` |
 | Hooks | 3 | None ran until the workspace was trusted (`hooks.v2.executionDisabledUntrustedWorkspace`). **engine-typecheck-and-test-on-save:** 57 results in `.kiro/hook-runs.log` since markers began at 08:27Z, 8 of them non-zero: 3 type errors (09:23:22Z, 09:45:08Z, and 10:24:22Z with a test failure too), the planted bug (09:37:54Z), the lattice design error (10:19:02Z), two saves with a lattice-test mistake (10:22:13Z, 10:22:15Z) and the Property 32 snapshot helper (10:49:17Z); each was followed by a clean save. **block-engine-fixture-edits:** blocked 1 edit (the 08:27:11Z hand test), allowed every other file-tool edit, including the creation of the 3 golden fixtures. **journey-entry-on-stop:** fired at the end of task sessions and main chat turns, deferred mid-wave and wrote wave entries at the end. Edits made through the shell (tasks 11.2, 11.3 and journal writes) bypassed both file hooks |
