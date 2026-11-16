@@ -142,6 +142,25 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec; the design already contained the exact types, so the task was a transcription.
 - Evidence: `packages/engine/src/types.ts`, `packages/engine/src/result.ts`, `.kiro/specs/weave-engine/tasks.md` (2.1 checked).
 
+### 2026-11-16 — weave-engine wave 2 (tasks 2.2 and 3.1)
+
+- Surface: IDE
+- Goal: Implement the typed errors (`src/errors.ts`, task 2.2) and the fast-check generators and fault injectors (`test/arbitraries.ts`, task 3.1).
+- Kiro features used: spec `weave-engine` (tasks 2.2 and 3.1, with `design.md` Error Handling and Testing Strategy as the source); steering `journey.md` (no writes during the wave, this one entry after it), `tech.md` (the `EXIT_CODE` rule) and `weaving-domain.md` (rule 10, typed errors with a stable `code`). I ran both tasks myself in this chat session, one after the other, not through Kiro's task execution, so `tasks.meta.json` has no history for them. No hook fired that I observed, no custom agent, no MCP tool, no property test, no checkpoint.
+- Model / credits (start → end):
+- What worked:
+  - `errors.ts`: the `EngineError` union with all 17 codes, `PlanProblem`, `EngineResult<T> = Result<T, EngineError>`, one constructor per code, and a `message` built only from the fields. `AUTOFIX_FAILED` carries `remaining` and no plan or flips. `PLAN_INVALID` leaves out `pick` and `hook` when they are absent.
+  - `arbitraries.ts`: generators for weaves, profiles, valid inputs (including repeat-ready widths), random lift plans biased toward long runs, and the nine fault injectors with `applyFaults` and `faultSpecsArb` for Properties 16 and 17.
+  - `pnpm typecheck` printed both `tsc` steps with `EXIT_CODE=0`. A search of `src/` for `Date`, `Math.random`, `Intl`, `toLocale`, `process`, `globalThis` and `fetch` found nothing, so the later scan (task 12.2) should pass on these files.
+  - Tasks 2.2, 3.1 and the parent tasks 2 and 3 are marked `[x]` in `tasks.md`.
+- What failed or surprised:
+  - **Not exercised:** nothing but the typechecker has looked at these files. No test imports `errors.ts` or `arbitraries.ts`. The fault injectors in particular have never been run. Whether each injector really produces its fault, and whether `applyFaults` really leaves the earliest fault intact, is unverified until Properties 16 and 17 exist (tasks 6.2 and 6.3). Expect bugs there.
+  - **Deviation from task 3.1:** it lists "lift plans biased toward long runs", and the design also says plans may be "built from a design". The design-built variant needs `buildLiftPlan` (task 7.1), which does not exist yet, so `liftPlanArb` only builds random plans. It must gain a design-built variant once task 7.1 is done. This is recorded in the comment at the top of `arbitraries.ts`.
+  - **Added generator limits to know about:** the fault base input uses `hookCount` of at least 3, because "repeat across" with a non-dividing width needs it. Injected `NaN` values must be compared with `Object.is` in Property 17.
+  - **Design versus code:** the design's `AUTOFIX_FAILED` entry and Property 33 had no flips on failure, and `errors.ts` matches that.
+- Spec versus vibe note: spec; both tasks followed `design.md` closely. The fault injectors are the hardest part of this wave, and the design's one-paragraph description left real decisions open: how each injector picks its variant, and which fields it expects. I settled those in the code.
+- Evidence: `packages/engine/src/errors.ts`, `packages/engine/test/arbitraries.ts`, `.kiro/specs/weave-engine/tasks.md` (2, 2.2, 3, 3.1 checked).
+
 ### Template
 
 ```
@@ -162,7 +181,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 and 1 done, tasks 1.1, 1.2 and 2.1) |
+| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 2 done, tasks 1.1, 1.2, 2.1, 2.2 and 3.1) |
 | Property-based tests / bugs they caught | 0 / 0 | |
 | Hooks | 1 | journey-entry-on-stop (wrote no entry after wave 0; unreliable for spec waves) |
 | Steering files | 6 | 4 always-on, 2 file-matched |

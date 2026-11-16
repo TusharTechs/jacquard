@@ -19,17 +19,17 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - Empty `src/index.ts`, `test/fixtures/`
     - _Requirements: 6.2_
 
-- [ ] 2. Core types, results and errors
+- [x] 2. Core types, results and errors
   - [x] 2.1 Implement `src/types.ts` and `src/result.ts`
     - All types in design Data Models; `Result<T, E>` (no default for `E`), `ok()`, `err()`
     - _Requirements: 1.1, 1.2, 1.6_
-  - [ ] 2.2 Implement `src/errors.ts`
+  - [x] 2.2 Implement `src/errors.ts`
     - `EngineError` union and `PlanProblem` from design Error Handling, one constructor per code, `message` built only from the fields
     - `EngineResult<T> = Result<T, EngineError>`, returned by every public function
     - _Requirements: 3.8_
 
-- [ ] 3. Test generators
-  - [ ] 3.1 Implement `test/arbitraries.ts`
+- [x] 3. Test generators
+  - [x] 3.1 Implement `test/arbitraries.ts`
     - Profiles, designs (including repeat-ready widths), weaves, lift plans biased toward long runs, and the nine fault injectors, as in design Testing Strategy, Generators
     - _Requirements: 1.2, 1.6, 3.7_
 
