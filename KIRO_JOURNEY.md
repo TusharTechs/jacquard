@@ -877,6 +877,24 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/test/harness.ts`, `packages/mcp/src/index.ts`.
 
+### 2026-11-16 — weave-mcp wave 11 (tasks 9.2, 10.1, 10.2, 11.1, 12.1)
+
+- Surface: IDE
+- Goal: Confirm the bundle starts; property tests for the tool list, `list_profiles`, the result envelope and fidelity to the engine.
+- Kiro features used: spec `weave-mcp` (tasks 9.2, 10.1, 10.2, 11.1, 12.1); property tests (Properties 1, 2, 6, 7). No hook output observed, no MCP tool, no custom agent.
+- Model / credits (start → end):
+- What failed or surprised:
+  - **Property 6 failed on the first run** (recorded before any fix).
+    - Property: 6, "Result envelope".
+    - Requirements: 8.2, 11.4.
+    - Seed: `6006`, path `"11"`, failed after 12 tests, shrunk 0 times.
+    - Counterexample, verbatim: `[{"call":{"name":"auto_fix","args":{"plan":{"pickCount":1,"hookCount":9,"designWidth":9,"repeatAcross":false,"lifts":[[true,true,false,false,false,true,false,false,true]]},"profile":{__proto__:null,"hookCount":9,"hooksPerCardRow":6,"spareHookCount":0,"maxFloat":2,"regionLimit":6,"holeMeans":"noLift","wovenFaceDown":false}}},"expectError":false}]`
+    - Assertion: `expected true to be false` on the test's own label `expectError`, not on the property.
+    - Cause: the test labelled every generated valid `auto_fix` call "expect success". A one-pick plan cannot be fixed (each end crosses a single pick, so every lifted end is an unbound warp line), and the engine returns `AUTOFIX_FAILED`. The server returned that error correctly with `isError: true`. The part of the property that 8.2 and 11.4 state, `isError` exactly when the body is a Tool_Error, held. Fix: a valid `auto_fix` call is labelled "outcome not known in advance". The `isError`-matches-body check still runs on every call, and Property 7 already compares the `auto_fix` outcome with the direct engine call. Test bug, not counted as a bug caught.
+- What worked: `node build.mjs` bundles the engine into `packages/mcp/dist/index.js` (52,568 bytes). Piping one `initialize` request into `node packages/mcp/dist/index.js` returned `{"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{}},"serverInfo":{"name":"jacquard-weave","version":"0.0.0"}},"jsonrpc":"2.0","id":1}`, and the process exited when stdin closed. Properties 1 (one case per tool), 2 (100 runs), 6 (100 runs) and 7 (300 runs, plus 100 for the omitted `repeatAcross`) all go through an SDK `Client` over the in-memory transport. After the fix: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine `148 passed`; mcp `8 passed` files, `54 passed` tests).
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/test/tool-list.property.test.ts`, `list-profiles.property.test.ts`, `result-envelope.property.test.ts`, `fidelity.property.test.ts`.
+
 ### Template
 
 ```

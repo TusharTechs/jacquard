@@ -103,32 +103,32 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - mcp-local fast-check generators using only the public engine API: small designs (up to about 12 by 12, at most 4 regions), weave assignments, valid built-in and custom profiles (low `maxFloat` so violations occur), valid lift plans and card sets (through `buildLiftPlan`, `autoFix`, `buildCards`), one-fault corruptions per engine error code, one-fault corruptions per argument, and non-canonical weave keys
     - _Requirements: 3.3, 3.4, 9.5, 10.1_
 
-- [ ] 9. Stdio entry and bundle
+- [x] 9. Stdio entry and bundle
   - [x] 9.1 Implement `src/index.ts`
     - Create the server with `realEngine`, connect `StdioServerTransport`, set `server.onerror` to log to stderr; no `console.log`, `console.info`, `console.debug` or `process.stdout` anywhere in `src`
     - _Requirements: 1.2, 1.6, 1.7_
-  - [ ] 9.2 Finish the esbuild bundle in `build.mjs`
+  - [x] 9.2 Finish the esbuild bundle in `build.mjs`
     - Bundle `src/index.ts` to `dist/index.js` (node, ESM, node22, SDK external) so the engine source is inlined; the script exits non-zero on failure so `pretest` fails the test run; confirm `node packages/mcp/dist/index.js` starts (stop it right away; do not leave a process running)
     - _Requirements: 13.7, 13.8_
 
-- [ ] 10. Tool list and list_profiles tests
-  - [ ] 10.1 Write property test for the tool list
+- [x] 10. Tool list and list_profiles tests
+  - [x] 10.1 Write property test for the tool list
     - File `test/tool-list.property.test.ts`; fixed finite set, one case per tool
     - **Property 1: Tool list**
     - **Validates: Requirements 1.1, 1.3, 1.4, 12.5**
-  - [ ] 10.2 Write property test for list_profiles content
+  - [x] 10.2 Write property test for list_profiles content
     - File `test/list-profiles.property.test.ts`
     - **Property 2: list_profiles content**
     - **Validates: Requirements 2.1, 2.2, 2.4, 2.5**
 
-- [ ] 11. Result envelope test
-  - [ ] 11.1 Write property test for the result envelope
+- [x] 11. Result envelope test
+  - [x] 11.1 Write property test for the result envelope
     - File `test/result-envelope.property.test.ts`
     - **Property 6: Result envelope**
     - **Validates: Requirements 8.2, 11.4**
 
 - [ ] 12. Fidelity and card tests
-  - [ ] 12.1 Write property test for fidelity to the engine
+  - [x] 12.1 Write property test for fidelity to the engine
     - File `test/fidelity.property.test.ts`; `numRuns` 300; the model calls the public engine function directly and compares `canonicalJson` of both sides
     - **Property 7: Fidelity to the engine**
     - **Validates: Requirements 3.1, 3.2, 4.1, 4.2, 5.1, 5.2, 6.1, 7.1, 10.1, 10.4**
