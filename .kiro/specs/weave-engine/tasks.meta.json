@@ -206,6 +206,112 @@
         "chatSessionId": "sess_5c4a7056-a397-4eb5-b0c9-4993e8653764",
         "timestamp": 1794818276537
       }
+    ],
+    "8. Checkpoint: run the engine tests once and confirm everything so far passes; ask the user if questions arise": [
+      {
+        "executionId": "b05a8047-241c-4353-8f83-40461f6f96d5",
+        "chatSessionId": "sess_b8a9f552-8b02-488e-b80d-15bf3ec407b7",
+        "timestamp": 1794819911654
+      },
+      {
+        "executionId": "b05a8047-241c-4353-8f83-40461f6f96d5",
+        "chatSessionId": "sess_b8a9f552-8b02-488e-b80d-15bf3ec407b7",
+        "timestamp": 1794819936883
+      },
+      {
+        "executionId": "1ec265c6-eefa-46ec-9598-1e865a553aeb",
+        "chatSessionId": "sess_9b9b1cad-3d2e-40c2-81ee-e0841a6782bc",
+        "timestamp": 1794819985632
+      },
+      {
+        "executionId": "1ec265c6-eefa-46ec-9598-1e865a553aeb",
+        "chatSessionId": "sess_9b9b1cad-3d2e-40c2-81ee-e0841a6782bc",
+        "timestamp": 1794820006995
+      }
+    ],
+    "9.1 Implement `buildCards`, `cardRows` and `nextCard` in `src/cards.ts`": [
+      {
+        "executionId": "371de322-1e8b-43cc-919a-1df71525386a",
+        "chatSessionId": "sess_2caf6a3e-edd8-4d4e-95c1-53f69fa65b95",
+        "timestamp": 1794820043542
+      },
+      {
+        "executionId": "371de322-1e8b-43cc-919a-1df71525386a",
+        "chatSessionId": "sess_2caf6a3e-edd8-4d4e-95c1-53f69fa65b95",
+        "timestamp": 1794820077279
+      }
+    ],
+    "9.2 Implement `decodeCards`": [
+      {
+        "executionId": "eba4ab83-9bfc-4c8c-97e3-213942089b71",
+        "chatSessionId": "sess_5f6379a7-f4fa-4ce9-aea9-6e239d1ca833",
+        "timestamp": 1794820095442
+      },
+      {
+        "executionId": "eba4ab83-9bfc-4c8c-97e3-213942089b71",
+        "chatSessionId": "sess_5f6379a7-f4fa-4ce9-aea9-6e239d1ca833",
+        "timestamp": 1794820145231
+      }
+    ],
+    "9.3 Example test: 400-hook card layout": [
+      {
+        "executionId": "b9083a85-4a12-445e-be40-5a812e57b0dc",
+        "chatSessionId": "sess_c97aac15-b425-4a26-a625-a703086c72db",
+        "timestamp": 1794820171858
+      },
+      {
+        "executionId": "b9083a85-4a12-445e-be40-5a812e57b0dc",
+        "chatSessionId": "sess_c97aac15-b425-4a26-a625-a703086c72db",
+        "timestamp": 1794820205343
+      }
+    ],
+    "10.4 Write property test against the oracle": [
+      {
+        "executionId": "ac3b93ac-b102-424c-b9b3-fd3491fd774c",
+        "chatSessionId": "sess_c3b3fa06-f330-43bb-8072-9e6a2d1cd324",
+        "timestamp": 1794820229846
+      },
+      {
+        "executionId": "ac3b93ac-b102-424c-b9b3-fd3491fd774c",
+        "chatSessionId": "sess_c3b3fa06-f330-43bb-8072-9e6a2d1cd324",
+        "timestamp": 1794820241177
+      }
+    ],
+    "10.9 Write property test for violation shape and order": [
+      {
+        "executionId": "440ffbfc-993c-4a6d-9ce2-429451be3cdd",
+        "chatSessionId": "sess_4f078a43-7dd3-4419-abbd-98212e87964a",
+        "timestamp": 1794820261599
+      },
+      {
+        "executionId": "440ffbfc-993c-4a6d-9ce2-429451be3cdd",
+        "chatSessionId": "sess_4f078a43-7dd3-4419-abbd-98212e87964a",
+        "timestamp": 1794820282360
+      }
+    ],
+    "10.2 Implement `checkFloats` in `src/floats.ts`": [
+      {
+        "executionId": "fb5fd63f-aa13-4367-8598-0a6e72f913f9",
+        "chatSessionId": "sess_1ab37140-2baa-4e29-8c3a-eb88135dab9b",
+        "timestamp": 1794820319981
+      },
+      {
+        "executionId": "fb5fd63f-aa13-4367-8598-0a6e72f913f9",
+        "chatSessionId": "sess_1ab37140-2baa-4e29-8c3a-eb88135dab9b",
+        "timestamp": 1794820370951
+      }
+    ],
+    "11.1 Implement badness and incremental run tables in `src/auto-fix.ts`": [
+      {
+        "executionId": "ff8d14ce-78ae-4917-b726-3ce2152fe681",
+        "chatSessionId": "sess_dbac8eaa-3523-48df-b471-8e3665326b13",
+        "timestamp": 1794820417995
+      },
+      {
+        "executionId": "ff8d14ce-78ae-4917-b726-3ce2152fe681",
+        "chatSessionId": "sess_dbac8eaa-3523-48df-b471-8e3665326b13",
+        "timestamp": 1794820486743
+      }
     ]
   }
 }

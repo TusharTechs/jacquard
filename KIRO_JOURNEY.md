@@ -361,6 +361,43 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: n/a.
 - Evidence: this entry; the HOOK_INSTRUCTION in this session at the end of the wave 7 turn.
 
+### 2026-11-16 — weave-engine wave 8 (task 8, checkpoint)
+
+- Surface: IDE
+- Goal: Run the engine tests once and confirm everything built so far passes (waves 0 to 7).
+- Kiro features used: spec `weave-engine` (task 8, a checkpoint), started through the orchestrator and run by the `spec-task-execution` sub-agent; steering `tech.md` (the `EXIT_CODE` rule and "Finishing a spec task"). No property test was written in this wave. No custom agent of ours, no MCP tool. I did not check `.kiro/hook-runs.log`, so I cannot say whether the save hook or the Stop hook fired in the sub-agent session.
+- Model / credits (start → end):
+- What worked: The sub-agent changed no files and reported all three commands with `EXIT_CODE=0`: `pnpm typecheck` (both `tsc` steps clean), `pnpm --filter @jacquard/engine exec vitest --run` (10 of 10 test files, 73 of 73 tests passed) and `pnpm test` (10 of 10 files, 73 of 73 tests passed). Task 8 is marked completed. Tasks 9.1 and 10.2 are now ready.
+- What failed or surprised: Nothing failed, so there is no shrunk counterexample or seed to record. The result comes from the sub-agent's report; I did not rerun the commands myself. The checkpoint had no questions for the user.
+- Spec versus vibe note: spec; the checkpoint costs one session and found nothing, which is what it is for.
+- Evidence: `.kiro/specs/weave-engine/tasks.md` (task 8 checked); sub-agent output quoted above.
+
+### 2026-11-16 — weave-engine wave 8 rerun (task 8, checkpoint run a second time)
+
+- Surface: IDE
+- Goal: Run the checkpoint (task 8) again at the user's request, although `tasks.md` already showed it completed.
+- Kiro features used: spec `weave-engine` (task 8), started through the orchestrator: `task_get` showed it already completed with two earlier execution records; I set it back to in progress, dispatched the `spec-task-execution` sub-agent, then marked it completed. Steering `tech.md` (the `EXIT_CODE` rule and "Finishing a spec task"). No property test written, no custom agent, no MCP tool. I did not check `.kiro/hook-runs.log`, so I cannot say whether any hook fired in the sub-agent session.
+- Model / credits (start → end):
+- What worked: The sub-agent changed no files and reported `EXIT_CODE=0` for `pnpm typecheck`, `pnpm --filter @jacquard/engine exec vitest --run` (10 of 10 files, 73 of 73 tests) and `pnpm test` (10 of 10 files, 73 of 73 tests). Same counts as the first run. Tasks 9.1 and 10.2 are ready.
+- What failed or surprised: Nothing failed, so there is no counterexample or seed to record. The task was run twice; the second run added no new information. The results come from the sub-agent's report; I did not rerun the commands myself.
+- Spec versus vibe note: spec.
+- Evidence: `.kiro/specs/weave-engine/tasks.md` (task 8 checked); sub-agent output.
+
+### 2026-11-16 — weave-engine wave 9 (tasks 9.1 and 10.2)
+
+- Surface: IDE
+- Goal: Implement the card builder (`src/cards.ts`, 9.1) and `checkFloats` (`src/floats.ts`, 10.2).
+- Kiro features used: spec `weave-engine` (tasks 9.1 and 10.2). Task 10.2 was started through the orchestrator: `task_update` to in progress, then the `spec-task-execution` sub-agent, then `task_update` to completed. Steering `tech.md` (the `EXIT_CODE` rule and "Finishing a spec task"). No property test was written in this wave, no custom agent of ours, no MCP tool. I did not check `.kiro/hook-runs.log`, so I cannot say whether any hook fired in the sub-agent session.
+- Model / credits (start -> end):
+- What worked: For 10.2 the sub-agent reported `pnpm typecheck` and `pnpm test` both with `EXIT_CODE=0`, and a summary of 11 test files and 74 tests passed. `checkFloats(plan, profile)` is exported from `src/index.ts`. It runs `validatePlan` first, analyses only the unit, treats warp lines as rings always and weft lines as rings only with `repeatAcross`, reports constant lines as `unbound`, and sorts by the 4.6 key. Tasks 9.1 and 10.2 are marked completed in `tasks.md`; tasks 10.4 to 10.9 and 11.1 became ready.
+- What failed or surprised:
+  - Nothing failed, so there is no shrunk counterexample or seed to record.
+  - **Not exercised:** no test calls `checkFloats` yet, so the 74 passing tests say nothing about it beyond the typecheck. The first real check is Property 18 (task 10.4) against the oracle.
+  - **Incomplete reading:** the sub-agent said it read `design.md` only up to its truncation point and did not read `requirements.md`. Its side labels, run starts and ordering follow the visible design text.
+  - **Task 9.1 is not covered in detail.** It was run in another session that I did not see, so this entry records only that it is marked `[x]` in `tasks.md`. The results above come from the sub-agent's report; I did not rerun the commands.
+- Spec versus vibe note: spec; the design's Float checker section was specific enough to implement without further questions.
+- Evidence: `packages/engine/src/floats.ts`, `.kiro/specs/weave-engine/tasks.md` (9.1 and 10.2 checked).
+
 ### Template
 
 ```
@@ -381,7 +418,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 7 done) |
+| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 9 done) |
 | Property-based tests / bugs they caught | 13 / 0 | Properties 1 to 11 (weaves, lift plan) and 16, 17 (validation); no failures; Kiro recorded 7 to 11, 16 and 17 as passed |
 | Hooks | 3 | All three did not run before the workspace was trusted (log line `hooks.v2.executionDisabledUntrustedWorkspace`). After trusting: journey-entry-on-stop fired in all five wave 7 task sessions, deferred in four and wrote the wave entry in the last; engine-typecheck-and-test-on-save fired on all six engine saves in wave 7, each logging `typecheck=0 test=0`; block-engine-fixture-edits blocked one edit (08:27:11Z, hook test session) and allowed six in wave 7 |
 | Steering files | 6 | 4 always-on, 2 file-matched |

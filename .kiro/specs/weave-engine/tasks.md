@@ -113,16 +113,16 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - **Property 11: Plan validation accepts built plans and rejects corruptions**
     - **Validates: Requirements 2.13**
 
-- [ ] 8. Checkpoint: run the engine tests once and confirm everything so far passes; ask the user if questions arise
+- [x] 8. Checkpoint: run the engine tests once and confirm everything so far passes; ask the user if questions arise
 
 - [ ] 9. Cards
-  - [ ] 9.1 Implement `buildCards`, `cardRows` and `nextCard` in `src/cards.ts`
+  - [x] 9.1 Implement `buildCards`, `cardRows` and `nextCard` in `src/cards.ts`
     - Positions `hookCount + spareHookCount`, spare positions after the figuring hooks, punching by `holeMeans`, numbers from 1, chain successor by `nextCard`
     - _Requirements: 2.7, 2.8, 2.9_
-  - [ ] 9.2 Implement `decodeCards`
+  - [x] 9.2 Implement `decodeCards`
     - Checks and error order from design Cards, Decoding, including `CARD_SPARE_LIFTED` and `CARD_IDLE_LIFTED`; orders by card number only; runs `validatePlan` on the result
     - _Requirements: 2.10, 2.11, 2.13_
-  - [ ] 9.3 Example test: 400-hook card layout
+  - [x] 9.3 Example test: 400-hook card layout
     - `PROFILE_400` cards have 416 positions in 52 rows of 8 with no `null` slots; positions 400 to 415 are never punched under `holeMeans: "lift"`
     - _Requirements: 1.3, 2.8_
   - [ ] 9.4 Write property test for card count and layout
@@ -142,7 +142,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
   - [x] 10.1 Implement `src/runs.ts`
     - Constant, linear and ring run extraction; a ring run starts where its ring predecessor differs
     - _Requirements: 4.2, 4.4_
-  - [ ] 10.2 Implement `checkFloats` in `src/floats.ts`
+  - [x] 10.2 Implement `checkFloats` in `src/floats.ts`
     - Analysed unit only, side labels with `wovenFaceDown`, separate warp and weft limits, unbound lines, 4.6 ordering as confirmed in the design
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
   - [x] 10.3 Implement the naive oracle in `test/oracle.ts`
@@ -168,7 +168,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - **Validates: Requirements 4.3, 4.4, 4.6**
 
 - [ ] 11. Auto-fix
-  - [ ] 11.1 Implement badness and incremental run tables in `src/auto-fix.ts`
+  - [x] 11.1 Implement badness and incremental run tables in `src/auto-fix.ts`
     - Badness `B` as in design Auto-fix, Badness; recompute only the two lines through a flipped cell
     - _Requirements: 5.1_
   - [ ] 11.2 Implement safe-flip detection and cell ranking
