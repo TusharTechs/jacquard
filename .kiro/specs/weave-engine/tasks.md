@@ -33,45 +33,47 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - Profiles, designs (including repeat-ready widths), weaves, lift plans biased toward long runs, and the nine fault injectors, as in design Testing Strategy, Generators
     - _Requirements: 1.2, 1.6, 3.7_
 
-- [ ] 4. Loom profiles
+- [x] 4. Loom profiles
   - [x] 4.1 Implement `src/profiles.ts`
     - `PROFILE_120`, `PROFILE_240`, `PROFILE_400` (frozen), `defineProfile()`, `validateProfile()` in 1.2 field order
-    - Every default has a label comment; `[sourced]` defaults quote S1; `[to verify]` defaults say `// to verify`
+    - Every default has a bracketed label comment; `[sourced]` defaults quote S1; `[to verify]` defaults say `// [to verify]`
+    - `defineProfile` starts from the built-in profile's defaults when `hookCount` is 120, 240 or 400, so a custom 400-hook profile gets the sourced 16 spare hooks unless the caller overrides them; other hook counts keep the fallback defaults (`hooksPerCardRow` 8, `spareHookCount` 0, and so on)
     - _Requirements: 1.2, 1.3, 1.4, 1.5_
-  - [ ] 4.2 Example test: built-in profile defaults
+  - [x] 4.2 Example test: built-in profile defaults
     - The three built-ins have exactly the defaults in 1.2; `PROFILE_400` has 400 + 16 = 416 positions
-    - Reads `src/profiles.ts` and checks each default line has a label comment and each `[sourced]` line quotes S1
+    - Reads `src/profiles.ts` and checks each default line has a bracketed label comment (`// [sourced]`, `// [convention]`, `// [decision]` or `// [to verify]`) and each `[sourced]` line quotes S1
+    - `defineProfile` inherits from a built-in: `hookCount` 400 gives the sourced 16 spare hooks unless overridden, 120 and 240 give their built-in defaults, and other hook counts get the fallback defaults
     - Remove passWithNoTests from vitest.config.ts.
     - _Requirements: 1.3_
-  - [ ] 4.3 Example test: invalid profile fields
+  - [x] 4.3 Example test: invalid profile fields
     - One case per field in 1.5, each expecting `PROFILE_INVALID` with that field and value
     - _Requirements: 1.5_
 
-- [ ] 5. Weaves
+- [x] 5. Weaves
   - [x] 5.1 Implement `src/weaves.ts`
     - `evaluateWeave`, `weavePeriod`, `validateWeave`; satin moves as the table `{ 5: [2, 3], 8: [3, 5] }`
     - _Requirements: 1.6, 1.7, 2.3_
-  - [ ] 5.2 Write property test for weave periodicity
+  - [x] 5.2 Write property test for weave periodicity
     - **Property 1: Weave periodicity**
     - **Validates: Requirements 2.3, 2.12**
-  - [ ] 5.3 Write property test for plain weave
+  - [x] 5.3 Write property test for plain weave
     - **Property 2: Plain weave alternates**
     - **Validates: Requirements 2.3**
-  - [ ] 5.4 Write property test for twill
+  - [x] 5.4 Write property test for twill
     - **Property 3: Twill ratio and slope**
     - **Validates: Requirements 1.6, 2.3**
-  - [ ] 5.5 Write property test for satin binding cells
+  - [x] 5.5 Write property test for satin binding cells
     - **Property 4: Satin has one binding cell per line in every window**
     - **Validates: Requirements 1.6, 2.3**
-  - [ ] 5.6 Write property test for satin moves
+  - [x] 5.6 Write property test for satin moves
     - **Property 5: Satin is never a twill**
     - **Validates: Requirements 1.6, 1.7**
-  - [ ] 5.7 Write property test for satin facings
+  - [x] 5.7 Write property test for satin facings
     - **Property 6: Satin facings are complements**
     - **Validates: Requirements 2.3**
 
 - [ ] 6. Input validation
-  - [ ] 6.1 Implement `src/validate.ts`
+  - [x] 6.1 Implement `src/validate.ts`
     - `validateInput` with the nine steps in design Error Handling, Validation order; reads the caller's arrays without copying
     - _Requirements: 1.5, 1.7, 2.6, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8_
   - [ ] 6.2 Write property test for validation order

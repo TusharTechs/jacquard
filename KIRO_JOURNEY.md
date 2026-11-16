@@ -185,6 +185,28 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec; the oracle in particular followed the design's description closely, and having the independence rule stated up front kept it from reusing `runs.ts`.
 - Evidence: `packages/engine/src/profiles.ts`, `weaves.ts`, `runs.ts`, `packages/engine/test/oracle.ts`, `.kiro/specs/weave-engine/tasks.md` (4.1, 5.1, 10.1, 10.3 checked; 7.1 extended).
 
+### 2026-11-16 — weave-engine wave 4 (tasks 4.2, 4.3, 5.2 to 5.7 and 6.1)
+
+- Surface: IDE
+- Goal: First tests for the engine: profile example tests (4.2, 4.3), Properties 1 to 6 for weaves (5.2 to 5.7), and the input validator `src/validate.ts` (6.1). Also remove `passWithNoTests`.
+- Kiro features used: spec `weave-engine` (nine tasks); property-based tests (fast-check, Properties 1 to 6, 200 cases each); steering `weaving-domain.md` (profile defaults are labelled fields), `tech.md` (the `EXIT_CODE` rule and run-tests-once) and `journey.md`. I ran the tasks myself in this chat session, in one run of vitest, not through Kiro's task execution, so `tasks.meta.json` has no `pbtResults` for them. No hook fired that I observed, no custom agent, no MCP tool, no checkpoint.
+- Model / credits (start → end):
+- What worked:
+  - **Test result:** `pnpm test` printed `Test Files  2 passed (2)` and `Tests  52 passed (52)` with `EXIT_CODE=0`: 46 tests in `test/profiles.test.ts` and 6 in `test/weaves.property.test.ts`. `pnpm typecheck` printed both `tsc` steps with `EXIT_CODE=0`. A search of `src/` for the forbidden names found nothing.
+  - **No property failed**, so there is no shrunk counterexample or seed to record, and the stop-and-show rule did not trigger. Properties 1 to 6 all passed on their first run.
+  - `passWithNoTests` is removed from `vitest.config.ts`, as task 4.2 now says. An empty test set will fail from here on.
+  - `defineProfile` now starts from the built-in profile when `hookCount` is 120, 240 or 400, so a custom 400-hook profile gets the sourced 16 spare hooks. Other hook counts keep the fallback defaults. This reverses a choice I flagged in the wave 3 entry, at the user's request. Tests cover 400, 120, 240, an override, `maxFloat` followed by the warp and weft limits, and a fallback size.
+  - The 4.2 test reads `src/profiles.ts` and checks that all 43 literal default lines carry a bracketed label, that every `[sourced]` line quotes S1, and that only `PROFILE_400` has `[sourced]` lines.
+  - `validateProfile` has one test case per invalid field (26 cases), plus order and non-object cases.
+  - `design.md` (the `extractRuns` return shape, and `defineProfile` inheritance) and `tasks.md` (tasks 4.1 and 4.2) were updated to match the user's confirmations. Tasks 4, 4.2, 4.3, 5, 5.2 to 5.7 and 6.1 are marked `[x]`.
+- What failed or surprised:
+  - **`validateInput` is not exercised.** Task 6.1 has no test of its own; Properties 16 and 17 (tasks 6.2 and 6.3, next wave) are its first check. Today only the typechecker has looked at it, so expect bugs there. Choices I made that the design did not state: a design that is not an array counts as empty; a row that is not an array counts as length 0; `weaves` keys that are not canonical non-negative integers are ignored; a `weaves` value that is not an object counts as no assignments; a design cell must be a non-negative safe integer (the design says "safe", 3.5 says "integer"); only `repeatAcross: true` turns repeat on.
+  - **Property 1 checks more than the design says.** It also asserts that `weavePeriod` equals a period computed in the test from the glossary, because a doubled period would still pass the periodicity check.
+  - **`arbitraries.ts` changed.** I exported `plainArb`, `twillArb` and `satinArb` with narrow types so the property tests can use them. Task 3.1 did not ask for this.
+  - **The timing is too fast to mean much.** The six property tests ran in 9 ms in total. That is plausible for cheap arithmetic, but I did not confirm the run count of 200 from the output, which only shows the number of tests. The count rests on `{ numRuns: 200 }` in the code.
+- Spec versus vibe note: spec; the properties were easy to write from the design, but they test the formulas of 2.3, which were fixed by the user. They pass because the code and the properties come from the same text, so they are weaker evidence than the float properties will be.
+- Evidence: `packages/engine/src/validate.ts`, `packages/engine/src/profiles.ts` (`defineProfile`), `packages/engine/test/profiles.test.ts`, `packages/engine/test/weaves.property.test.ts`, `packages/engine/vitest.config.ts`.
+
 ### Template
 
 ```
@@ -205,8 +227,8 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 3 done, tasks 1.1, 1.2, 2.1, 2.2, 3.1, 4.1, 5.1, 10.1 and 10.3) |
-| Property-based tests / bugs they caught | 0 / 0 | |
+| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 4 done) |
+| Property-based tests / bugs they caught | 6 / 0 | Properties 1 to 6 (weaves), all passed first run |
 | Hooks | 1 | journey-entry-on-stop (wrote no entry after wave 0; unreliable for spec waves) |
 | Steering files | 6 | 4 always-on, 2 file-matched |
 | Custom agents | 1 | journey-scribe (not yet invoked) |

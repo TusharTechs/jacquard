@@ -65,7 +65,7 @@ Workspace root gets `package.json`, `pnpm-workspace.yaml` (`packages/*`, `apps/*
 
 ### Profiles (1.2–1.5)
 
-`profiles.ts` exports `PROFILE_120`, `PROFILE_240`, `PROFILE_400` (frozen objects) and `defineProfile(fields)`, which fills `maxWarpFloat` and `maxWeftFloat` from `maxFloat` when they are omitted and fills the other defaults from 1.2.
+`profiles.ts` exports `PROFILE_120`, `PROFILE_240`, `PROFILE_400` (frozen objects) and `defineProfile(fields)`, which fills `maxWarpFloat` and `maxWeftFloat` from `maxFloat` when they are omitted and fills the other defaults from 1.2. When `hookCount` is 120, 240 or 400, the other defaults come from that built-in profile, so a custom 400-hook profile gets the sourced 16 spare hooks unless the caller overrides them. Any other `hookCount` gets the fallback defaults (`hooksPerCardRow` 8, `spareHookCount` 0, and so on), labelled `[to verify]`.
 
 Each default carries its label in a comment, for example:
 
@@ -148,8 +148,8 @@ The analysed unit is picks `0..pickCount−1` by ends `0..designWidth−1`. Idle
 
 #### Runs
 
-`runs.ts` turns a line into runs `{ start, length, state }`:
-- **Constant line** (every cell equal): one unbound run. This covers warp lines, and weft lines with or without repeat (4.4).
+`runs.ts` exports `extractRuns(cells, ring)`, which returns either `{ kind: "constant", state, length }` or `{ kind: "runs", runs }`, where each run is `{ start, length, state }`:
+- **Constant line** (every cell equal): `kind: "constant"`, which the checker reports as unbound. This covers warp lines, and weft lines with or without repeat (4.4).
 - **Linear line**: maximal runs from index 0.
 - **Ring line, not constant**: a run starts at index `i` when `cell[i] ≠ cell[(i − 1) mod L]`. Runs are listed from the lowest such `i`, and the last run may wrap past the end.
 

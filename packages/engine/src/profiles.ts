@@ -59,6 +59,29 @@ export const PROFILE_400: LoomProfile = Object.freeze({
   wovenFaceDown: false, // [decision] the face is the side facing up on the loom
 });
 
+/**
+ * Defaults for a custom profile whose `hookCount` is not 120, 240 or 400. Those three sizes start
+ * from their built-in profile instead (see `defineProfile`).
+ */
+const FALLBACK_DEFAULTS: Omit<LoomProfile, "hookCount"> = Object.freeze({
+  hooksPerCardRow: 8, // [to verify] same assumed default as the 120 and 240 profiles
+  spareHookCount: 0, // [to verify] 0 as for the 120 and 240 profiles; only PROFILE_400 has spare hooks that S1 states
+  spareHookPlacement: "afterFiguring", // [to verify] spare positions after the last figuring hook
+  maxFloat: 8, // [decision] working default; the right value depends on thread density
+  maxWarpFloat: 8, // [decision] defaults to maxFloat
+  maxWeftFloat: 8, // [decision] defaults to maxFloat
+  regionLimit: 4, // [decision] default 4, maximum 8
+  holeMeans: "lift", // [convention] consistent with S1: needles tend "to pierce the card where it is blank"; the cylinder presses off "the hooks that are not to be lifted"
+  cardFillOrder: "ascending", // [to verify] assumed to match PROFILE_400, whose line quotes S1 for slot 0 at the top; row 0 at the numbered end is also unconfirmed
+  wovenFaceDown: false, // [decision] the face is the side facing up on the loom
+});
+
+const BUILT_IN_PROFILES: Readonly<Record<number, LoomProfile>> = {
+  120: PROFILE_120,
+  240: PROFILE_240,
+  400: PROFILE_400,
+};
+
 /** The fields of a custom profile. Only `hookCount` is required. */
 export type ProfileFields = Pick<LoomProfile, "hookCount"> &
   Partial<Omit<LoomProfile, "hookCount">>;
@@ -66,23 +89,28 @@ export type ProfileFields = Pick<LoomProfile, "hookCount"> &
 /**
  * Builds a profile from the given fields (1.4). Every field that is given is kept exactly as given,
  * even when it is invalid, so that `validateProfile` can reject it. Every omitted field takes its
- * default from 1.2. An explicit `undefined` counts as omitted. `maxWarpFloat` and `maxWeftFloat`
- * default to the resolved `maxFloat`.
+ * default, and an explicit `undefined` counts as omitted.
+ *
+ * When `hookCount` is 120, 240 or 400, the defaults are that built-in profile's, so a custom
+ * 400-hook profile gets the sourced 16 spare hooks unless the caller overrides them. Any other
+ * `hookCount` gets `FALLBACK_DEFAULTS`. `maxWarpFloat` and `maxWeftFloat` default to the resolved
+ * `maxFloat`, not to the base profile's own limits.
  */
 export function defineProfile(fields: ProfileFields): LoomProfile {
-  const maxFloat = fields.maxFloat ?? 8; // [decision] working default
+  const base = BUILT_IN_PROFILES[fields.hookCount] ?? FALLBACK_DEFAULTS;
+  const maxFloat = fields.maxFloat ?? base.maxFloat;
   return {
     hookCount: fields.hookCount,
-    hooksPerCardRow: fields.hooksPerCardRow ?? 8, // [to verify] same default as the 120 and 240 profiles
-    spareHookCount: fields.spareHookCount ?? 0, // [to verify] 0 as for the 120 and 240 profiles; only PROFILE_400 has spare hooks that S1 states
-    spareHookPlacement: fields.spareHookPlacement ?? "afterFiguring", // [to verify] spare positions after the last figuring hook
+    hooksPerCardRow: fields.hooksPerCardRow ?? base.hooksPerCardRow,
+    spareHookCount: fields.spareHookCount ?? base.spareHookCount,
+    spareHookPlacement: fields.spareHookPlacement ?? base.spareHookPlacement,
     maxFloat,
-    maxWarpFloat: fields.maxWarpFloat ?? maxFloat, // [decision] defaults to maxFloat
-    maxWeftFloat: fields.maxWeftFloat ?? maxFloat, // [decision] defaults to maxFloat
-    regionLimit: fields.regionLimit ?? 4, // [decision] default 4, maximum 8
-    holeMeans: fields.holeMeans ?? "lift", // [convention] consistent with S1
-    cardFillOrder: fields.cardFillOrder ?? "ascending", // [to verify] see PROFILE_400 for what S1 states
-    wovenFaceDown: fields.wovenFaceDown ?? false, // [decision]
+    maxWarpFloat: fields.maxWarpFloat ?? maxFloat,
+    maxWeftFloat: fields.maxWeftFloat ?? maxFloat,
+    regionLimit: fields.regionLimit ?? base.regionLimit,
+    holeMeans: fields.holeMeans ?? base.holeMeans,
+    cardFillOrder: fields.cardFillOrder ?? base.cardFillOrder,
+    wovenFaceDown: fields.wovenFaceDown ?? base.wovenFaceDown,
   };
 }
 

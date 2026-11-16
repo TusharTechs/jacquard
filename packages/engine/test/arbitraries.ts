@@ -23,23 +23,29 @@ function must<T>(value: T | undefined, what: string): T {
 
 const SATIN_MOVES = { 5: [2, 3], 8: [3, 5] } as const;
 
-const plainArb: fc.Arbitrary<Weave> = fc.constant<Weave>({ kind: "plain" });
+export type PlainWeave = Extract<Weave, { kind: "plain" }>;
+export type TwillWeave = Extract<Weave, { kind: "twill" }>;
+export type SatinWeave = Extract<Weave, { kind: "satin" }>;
 
-const twillArb: fc.Arbitrary<Weave> = fc.record({
+export const plainArb: fc.Arbitrary<PlainWeave> = fc.constant<PlainWeave>({ kind: "plain" });
+
+export const twillArb: fc.Arbitrary<TwillWeave> = fc.record({
   kind: fc.constant("twill" as const),
   up: fc.integer({ min: 1, max: 5 }),
   down: fc.integer({ min: 1, max: 5 }),
   direction: fc.constantFrom("S" as const, "Z" as const),
 });
 
-const satinArb: fc.Arbitrary<Weave> = fc.constantFrom(5 as const, 8 as const).chain((size) =>
-  fc.record({
-    kind: fc.constant("satin" as const),
-    size: fc.constant(size),
-    move: fc.constantFrom(...SATIN_MOVES[size]),
-    facing: fc.constantFrom("warp" as const, "weft" as const),
-  }),
-);
+export const satinArb: fc.Arbitrary<SatinWeave> = fc
+  .constantFrom(5 as const, 8 as const)
+  .chain((size) =>
+    fc.record({
+      kind: fc.constant("satin" as const),
+      size: fc.constant(size),
+      move: fc.constantFrom(...SATIN_MOVES[size]),
+      facing: fc.constantFrom("warp" as const, "weft" as const),
+    }),
+  );
 
 /** Any valid weave: plain, twill (up and down 1 to 5), or satin with an allowed move. */
 export const weaveArb: fc.Arbitrary<Weave> = fc.oneof(plainArb, twillArb, satinArb);
