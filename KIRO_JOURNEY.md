@@ -350,6 +350,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec; the properties were fully stated in `design.md`, so the tests were direct translations.
 - Evidence: `packages/engine/test/plan-validation.property.test.ts` and the four sibling files above, `.kiro/specs/weave-engine/tasks.md` (7.5 to 7.9 checked), `.kiro/specs/weave-engine/tasks.meta.json` (`pbtResults` for 7.5 to 7.9), `.kiro/hook-runs.log` (local, ignored by git). Files in `media/journey/`: `2026-11-16-hooks-firing-live.png` (committed; I viewed it: a terminal running `tail -f ~/Projects/jacquard/.kiro/hook-runs.log` while task 7.7 runs, showing the 7.5 and 7.6 `save-hook result: typecheck=0 test=0` lines); `2026-11-16-clip-hooks-firing-live-wave7.mp4` (37 MB; 70 s according to the user, hooks firing live in the terminal during task 7.7); `2026-11-16-wave7-plan-properties.mp4` (345 MB, the user's full recording of wave 7). Both MP4s are kept out of git, and I have not watched them.
 
+### 2026-11-16 — Main chat session: Stop hook fired after the wave 7 write-up
+
+- Surface: IDE
+- Goal: Complete and commit the wave 7 entry (done above, commit `d284ed7`).
+- Kiro features used: hook `journey-entry-on-stop` (fired at the end of this main chat turn and delivered its prompt as a HOOK_INSTRUCTION; this entry is the response). No spec task, agent, MCP tool, property test or checkpoint in this turn.
+- Model / credits (start → end):
+- What worked: This is the first time the Stop hook has been seen to fire in the main chat session rather than in a spec task session. Its prompt correctly treats this as an ordinary chat session, so an entry is written.
+- What failed or surprised: I tried to use `grep_search` while editing the tally and it was not available in this turn; I used the shell instead. Nothing else.
+- Spec versus vibe note: n/a.
+- Evidence: this entry; the HOOK_INSTRUCTION in this session at the end of the wave 7 turn.
+
 ### Template
 
 ```
