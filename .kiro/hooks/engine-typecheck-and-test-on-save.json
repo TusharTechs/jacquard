@@ -8,7 +8,7 @@
       "matcher": "packages/engine/",
       "action": {
         "type": "command",
-        "command": "echo \"$(date -u +%FT%TZ) save-hook fired\" >> .kiro/hook-runs.log; pnpm --filter @jacquard/engine typecheck; echo \"TYPECHECK_EXIT_CODE=$?\"; pnpm --filter @jacquard/engine test; echo \"TEST_EXIT_CODE=$?\"",
+        "command": "echo \"$(date -u +%FT%TZ) save-hook fired\" >> .kiro/hook-runs.log; pnpm --filter @jacquard/engine typecheck; tc=$?; echo \"TYPECHECK_EXIT_CODE=$tc\"; pnpm --filter @jacquard/engine test; tt=$?; echo \"TEST_EXIT_CODE=$tt\"; echo \"$(date -u +%FT%TZ) save-hook result: typecheck=$tc test=$tt\" >> .kiro/hook-runs.log",
         "timeout": 180
       }
     }

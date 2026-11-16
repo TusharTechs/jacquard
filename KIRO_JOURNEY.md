@@ -315,6 +315,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - What failed or surprised: The save hook's marker uses a relative path, so it depends on Kiro running the command in the project root, which the documentation says it does.
 - Evidence: `.kiro/hooks/engine-typecheck-and-test-on-save.json`, `.kiro/hooks/block-engine-fixture-edits.py`, `.gitignore`.
 
+### 2026-11-16 — Hook test: fixture write blocked, source edit allowed
+
+- Surface: IDE
+- Goal: Append a line to `packages/engine/test/fixtures/.gitkeep` and a comment to `packages/engine/src/weaves.ts`, report what happened, then undo both.
+- Kiro features used: hooks `block-engine-fixture-edits` (fired and blocked the fixture write) and `engine-typecheck-and-test-on-save` (fired after each `str_replace` on `weaves.ts`).
+- Model / credits (start → end):
+- What worked: `fs_write` to the existing `.gitkeep` was stopped by the PreToolUse hook before it ran, and the file stayed at 0 bytes. The `str_replace` on `weaves.ts` went through, `git diff --stat` showed one inserted line, and a second `str_replace` removed it. `git status --short` was empty at the end.
+- What failed or surprised: Earlier entries recorded that the hooks did not fire. The cause was workspace trust: Kiro's log line `hooks.v2.executionDisabledUntrustedWorkspace` showed hook execution was disabled for an untrusted workspace. Trusting the folder fixed it (relayed by the user; the user also reports all three hooks fire now, and I only saw log lines for the two below). In this session `.kiro/hook-runs.log` shows a `save-hook fired` line after both the add and the undo edit, but I did not see the typecheck or test output in the chat, so I cannot say whether it passed. That gap led to the follow-up change: the save hook now also appends `save-hook result: typecheck=<exit code> test=<exit code>` to the log.
+- Spec versus vibe note: vibe.
+- Evidence: `.kiro/hooks/engine-typecheck-and-test-on-save.json` (result line added); `.kiro/hook-runs.log` lines `08:27:11Z guard fired: fs_write` / `blocked`, `08:27:15Z guard fired: str_replace` / `allowed` / `save-hook fired`, `08:27:24Z` same pair for the undo; `git status --short` empty afterwards.
+
 ### Template
 
 ```
@@ -337,7 +348,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 |---|---|---|
 | Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 6 done) |
 | Property-based tests / bugs they caught | 8 / 0 | Properties 1 to 6 (weaves) and 16, 17 (validation), all passed first run; Kiro recorded 16 and 17 |
-| Hooks | 3 | journey-entry-on-stop (wrote no entry after wave 0 or wave 5; unreliable for spec waves); engine-typecheck-and-test-on-save and block-engine-fixture-edits (not seen to fire in live tests on Nov 16, including wave 6 task sessions where 3 hooks were registered) |
+| Hooks | 3 | journey-entry-on-stop (wrote no entry after wave 0 or wave 5; unreliable for spec waves); engine-typecheck-and-test-on-save and block-engine-fixture-edits (did not fire in live tests on Nov 16 up to wave 6 because the workspace was untrusted, log line `hooks.v2.executionDisabledUntrustedWorkspace`; they fire after trusting the folder, and both logged in `.kiro/hook-runs.log` in the hook test session) |
 | Steering files | 6 | 4 always-on, 2 file-matched |
 | Custom agents | 1 | journey-scribe (not yet invoked) |
 | MCP servers (third-party / our own) | 0 / 0 | |
