@@ -738,6 +738,22 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `.kiro/specs/weave-mcp/requirements.md`, `.kiro/specs/weave-mcp/design.md`, `.kiro/specs/weave-mcp/tasks.md`.
 
+### 2026-11-16 — Autopilot standing orders; weave-mcp wave 0 (task 1.1)
+
+- Surface: IDE
+- Goal: Record the user's standing orders as steering, then start running the weave-mcp tasks without stopping between waves.
+- Kiro features used: steering `autopilot.md` (new, always included); spec `weave-mcp` (task 1.1). No hook output observed, no property test, no MCP tool, no custom agent, no checkpoint.
+- Model / credits (start → end):
+- What worked:
+  - `.kiro/steering/autopilot.md` holds the order of work (B, C, D, F, G, H; E is the user's), the per-phase loop, the stop conditions and the Phase B decisions. All the Phase B decisions were already in the weave-mcp spec, so no spec text changed.
+  - Task 1.1: `packages/mcp` skeleton (`package.json` with SDK `1.32.2` and engine `workspace:*`, exact dev dependency versions read from the engine's installed packages: `@types/node` 22.20.5, `fast-check` 4.10.2, `typescript` 7.0.2, `vitest` 5.1.0, `esbuild` 0.28.2; `tsconfig.json`, `tsconfig.test.json`, `vitest.config.ts`, `build.mjs`, placeholder `src/index.ts`). `dist/` was already git-ignored.
+  - `pnpm install` resolved the SDK to `1.32.2(zod@4.6.7)` with no missing or unmet `zod` peer, so no `zod` entry was added.
+- What failed or surprised:
+  - pnpm 12 refused to run esbuild's postinstall (`ERR_PNPM_IGNORED_BUILDS`) and wrote a placeholder `allowBuilds: esbuild: set this to true or false` into `pnpm-workspace.yaml`. I ran `pnpm approve-builds esbuild`, which set it to `true`. This is a workspace config change the spec did not foresee.
+  - `pnpm test` failed after task 1.1 (`No test files found, exiting with code 1` in `packages/mcp`; engine `35 passed`, `148 passed`). The package has no test file until task 1.2, so task 1.1 could not meet the finish rule on its own. I did not add `passWithNoTests`; task 1.2 adds the first test. Typecheck passed (`EXIT_CODE=0`).
+- Spec versus vibe note: spec.
+- Evidence: `.kiro/steering/autopilot.md`, `packages/mcp/package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`.
+
 ### Template
 
 ```

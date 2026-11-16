@@ -22,7 +22,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
 ## Tasks
 
 - [ ] 1. Set up the `packages/mcp` package
-  - [ ] 1.1 Create the package skeleton
+  - [x] 1.1 Create the package skeleton
     - `packages/mcp/package.json`: name `@jacquard/mcp`, `private`, `type: module`; `dependencies`: `@jacquard/engine` as `workspace:*` and `@modelcontextprotocol/sdk` as exactly `1.32.2`; `devDependencies`: `esbuild` exactly `0.28.2`, and `fast-check`, `typescript`, `vitest`, `@types/node` at the exact resolved versions that `packages/engine` already uses (read them from the installed engine packages or `pnpm-lock.yaml`; write them without `^` or `~`)
     - Scripts: `build` (`node build.mjs`), `pretest` (`pnpm run build`), `test` (`vitest --run`), `typecheck` (`tsc -p tsconfig.json && tsc -p tsconfig.test.json`)
     - `tsconfig.json` (src only, strict, ES2022, `types: ["node"]`, same strict options as the engine), `tsconfig.test.json` (src and test), `vitest.config.ts`, a placeholder `src/index.ts` (`export {}`), and `build.mjs` using esbuild as in design Build and entry point
