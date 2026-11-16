@@ -174,10 +174,10 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
   - [x] 11.2 Implement safe-flip detection and cell ranking
     - Safe-flip rule; ranking by the single lattice `(p − s·e) mod n = 0`, then smallest remaining piece, then ring offset
     - _Requirements: 5.4, 5.7_
-  - [ ] 11.3 Implement the auto-fix loop
+  - [x] 11.3 Implement the auto-fix loop
     - Clean plans return unchanged; safe phase, then fallback on lowest negative ΔB; `stuck` and `iterationLimit` failures return `AUTOFIX_FAILED` with `remaining` and no plan; expand the unit to every tile with `repeatAcross`; idle hooks never touched
     - _Requirements: 5.1, 5.2, 5.3, 5.5, 5.6, 5.8_
-  - [ ] 11.4 Example test: satin-lattice placement
+  - [x] 11.4 Example test: satin-lattice placement
     - Solid 24 × 24 region, limits 8, run all lifted and all unlifted; every flip satisfies `(p − 2e) mod 9 = 0`; no three flips on consecutive ends at consecutive picks
     - _Requirements: 5.7_
   - [ ] 11.5 Example test: golden fixtures
@@ -204,15 +204,15 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
   - [ ] 11.12 Write property test for the failure rule
     - **Property 30: Never partly fixed**
     - **Validates: Requirements 5.8**
-  - [ ] 11.13 Write property test for badness
+  - [x] 11.13 Write property test for badness
     - **Property 33: Badness strictly decreases with every flip**
     - **Validates: Requirements 5.1, 5.8**
 
 - [ ] 12. Public API and determinism
-  - [ ] 12.1 Export the public API from `src/index.ts`
+  - [x] 12.1 Export the public API from `src/index.ts`
     - Types, built-in profiles, `defineProfile`, `validateProfile`, `evaluateWeave`, `weavePeriod`, `buildLiftPlan`, `validatePlan`, `buildCards`, `decodeCards`, `cardRows`, `nextCard`, `checkFloats`, `autoFix`
     - _Requirements: 1.4, 6.1_
-  - [ ] 12.2 Example test: no forbidden globals or runtime dependencies
+  - [x] 12.2 Example test: no forbidden globals or runtime dependencies
     - Scans `src/` for `Date`, `Math.random`, `Intl`, `toLocale`, `process`, `globalThis`, `fetch`; checks `package.json` has no `dependencies`
     - _Requirements: 6.2_
   - [ ] 12.3 Write property test for determinism
@@ -221,7 +221,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
   - [ ] 12.4 Write property test for input immutability
     - **Property 32: Inputs are never modified**
     - **Validates: Requirements 6.3**
-  - [ ] 12.5 Write property test for custom profiles
+  - [x] 12.5 Write property test for custom profiles
     - **Property 34: A custom profile is used in place of a built-in**
     - **Validates: Requirements 1.4**
 

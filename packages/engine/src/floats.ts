@@ -10,7 +10,7 @@ import { extractRuns } from "./runs.js";
 import type { Direction, LiftPlan, LoomProfile, Side, Violation } from "./types.js";
 
 /** Side of a run (4.1): warp-lifted and weft-unlifted are face, the rest back. wovenFaceDown swaps. */
-function sideOf(direction: Direction, state: boolean, wovenFaceDown: boolean): Side {
+export function sideOf(direction: Direction, state: boolean, wovenFaceDown: boolean): Side {
   const face = direction === "warp" ? state : !state;
   return face !== wovenFaceDown ? "face" : "back";
 }
@@ -30,7 +30,7 @@ function columnKey(violation: Violation): number {
 }
 
 /** Order from 4.6: kind, side, direction, row key, column key. */
-function compareViolations(a: Violation, b: Violation): number {
+export function compareViolations(a: Violation, b: Violation): number {
   return (
     KIND_RANK[a.kind] - KIND_RANK[b.kind] ||
     SIDE_RANK[a.side] - SIDE_RANK[b.side] ||

@@ -4,8 +4,12 @@
 // the analysed cells (picks 0..pickCount-1 by ends 0..designWidth-1); idle hooks are never read and
 // the input plan is never written.
 
+import { autofixFailed, type EngineResult } from "./errors.js";
+import { compareViolations, sideOf } from "./floats.js";
+import { validatePlan } from "./lift-plan.js";
+import { err, ok } from "./result.js";
 import { extractRuns, type LineRuns } from "./runs.js";
-import type { LiftPlan, LoomProfile } from "./types.js";
+import type { AutoFixOutput, Direction, Flip, LiftPlan, LoomProfile, Violation } from "./types.js";
 
 /**
  * Badness of one line: for each float run `length - limit` when the run is longer than the limit;
@@ -258,9 +262,14 @@ export function longestRemainingPiece(unit: WorkUnit, target: FixTarget, offset:
  * longest remaining piece, then lower offset from the run start (5.7). Empty when none is safe.
  */
 export function rankSafeCandidates(unit: WorkUnit, target: FixTarget): Candidate[] {
+  return rankCandidates(unit, target, true);
+}
+
+/** All candidates of `target` in the 5.7 rank order, optionally keeping only safe ones. */
+function rankCandidates(unit: WorkUnit, target: FixTarget, safeOnly: boolean): Candidate[] {
   const lattice = latticeFor(limitOf(unit, target.direction));
   return candidatesOf(unit, target)
-    .filter((candidate) => isSafeFlip(unit, candidate.end, candidate.pick))
+    .filter((candidate) => !safeOnly || isSafeFlip(unit, candidate.end, candidate.pick))
     .map((candidate) => ({
       candidate,
       off: onLattice(lattice, candidate.end, candidate.pick) ? 0 : 1,
@@ -268,4 +277,146 @@ export function rankSafeCandidates(unit: WorkUnit, target: FixTarget): Candidate
     }))
     .sort((a, b) => a.off - b.off || a.piece - b.piece || a.candidate.offset - b.candidate.offset)
     .map((entry) => entry.candidate);
+}
+
+// ---------------------------------------------------------------------------------------------
+// The loop (5.1, 5.2, 5.3, 5.5, 5.6, 5.8). See design.md, "Algorithm".
+// ---------------------------------------------------------------------------------------------
+
+export interface AutoFixOptions {
+  /** Most flips allowed. Default `4 * pickCount * designWidth`. */
+  readonly maxIterations?: number;
+}
+
+interface Found {
+  readonly violation: Violation;
+  readonly target: FixTarget;
+}
+
+function pushLine(
+  unit: WorkUnit,
+  profile: LoomProfile,
+  direction: Direction,
+  line: number,
+  runs: LineRuns,
+  out: Found[],
+): void {
+  const limit = direction === "warp" ? unit.maxWarpFloat : unit.maxWeftFloat;
+  if (runs.kind === "constant") {
+    out.push({
+      violation: {
+        kind: "unbound",
+        direction,
+        side: sideOf(direction, runs.state, profile.wovenFaceDown),
+        line,
+        length: runs.length,
+      },
+      target: { direction, line, start: 0, length: runs.length, unbound: true },
+    });
+    return;
+  }
+  for (const run of runs.runs) {
+    if (run.length <= limit) continue;
+    out.push({
+      violation: {
+        kind: "float",
+        direction,
+        side: sideOf(direction, run.state, profile.wovenFaceDown),
+        pick: direction === "warp" ? run.start : line,
+        end: direction === "warp" ? line : run.start,
+        length: run.length,
+      },
+      target: { direction, line, start: run.start, length: run.length, unbound: false },
+    });
+  }
+}
+
+/** Violations of the unit in the 4.6 order, each with its fix target. */
+function violationsOf(unit: WorkUnit, profile: LoomProfile): Found[] {
+  const found: Found[] = [];
+  for (let end = 0; end < unit.designWidth; end += 1) {
+    pushLine(unit, profile, "warp", end, unit.warpRuns[end] as LineRuns, found);
+  }
+  for (let pick = 0; pick < unit.pickCount; pick += 1) {
+    pushLine(unit, profile, "weft", pick, unit.weftRuns[pick] as LineRuns, found);
+  }
+  return found.sort((a, b) => compareViolations(a.violation, b.violation));
+}
+
+/** Writes the unit into a copy of the plan, tiling it across every tile with `repeatAcross` (5.6). */
+function expandUnit(plan: LiftPlan, unit: WorkUnit): LiftPlan {
+  const lifts: boolean[][] = [];
+  for (let pick = 0; pick < plan.pickCount; pick += 1) {
+    const row = (plan.lifts[pick] as readonly boolean[]).slice();
+    const cells = unit.cells[pick] as boolean[];
+    const limit = plan.repeatAcross ? plan.hookCount : plan.designWidth;
+    for (let hook = 0; hook < limit; hook += 1) row[hook] = cells[hook % plan.designWidth] as boolean;
+    lifts.push(row);
+  }
+  return {
+    pickCount: plan.pickCount,
+    hookCount: plan.hookCount,
+    designWidth: plan.designWidth,
+    repeatAcross: plan.repeatAcross,
+    lifts,
+  };
+}
+
+/**
+ * Fixes floats and unbound lines by flipping lift-plan cells (Requirement 5). Runs `validatePlan`
+ * first. A plan with no violations is returned unchanged with no flips. Otherwise each step takes
+ * the best-ranked safe flip of the first violation that has one; when no violation has a safe flip,
+ * the flip with the lowest negative change in badness; when there is none, it fails with `stuck`.
+ * Failure returns `AUTOFIX_FAILED` with the violations left and no plan (5.8). Only the analysed
+ * unit is edited, then copied to every tile with `repeatAcross`; idle hooks are never touched. The
+ * inputs are not modified.
+ */
+export function autoFix(
+  plan: LiftPlan,
+  profile: LoomProfile,
+  options: AutoFixOptions = {},
+): EngineResult<AutoFixOutput> {
+  const validated = validatePlan(plan, profile);
+  if (!validated.ok) return err(validated.error);
+
+  const maxIterations = options.maxIterations ?? 4 * plan.pickCount * plan.designWidth;
+  const unit = createWorkUnit(plan, profile);
+  const flips: Flip[] = [];
+
+  for (;;) {
+    const found = violationsOf(unit, profile);
+    if (found.length === 0) {
+      return ok({ plan: flips.length === 0 ? plan : expandUnit(plan, unit), flips });
+    }
+    const remaining = (): Violation[] => found.map((entry) => entry.violation);
+    if (flips.length >= maxIterations) {
+      return err(autofixFailed("iterationLimit", maxIterations, remaining()));
+    }
+
+    // Safe phase: first violation in order that has a safe candidate.
+    let chosen: Candidate | undefined;
+    for (const entry of found) {
+      chosen = rankSafeCandidates(unit, entry.target)[0];
+      if (chosen !== undefined) break;
+    }
+
+    // Fallback: lowest change in badness over every candidate; ties keep the earlier violation, then rank.
+    if (chosen === undefined) {
+      let best = 0;
+      for (const entry of found) {
+        for (const candidate of rankCandidates(unit, entry.target, false)) {
+          const delta = flipCell(unit, candidate.end, candidate.pick);
+          flipCell(unit, candidate.end, candidate.pick);
+          if (delta < best) {
+            best = delta;
+            chosen = candidate;
+          }
+        }
+      }
+      if (chosen === undefined) return err(autofixFailed("stuck", maxIterations, remaining()));
+    }
+
+    flipCell(unit, chosen.end, chosen.pick);
+    flips.push({ pick: chosen.pick, end: chosen.end });
+  }
 }

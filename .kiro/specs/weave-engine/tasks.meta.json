@@ -67,6 +67,14 @@
     "9.7 Write property test for bad card sets": {
       "status": "passed",
       "lastRunTimestamp": 1794822426250
+    },
+    "11.13 Write property test for badness": {
+      "status": "passed",
+      "lastRunTimestamp": 1794824673936
+    },
+    "12.5 Write property test for custom profiles": {
+      "status": "passed",
+      "lastRunTimestamp": 1794824889357
     }
   },
   "executionHistory": {
@@ -493,6 +501,83 @@
         "executionId": "5b6db2c9-4dde-48ba-a0ff-d6249a16ce9a",
         "chatSessionId": "sess_6cd318ad-c178-4f06-bde8-0ac3b09c375c",
         "timestamp": 1794822613298
+      }
+    ],
+    "11.3 Implement the auto-fix loop": [
+      {
+        "executionId": "5ac8a7d2-7cb0-4759-be2f-62610c77c66d",
+        "chatSessionId": "sess_6e7f8739-33f7-4d70-8c4e-881a00b20298",
+        "timestamp": 1794824165291
+      },
+      {
+        "executionId": "5ac8a7d2-7cb0-4759-be2f-62610c77c66d",
+        "chatSessionId": "sess_6e7f8739-33f7-4d70-8c4e-881a00b20298",
+        "timestamp": 1794824255179
+      }
+    ],
+    "11.4 Example test: satin-lattice placement": [
+      {
+        "executionId": "1be07943-937e-46b1-875e-09b2bcb3f845",
+        "chatSessionId": "sess_209ecd0e-c7e2-48e1-899c-65e65d8b3149",
+        "timestamp": 1794824321392
+      },
+      {
+        "executionId": "160d2736-4601-4078-ac70-f5efeecaa4f6",
+        "chatSessionId": "sess_209ecd0e-c7e2-48e1-899c-65e65d8b3149",
+        "timestamp": 1794824489137
+      },
+      {
+        "executionId": "160d2736-4601-4078-ac70-f5efeecaa4f6",
+        "chatSessionId": "sess_209ecd0e-c7e2-48e1-899c-65e65d8b3149",
+        "timestamp": 1794824603438
+      }
+    ],
+    "11.13 Write property test for badness": [
+      {
+        "executionId": "e94b7adc-db60-4e17-b7cd-9c4a406a17cc",
+        "chatSessionId": "sess_a13e8c9c-d018-418c-9037-6d93f16477e2",
+        "timestamp": 1794824632333
+      },
+      {
+        "executionId": "e94b7adc-db60-4e17-b7cd-9c4a406a17cc",
+        "chatSessionId": "sess_a13e8c9c-d018-418c-9037-6d93f16477e2",
+        "timestamp": 1794824684719
+      }
+    ],
+    "12.1 Export the public API from `src/index.ts`": [
+      {
+        "executionId": "7bab6310-4ee5-4b32-83fe-816b56a0f385",
+        "chatSessionId": "sess_0353c130-53e2-4c4e-a72b-7d725755aef9",
+        "timestamp": 1794824711830
+      },
+      {
+        "executionId": "7bab6310-4ee5-4b32-83fe-816b56a0f385",
+        "chatSessionId": "sess_0353c130-53e2-4c4e-a72b-7d725755aef9",
+        "timestamp": 1794824756682
+      }
+    ],
+    "12.2 Example test: no forbidden globals or runtime dependencies": [
+      {
+        "executionId": "acc2da56-b1ca-41b9-89ba-c103ab054c17",
+        "chatSessionId": "sess_e57a35b7-cf6e-42da-8b0d-c735fd094dae",
+        "timestamp": 1794824779213
+      },
+      {
+        "executionId": "acc2da56-b1ca-41b9-89ba-c103ab054c17",
+        "chatSessionId": "sess_e57a35b7-cf6e-42da-8b0d-c735fd094dae",
+        "timestamp": 1794824814132
+      }
+    ],
+    "12.5 Write property test for custom profiles": [
+      {
+        "executionId": "87e25d99-7a2e-4230-b3f8-a159f153a224",
+        "chatSessionId": "sess_2e47ed03-7107-422d-84bf-779d92aba9e4",
+        "timestamp": 1794824839029
+      },
+      {
+        "executionId": "87e25d99-7a2e-4230-b3f8-a159f153a224",
+        "chatSessionId": "sess_2e47ed03-7107-422d-84bf-779d92aba9e4",
+        "timestamp": 1794824904597
       }
     ]
   }
