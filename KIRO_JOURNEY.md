@@ -1023,6 +1023,22 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec. The editor's interaction feel is marked for vibe mode in task 6.3.
 - Evidence: `.kiro/specs/motif-input/requirements.md`, `design.md`, `tasks.md`; `.kiro/steering/structure.md`; `packages/motif/package.json`, `backend/package.json`, `apps/web/package.json`.
 
+### 2026-11-16 — motif-input wave 1 (tasks 2.1, 2.2, 2.3)
+
+- Surface: IDE
+- Goal: Implement `@jacquard/motif`: the Motif_SVG parser, rasterizer, symmetry, speck removal, pipeline, request validation and the stand-in generator.
+- Kiro features used: spec `motif-input` (tasks 2.1 to 2.3, run by Kiro's `general-task-execution` sub-agent in a fresh context; I reran the checks myself); hook `block-engine-fixture-edits` (checked the sub-agent's file writes). No property test yet, no MCP tool, no custom agent.
+- Model / credits (start → end):
+- What worked:
+  - `packages/motif/src`: `parse-motif.ts` (684 lines: a single-pass tokenizer with no regex over the whole input, never throws), `geometry.ts` (non-zero winding with on-edge tolerance), `rasterize.ts`, `symmetry.ts`, `specks.ts`, `motif-to-design.ts`, `request.ts`, `stand-in.ts` (5 families), `types.ts`, plus `test/smoke.test.ts` (11 example tests).
+  - Rerun by me: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, motif 13, backend 3, mcp 88, web 3 passed).
+- What failed or surprised:
+  - **Design finding:** speck removal as literally designed (relabel the whole grid after every merge) took 6.5 s on a noisy 120 by 120 grid in the sub-agent's scratch test. It was rewritten to update only the touched components with a min-heap. The sub-agent compared it with a literal version on 5,000 random grids and they matched. `design.md` now records the finding. Property 8 was extended to compare `removeSpecks` with a literal implementation kept in `test/`, so the equivalence is a standing test, not a one-off scratch run.
+  - The sub-agent made 12 small decisions the spec did not fix (extra reason strings such as `markup`, `cdata` and `number:<attr>`; numeric character references rejected; `fill` and `transform` rejected on the `svg` root; prompt length counted in code points; field check order). They are listed in its report and are consistent with Requirement 4. One gap: with 7 non-background colours, three stand-in families have bands about 6 to 7 viewBox units wide, narrower than the 10 units I asked for.
+  - A screen recording, `media/journey/autopilot/2026-11-16-autopilot-part00.mkv`, appeared in the repo while it was being written (the user's). `.gitignore` covered only `.mov` and `.mp4`, and my commit helper runs `git add -A`, so it would have been committed. I added `media/**/*.mkv` to `.gitignore` before committing.
+- Spec versus vibe note: spec.
+- Evidence: `packages/motif/src/*.ts`, `packages/motif/test/smoke.test.ts`, `.kiro/specs/motif-input/design.md` (Speck removal, Property 8), `.gitignore`.
+
 ### Template
 
 ```

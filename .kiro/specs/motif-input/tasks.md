@@ -22,12 +22,12 @@ All 14 correctness properties have their own property test task. Every property 
   - [x] 1.2 Update `.kiro/steering/structure.md` to list `packages/motif` and `@jacquard/motif`
     - _Requirements: 13.1_
 
-- [ ] 2. Motif package
-  - [ ] 2.1 Implement `parse-motif.ts` (tokenizer, allow lists, fills, transforms, shapes to polygons, palette rule, size limits; never throws)
+- [x] 2. Motif package
+  - [x] 2.1 Implement `parse-motif.ts` (tokenizer, allow lists, fills, transforms, shapes to polygons, palette rule, size limits; never throws)
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 4.8_
-  - [ ] 2.2 Implement `rasterize.ts`, `symmetry.ts`, `specks.ts`
+  - [x] 2.2 Implement `rasterize.ts`, `symmetry.ts`, `specks.ts`
     - _Requirements: 5.1 to 5.5, 6.1 to 6.6, 7.1 to 7.5_
-  - [ ] 2.3 Implement `motif-to-design.ts`, `request.ts` (`validateMotifRequest`, request and response types) and `stand-in.ts`; export everything from `src/index.ts`
+  - [x] 2.3 Implement `motif-to-design.ts`, `request.ts` (`validateMotifRequest`, request and response types) and `stand-in.ts`; export everything from `src/index.ts`
     - _Requirements: 1.1, 1.3, 7.6, 8.1 to 8.4_
 
 - [ ] 3. Motif properties and examples

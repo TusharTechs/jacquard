@@ -41,3 +41,4 @@ Thumbs.db
 # Screen recordings of the build journey (large; the edited video goes to YouTube)
 media/**/*.mov
 media/**/*.mp4
+media/**/*.mkv

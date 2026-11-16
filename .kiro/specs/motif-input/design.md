@@ -98,7 +98,9 @@ For cell (end, pick), the centre in viewBox coordinates is `x = minX + (end + 0.
 
 #### Speck removal (`specks.ts`, Requirement 6)
 
-Loop: label 4-connected components; collect components smaller than `minFeature`; if none, or the design is a single component, stop. Sort specks by size, then by the pick-major index of their first cell. Take the first speck only, count shared edges with each neighbouring region, relabel the speck to the region with the most shared edges (lowest index on a tie), and repeat from labelling. One speck per iteration keeps the rule simple to state (6.3). Each iteration reduces the component count by at least one, so the loop ends after at most `ends * picks` iterations. A speck always has a neighbour unless it is the whole design.
+Rule: label 4-connected components; collect components smaller than `minFeature`; if none, or the design is a single component, stop. Order specks by size, then by the pick-major index of their first cell. Take the first speck only, count shared edges with each neighbouring region, relabel the speck to the region with the most shared edges (lowest index on a tie), and repeat. One speck per step keeps the rule simple to state (6.3). Each step reduces the component count by at least one, so the loop ends after at most `ends * picks` steps. A speck always has a neighbour unless it is the whole design.
+
+Implementation (finding from task 2.2): relabelling the whole grid after every merge took 6.5 s on a noisy 120 by 120 grid. The implementation keeps the components and a min-heap ordered by (size, first cell) and updates only the components a merge touches. It makes the same choice at every step as the literal rule; this was checked against a literal implementation on 5,000 random grids during the task, and Properties 7 and 8 check the rule itself.
 
 #### Pipeline (`motif-to-design.ts`, 7.6)
 
@@ -206,7 +208,7 @@ For any design up to 24 by 24 with up to 6 regions and any Minimum_Feature from 
 
 ### Property 8: Speck merge choice
 
-For any design containing exactly one speck component that is smaller than Minimum_Feature, while all other components are at least Minimum_Feature, `removeSpecks` relabels exactly that component, to the neighbouring region with the most shared edges, lowest index on a tie.
+For any design containing exactly one speck component that is smaller than Minimum_Feature, while all other components are at least Minimum_Feature, `removeSpecks` relabels exactly that component, to the neighbouring region with the most shared edges, lowest index on a tie. And for any design up to 12 by 12 with up to 5 regions and any Minimum_Feature from 1 to 12, `removeSpecks` equals a literal, relabel-everything-each-step implementation of 6.3 kept in `test/` (added after the task 2.2 finding).
 
 **Validates: Requirements 6.3**
 
