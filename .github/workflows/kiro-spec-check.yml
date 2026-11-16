@@ -1,0 +1,80 @@
+# Kiro CLI headless spec check (kiro-product Requirement 4).
+# Off until the repository variable KIRO_CI_ENABLED is "true" and the secret KIRO_API_KEY is set.
+# The key is read only from the secret, into the one step that needs it, and is never written to a file.
+name: kiro-spec-check
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kiro-spec-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  spec-check:
+    if: ${{ vars.KIRO_CI_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Install Kiro CLI
+        run: |
+          curl -fsSL https://cli.kiro.dev/install | bash
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: List changed files
+        run: |
+          git diff --name-only HEAD~1 HEAD > changed-files.txt || git ls-files > changed-files.txt
+          echo "Changed files:"; cat changed-files.txt
+
+      - name: Kiro spec check (read-only)
+        env:
+          KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}
+        run: |
+          set -o pipefail
+          {
+            echo "Check these changed files against the requirements in .kiro/specs, as your instructions describe."
+            echo
+            cat changed-files.txt
+          } > prompt.txt
+          kiro-cli chat --v3 --no-interactive --agent spec-checker --trust-tools=read_file,grep_search < prompt.txt | tee kiro-output.txt
+
+      - name: Job summary
+        if: always()
+        run: |
+          {
+            echo "## Kiro spec check"
+            echo
+            if [ -f kiro-output.txt ]; then cat kiro-output.txt; else echo "No output (the Kiro step did not run)."; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail on a broken criterion
+        run: |
+          if grep -q '^VERDICT: FAIL' kiro-output.txt; then
+            echo "spec-checker reported a broken acceptance criterion; see the job summary."
+            exit 1
+          fi
+          grep -q '^VERDICT: PASS' kiro-output.txt || { echo "No verdict line in the Kiro output."; exit 1; }

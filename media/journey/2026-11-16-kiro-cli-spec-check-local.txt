@@ -1,0 +1,122 @@
+## `.gitignore`
+- **Governing spec:** kiro-product.
+- **Criteria touched:** 1.3. The spec's Decision log says `.gitignore` gets `!power/dist/` so the Power server can be committed.
+- **Finding:** `dist/` is followed by `!power/dist/` and `!power/dist/**`, which re-includes the committed bundle. `.kiro` is not ignored, so the structure rule holds. No criterion appears broken.
+
+## `.kiro/specs/kiro-product/design.md`, `requirements.md`, `tasks.md`
+- **Governing spec:** these are kiro-product's own files.
+- **Finding:** I read `requirements.md` only. I did not open `design.md` or `tasks.md`, so I can't say whether they match it. Nothing in `requirements.md` contradicts the changed code I read.
+
+## `KIRO_JOURNEY.md`
+- **Governing spec:** none. It is a journal governed by the journey rule, not a spec.
+- **Finding:** I did not open it. Not checked.
+
+## `apps/web/public/gallery/index.json`, `lotus-border.json`, `peacock-butta.json`, `star-lattice.json`, `temple-stripe.json`
+- **Governing spec:** kiro-product. These are the output of `scripts/gallery`.
+- **Criteria touched:** 2.1, 2.2, 2.3, 2.5.
+- **Findings:**
+  - 2.1: `index.json` lists four examples, and `buildGallery` writes the four files.
+  - 2.2: every example has `"violationsAfter": 0`. `peacock-butta` has `"violationsBefore": 1` and `"flips": 1`, and the other three need no fix.
+  - 2.5: every example has `"source": "standIn"`.
+  - 2.3: I did not run the generator. I could not confirm byte-identity beyond what `gallery.test.ts` asserts.
+- No criterion appears broken.
+
+## `apps/web/test/gallery.test.ts`
+- **Governing spec:** kiro-product.
+- **Criteria touched:** 2.2, 2.3, 2.4, 2.5.
+- **Findings:**
+  - 2.4: the test compares the committed files to a fresh `buildGallery()` and fails on a difference.
+  - 2.4: it also fails if `violationsAfter` is not 0.
+  - 2.3: it checks that a second run is identical.
+  - 2.5: it asserts `source` is `standIn`.
+- No criterion appears broken.
+
+## `scripts/gallery/generate.ts`
+- **Governing spec:** kiro-product.
+- **Criteria touched:** 2.1, 2.2, 2.3, 2.5.
+- **Findings:**
+  - 2.1: it uses `standInMotif`, `motifToDesign`, `buildLiftPlan`, `checkFloats` and `autoFix`.
+  - 2.2: it runs `autoFix` only when violations exist, and it records `violationsAfter`.
+  - 2.3: it uses no clock, randomness or I/O, and `canonicalJson` sorts keys.
+  - 2.5: it hard-codes `source: "standIn"`.
+- It imports `defaultWeaves` from `apps/web/src/lib/default-weaves`. The spec's Decision log says "region weaves from the web app's defaults", so this matches.
+- No criterion appears broken.
+
+## `scripts/gallery/run.mjs`
+- **Governing spec:** kiro-product.
+- **Criteria touched:** 2.1, 2.3.
+- **Finding:** it bundles `generate.ts` with esbuild and writes the files. `--check` compares the committed files and exits 1 on a difference. No criterion appears broken.
+
+## `package.json`
+- **Governing spec:** kiro-product, for the root `gallery` script and the esbuild dev dependency. The Decision log says esbuild is a root dev dependency.
+- **Criteria touched:** 2.1.
+- **Findings:** the `gallery` script runs `scripts/gallery/run.mjs`, and `esbuild` is pinned to `0.28.2`. The root has no `typecheck` or `test` change that conflicts with the tech rules. No criterion appears broken.
+
+## `packages/mcp/build.mjs` and `packages/mcp/package.json`
+- **Governing specs:** kiro-product (1.3, 1.4) and weave-mcp (13.4, 13.5, 13.8).
+- **Findings:**
+  - kiro-product 1.4: `build:power` is a script in `packages/mcp`, and `--outfile` lets the test compare a fresh build to the committed file.
+  - weave-mcp 13.4: the SDK is pinned to `1.32.2` and every dependency is an exact version. `@jacquard/engine` is `workspace:*`.
+  - weave-mcp 13.5 and 13.8: `typecheck` and `test` exist, and `pretest` runs the build, which exits 1 on failure.
+  - weave-mcp 13.3: nothing here imports an engine internal path.
+  - The default build still marks the SDK external, as before. The `--power` build inlines it.
+- No criterion appears broken.
+
+## `packages/mcp/test/power.test.ts`
+- **Governing spec:** kiro-product, with weave-mcp 1.1 for the tool list.
+- **Criteria touched:** 1.1 to 1.7, and weave-mcp 1.1 and 13.7.
+- **Findings:**
+  - It checks the `plugin.json` fields, and the `mcp.json` command, args and absence of `env`.
+  - It checks that `mcp.json` has no absolute path or secret.
+  - It checks that `server.js` is byte-identical to a fresh `--power` build.
+  - It runs `server.js` from a temporary folder outside the repo. The file is copied alone, so there is no `node_modules`.
+  - It requires an initialize reply within 5 seconds and the six tool names in the weave-mcp order.
+  - It checks skill frontmatter, description length and the framing text.
+  - It checks that the README opens with the "dead as a computing medium" line.
+- No criterion appears broken.
+
+## `power/plugin.json`
+- **Governing spec:** kiro-product.
+- **Criterion touched:** 1.1.
+- **Finding:** it has the required `$schema`, `name` `loom`, semver `0.1.0`, `description`, `author.name`, `keywords`, `repository` and `license` `MIT`. The description says the card format has not been tested on a working loom, which satisfies the product framing rule. No criterion appears broken.
+
+## `power/mcp.json`
+- **Governing spec:** kiro-product.
+- **Criterion touched:** 1.2.
+- **Finding:** it has the right `$schema` and one stdio server. The command is `node`, the args are `["${PLUGIN_ROOT}/dist/server.js"]`, and there is no `env`, absolute path or secret. No criterion appears broken.
+
+## `power/dist/package.json`
+- **Governing spec:** kiro-product.
+- **Criterion touched:** 1.3.
+- **Finding:** it contains only `{"type":"module"}`, so the ESM bundle runs under plain `node`. No criterion appears broken.
+
+## `power/dist/server.js`
+- **Governing spec:** kiro-product.
+- **Criteria touched:** 1.3, 1.4.
+- **Finding:** I did not read this bundle. `power.test.ts` is the check for it: it requires a fresh-build match, only built-in imports, and the same six tools. I can't say the test passes. No criterion appears broken in what I read.
+
+## `power/README.md`
+- **Governing spec:** kiro-product.
+- **Criteria touched:** 1.3, 1.7.
+- **Findings:**
+  - 1.7: it covers the local-folder and GitHub installs and has a "Test it in a fresh empty workspace" section.
+  - Product framing: the first line says "Punch cards are dead as a computing medium". The second paragraph says the format is untested on a working loom and that the Power assists the designer and the card puncher and does not replace them.
+  - It states no unsourced statistic.
+  - I can't verify the `kiro-cli powers install` command or the GitHub import wording. The README itself admits the folder-URL behaviour is unconfirmed.
+- No criterion appears broken.
+
+## `power/skills/check-floats-and-cards/SKILL.md` and `power/skills/design-woven-pattern/SKILL.md`
+- **Governing spec:** kiro-product.
+- **Criteria touched:** 1.5, 1.6.
+- **Findings:**
+  - 1.5: each has `name` equal to its folder name, and each `description` is well under 1024 characters.
+  - 1.6: both say the card format has not been tested on a working loom. Both say the tools assist the designer and the card puncher and do not replace them. Both use the four labels.
+  - Product framing: neither states time or cost figures, and `design-woven-pattern` says not to present a pixelated picture as a design.
+  - The worked-example numbers (16 violations, 9 flips and so on) are claimed to come from the bundled server. I did not run them, so I can't confirm them.
+- No criterion appears broken.
+
+## `pnpm-lock.yaml`
+- **Governing spec:** weave-mcp 13.4, which requires a committed lockfile recording the pinned versions.
+- **Finding:** I did not open it. Not checked.
+
+VERDICT: PASSI didn't write a `KIRO_JOURNEY.md` entry. This session only reviewed files and changed nothing in the repo. I also have no write tool in this role, so I couldn't append one even if it were needed.

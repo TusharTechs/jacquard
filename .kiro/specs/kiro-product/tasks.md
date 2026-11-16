@@ -24,12 +24,12 @@ Ship the Kiro configuration as a product: the `loom` Power, the gallery, the `re
     - _Requirements: 2.1, 2.2, 2.3, 2.5_
   - [x] 2.2 `apps/web/test/gallery.test.ts`
     - _Requirements: 2.3, 2.4_
-- [ ] 3. Workflow, agents, CI, automation
-  - [ ] 3.1 `.kiro/agents/release-runner.json`, `.kiro/agents/spec-checker.json`, `.kiro/workflows/release-check.workflow.json`
+- [x] 3. Workflow, agents, CI, automation
+  - [x] 3.1 `.kiro/agents/release-runner.json`, `.kiro/agents/spec-checker.json`, `.kiro/workflows/release-check.workflow.json`
     - _Requirements: 3.1, 3.2, 3.3, 4.4, 4.5_
-  - [ ] 3.2 `.github/workflows/kiro-spec-check.yml` and `.kiro/automations/gallery-daily.md`
+  - [x] 3.2 `.github/workflows/kiro-spec-check.yml` and `.kiro/automations/gallery-daily.md`
     - _Requirements: 4.1, 4.2, 4.3, 5.1, 5.2_
-  - [ ] 3.3 Extend `packages/mcp/test/config.test.ts`; run the `spec-checker` agent once locally with the CI command to confirm it works
+  - [x] 3.3 Extend `packages/mcp/test/config.test.ts`; run the `spec-checker` agent once locally with the CI command to confirm it works
     - _Requirements: 3.2, 4.2, 4.3, 4.4_
 
 ## Task Dependency Graph

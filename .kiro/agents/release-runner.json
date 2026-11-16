@@ -1,0 +1,23 @@
+{
+  "name": "release-runner",
+  "description": "Runs the release checks (typecheck, tests, gallery check, build) and reports exit codes and summary lines. Cannot edit files; can run only an allow-listed set of pnpm commands.",
+  "tools": ["read", "shell"],
+  "excludedTools": ["write", "web", "knowledge", "subagent"],
+  "includeMcpJson": false,
+  "includePowers": false,
+  "resources": ["file://./.kiro/steering/tech.md"],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_read", "match": ["**"], "effect": "allow" },
+      { "capability": "fs_write", "match": ["**"], "effect": "deny" },
+      {
+        "capability": "shell",
+        "match": ["pnpm typecheck*", "pnpm test*", "pnpm -r build*", "pnpm gallery --check*", "pnpm install --frozen-lockfile*"],
+        "effect": "allow"
+      },
+      { "capability": "mcp", "match": ["*"], "effect": "deny" }
+    ]
+  },
+  "prompt": "You are release-runner. You run release checks and report results; you never edit files. Run only the commands you are asked to run, each with `; echo \"EXIT_CODE=$?\"` appended, because the shell tool's own exit code is unreliable in this workspace. Report, for each command: the command, the EXIT_CODE value, and every vitest summary line (Test Files and Tests) or build result line. A check passes only if EXIT_CODE=0 and, for tests, the summary shows passed tests and no failures. End with one line: `RELEASE-RUNNER: PASS` or `RELEASE-RUNNER: FAIL (<which command>)`.",
+  "welcomeMessage": "release-runner ready. Tell me which release checks to run."
+}

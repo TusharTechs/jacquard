@@ -1,0 +1,37 @@
+{
+  "name": "release-check",
+  "description": "Release check for JACQUARD: tests and the gallery audit in parallel, then the web design review, then a build of every package.",
+  "steps": [
+    {
+      "type": "parallel",
+      "id": "tests-and-gallery-audit",
+      "joinPolicy": "allSettled",
+      "branches": [
+        {
+          "type": "step",
+          "id": "engine-and-package-tests",
+          "agent": "release-runner",
+          "prompt": "Run `pnpm typecheck`, then `pnpm test`, then `pnpm gallery --check`. Report each EXIT_CODE and every summary line."
+        },
+        {
+          "type": "step",
+          "id": "gallery-audit",
+          "agent": "weave-auditor",
+          "prompt": "Audit the example gallery in apps/web/public/gallery (index.json and each example file). For each example: call build_lift_plan with its design, weaves and the built-in profile named in setup.profile (with setup.repeatAcross), then check_floats; if there are violations, auto_fix and check_floats again; then build_cards and decode_cards on the final plan and compare. Check that each file says source standIn and that its recorded check.violationsAfter is 0 and matches what you found. Report findings in your usual format with a count per category."
+        }
+      ]
+    },
+    {
+      "type": "step",
+      "id": "web-design-review",
+      "agent": "design-reviewer",
+      "prompt": "Review apps/web/src against .kiro/steering/design-language.md and the framing rules in .kiro/steering/product.md. Report only real problems with severity, in your usual format, with a count per category."
+    },
+    {
+      "type": "step",
+      "id": "build",
+      "agent": "release-runner",
+      "prompt": "Run `pnpm -r build`. Report the EXIT_CODE and each package's build result line."
+    }
+  ]
+}

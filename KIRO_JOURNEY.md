@@ -1316,6 +1316,26 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `power/**`, `packages/mcp/build.mjs`, `packages/mcp/test/power.test.ts`, `scripts/gallery/*`, `apps/web/public/gallery/*.json`, `apps/web/test/gallery.test.ts`, `.kiro/specs/kiro-product/*.md`.
 
+### 2026-11-16 — kiro-product wave 1 (tasks 3.1, 3.2, 3.3): release-check workflow, CI spec check, Kiro Web prompt
+
+- Surface: IDE, plus one Kiro CLI headless run from this machine
+- Goal: The `release-check` workflow and its agent, the CI spec check and its agent, and the Kiro Web scheduled-task prompt.
+- Kiro features used: workflow `.kiro/workflows/release-check.workflow.json` (new; not yet run, because workflows are off by default in the IDE setting `kiroAgent.workflows.enabled`); custom agents `release-runner` and `spec-checker` (new); Kiro CLI 3.3.0 headless (`kiro-cli chat --v3 --no-interactive --agent spec-checker --trust-tools=read_file,grep_search`), run once locally with my Google login; hook `journey-entry-on-stop` (fired at the end of the headless run, see below).
+- Model / credits (start → end):
+- What worked:
+  - `release-check` runs a parallel node (`release-runner`: typecheck, test, `gallery --check`; `weave-auditor`: gallery audit), then `design-reviewer`, then `release-runner` with `pnpm -r build`. `pnpm -r build` passed locally (`EXIT_CODE=0`).
+  - `.github/workflows/kiro-spec-check.yml` is guarded by `vars.KIRO_CI_ENABLED == 'true'`. It reads `KIRO_API_KEY` only from `secrets.KIRO_API_KEY` in one step's `env`, writes the agent output to the job summary, and fails on `VERDICT: FAIL` or a missing verdict.
+  - `.kiro/automations/gallery-daily.md` has the scheduled-task prompt.
+  - `config.test.ts` gained 6 tests (runner allow list, checker read-only, workflow order and node types, CI guard, key handling, command). `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 110, export 52, motif 75, backend 45, web 127).
+  - **Local headless run:** 25 changed files from the last commit, `EXIT_CODE=0`, 122 lines of output ending `VERDICT: PASS`. For each file it named the governing spec and the criteria touched (for example kiro-product 1.1, 1.2, 2.1 to 2.5). It said plainly what it did not read (`design.md`, `tasks.md`, the journal, the 663 kB bundle). Output saved as `media/journey/2026-11-16-kiro-cli-spec-check-local.txt`.
+- What failed or surprised:
+  - The workspace `journey-entry-on-stop` hook also fired inside the headless run. The agent appended "I didn't write a `KIRO_JOURNEY.md` entry…" to the same line as `VERDICT: PASS`. The CI check still matches `^VERDICT: PASS`, but in CI the hook will add text to every job summary. Not changed; noted for the user.
+  - The CI job has not run on GitHub. It needs `KIRO_API_KEY` (a Pro-or-higher plan key from app.kiro.dev) and `KIRO_CI_ENABLED=true`, both the user's to set. `pnpm/action-setup@v4` reads pnpm 12.16.1 from `packageManager`; that is untested on a runner.
+  - The `release-check` workflow has not been run. The `release-runner` shell allow list uses glob patterns whose exact matching in workflow steps I have not seen work.
+  - The Kiro Web scheduled task was not created: it spends credits and needs the user's sign-in.
+- Spec versus vibe note: spec.
+- Evidence: `.kiro/agents/release-runner.json`, `.kiro/agents/spec-checker.json`, `.kiro/workflows/release-check.workflow.json`, `.github/workflows/kiro-spec-check.yml`, `.kiro/automations/gallery-daily.md`, `packages/mcp/test/config.test.ts`, `media/journey/2026-11-16-kiro-cli-spec-check-local.txt`.
+
 ### Template
 
 ```

@@ -119,3 +119,59 @@ describe(REVIEWER, () => {
     expect(mcpAllows, `${REVIEWER}: mcp allow rules`).toEqual([]);
   });
 });
+
+// kiro-product Requirements 3 and 4: release-runner, spec-checker, release-check workflow, CI file.
+const RUNNER = ".kiro/agents/release-runner.json";
+const CHECKER = ".kiro/agents/spec-checker.json";
+const WORKFLOW = ".kiro/workflows/release-check.workflow.json";
+const CI = ".github/workflows/kiro-spec-check.yml";
+
+describe(RUNNER, () => {
+  const agent = read(RUNNER) as Agent;
+  it("cannot write files and may run only allow-listed pnpm commands (3.2)", () => {
+    const rules = agent.permissions?.rules ?? [];
+    expect(rules.some((r) => r.capability === "fs_write" && r.effect === "deny" && r.match.includes("**"))).toBe(true);
+    for (const rule of rules.filter((r) => r.capability === "shell" && r.effect !== "deny")) {
+      for (const match of rule.match) expect(match, `${RUNNER}: shell allow ${match}`).toMatch(/^pnpm (typecheck|test|-r build|gallery --check|install --frozen-lockfile)/);
+    }
+    expect(agent.tools?.includes("write"), `${RUNNER}: write tool`).toBe(false);
+  });
+});
+
+describe(CHECKER, () => {
+  const agent = read(CHECKER) as Agent;
+  it("is read-only with read as its only tool (4.4)", () => {
+    checkReadOnly(CHECKER, agent);
+    expect(agent.tools).toEqual(["read"]);
+  });
+});
+
+describe(WORKFLOW, () => {
+  const workflow = read(WORKFLOW) as { name: string; steps: { type: string; id: string; agent?: string; branches?: { type: string; agent: string }[] }[] };
+  it("runs tests and the gallery audit in parallel, then the design review, then the build (3.1, 3.3)", () => {
+    expect(workflow.name).toBe("release-check");
+    const [first, second, third] = workflow.steps;
+    expect(first?.type).toBe("parallel");
+    expect(first?.branches?.map((b) => b.agent).sort()).toEqual(["release-runner", "weave-auditor"]);
+    expect(second?.agent).toBe("design-reviewer");
+    expect(third?.agent).toBe("release-runner");
+    for (const step of workflow.steps) expect(["step", "parallel"]).toContain(step.type);
+  });
+});
+
+describe(CI, () => {
+  const text = readFileSync(join(workspaceRoot, CI), "utf8");
+  it("is guarded by KIRO_CI_ENABLED (4.3)", () => {
+    expect(text).toContain("if: ${{ vars.KIRO_CI_ENABLED == 'true' }}");
+  });
+  it("reads the key only from the secret into a step env, and never echoes or writes it (4.2)", () => {
+    const keyLines = text.split("\n").filter((line) => line.includes("KIRO_API_KEY") && !line.trim().startsWith("#"));
+    expect(keyLines).toEqual(["          KIRO_API_KEY: ${{ secrets.KIRO_API_KEY }}"]);
+    expect(text).not.toMatch(/echo[^\n]*KIRO_API_KEY|KIRO_API_KEY[^\n]*>/);
+  });
+  it("runs the read-only spec-checker headless and posts to the job summary (4.1, 4.2)", () => {
+    expect(text).toContain("kiro-cli chat --v3 --no-interactive --agent spec-checker --trust-tools=read_file,grep_search");
+    expect(text).toContain("$GITHUB_STEP_SUMMARY");
+    expect(text).not.toContain("--trust-all-tools");
+  });
+});
