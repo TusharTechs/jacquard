@@ -20,11 +20,12 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - _Requirements: 6.2_
 
 - [ ] 2. Core types, results and errors
-  - [ ] 2.1 Implement `src/types.ts` and `src/result.ts`
-    - All types in design Data Models; `Result<T>`, `ok()`, `err()`
+  - [x] 2.1 Implement `src/types.ts` and `src/result.ts`
+    - All types in design Data Models; `Result<T, E>` (no default for `E`), `ok()`, `err()`
     - _Requirements: 1.1, 1.2, 1.6_
   - [ ] 2.2 Implement `src/errors.ts`
     - `EngineError` union and `PlanProblem` from design Error Handling, one constructor per code, `message` built only from the fields
+    - `EngineResult<T> = Result<T, EngineError>`, returned by every public function
     - _Requirements: 3.8_
 
 - [ ] 3. Test generators
@@ -40,6 +41,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
   - [ ] 4.2 Example test: built-in profile defaults
     - The three built-ins have exactly the defaults in 1.2; `PROFILE_400` has 400 + 16 = 416 positions
     - Reads `src/profiles.ts` and checks each default line has a label comment and each `[sourced]` line quotes S1
+    - Remove passWithNoTests from vitest.config.ts.
     - _Requirements: 1.3_
   - [ ] 4.3 Example test: invalid profile fields
     - One case per field in 1.5, each expecting `PROFILE_INVALID` with that field and value

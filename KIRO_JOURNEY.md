@@ -127,6 +127,21 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec; the tasks were small enough that the spec added little here, but it set the exact package layout that later tasks depend on.
 - Evidence: `.kiro/specs/weave-engine/tasks.md` (1, 1.1, 1.2 checked), `.kiro/specs/weave-engine/tasks.meta.json`, `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`, `packages/engine/`.
 
+### 2026-11-16 — weave-engine wave 1 (task 2.1)
+
+- Surface: IDE
+- Goal: Implement the data types and the result type (`src/types.ts`, `src/result.ts`).
+- Kiro features used: spec `weave-engine` (task 2.1; `design.md` Data Models was the source of the types). I ran the task myself in this chat session, not through Kiro's task execution, so there is no `tasks.meta.json` history for it. Steering: `journey.md` (no write during the wave, one entry after it) and `tech.md` (the `EXIT_CODE` rule for the typecheck). No hook fired that I observed, no custom agent, no MCP tool, no property test, no checkpoint.
+- Model / credits (start → end):
+- What worked: `types.ts` has every type in the design's Data Models section (`Design`, `Weave`, `WeaveAssignment`, `LoomProfile`, `BuildInput`, `LiftPlan`, `BuildOutput`, `Card`, `CardSet`, `Side`, `Direction`, `Violation`, `Warning`, `Flip`, `AutoFixOutput`), with `readonly` fields. `result.ts` has `Ok`, `Err`, `Result`, `ok()` and `err()`. `pnpm typecheck` printed both `tsc` steps with `EXIT_CODE=0`. Task 2.1 is marked `[x]` in `tasks.md`; parent task 2 stays open until task 2.2.
+- What failed or surprised:
+  - **Deviation from the task text and the design:** the task and the design say `Result<T>`, but I defined `Result<T, E>` with no default for `E`. A default of `EngineError` would need `errors.ts`, which is task 2.2, and the typecheck would fail until then. Task 2.2 should add `EngineResult<T> = Result<T, EngineError>` in `errors.ts`, and public functions should return that. This needs the user's agreement; `design.md` still says `Result<T>`.
+  - **Approved deviation:** the user approved `Result<T, E>` in `result.ts`, with `EngineResult<T> = Result<T, EngineError>` added in task 2.2. `design.md` (Overview and package layout) and `tasks.md` (tasks 2.1 and 2.2) were updated to match. The user also had task 4.2 extended with "Remove passWithNoTests from vitest.config.ts."
+  - **Weak check:** the typecheck proves the files compile. Nothing else exercises these types yet, and nothing exports them: `src/index.ts` is still `export {};` until task 12.1.
+  - **Hook:** I do not know whether the Stop hook fired at the end of that session. It had no reason to write, because this entry already existed.
+- Spec versus vibe note: spec; the design already contained the exact types, so the task was a transcription.
+- Evidence: `packages/engine/src/types.ts`, `packages/engine/src/result.ts`, `.kiro/specs/weave-engine/tasks.md` (2.1 checked).
+
 ### Template
 
 ```
@@ -147,7 +162,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; wave 0 done, tasks 1.1 and 1.2) |
+| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 and 1 done, tasks 1.1, 1.2 and 2.1) |
 | Property-based tests / bugs they caught | 0 / 0 | |
 | Hooks | 1 | journey-entry-on-stop (wrote no entry after wave 0; unreliable for spec waves) |
 | Steering files | 6 | 4 always-on, 2 file-matched |

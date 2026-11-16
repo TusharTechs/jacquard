@@ -18,7 +18,7 @@ design + weaves + profile + options
                     decodeCards(cardSet, profile) ──► plan   (2.10, 2.11)
 ```
 
-Every public function returns a `Result<T>`. Expected failures are values, never thrown. A thrown exception means an engine bug.
+Every public function returns an `EngineResult<T>`, which is `Result<T, EngineError>`. `result.ts` defines the generic `Result<T, E>` with no default for `E`; `errors.ts` defines `EngineResult<T>`. Expected failures are values, never thrown. A thrown exception means an engine bug.
 
 ## Architecture
 
@@ -33,8 +33,8 @@ packages/engine/
 ├── src/
 │   ├── index.ts            public exports only
 │   ├── types.ts            Design, Weave, LoomProfile, LiftPlan, Card, CardSet, Violation, Warning
-│   ├── result.ts           Result<T>, ok(), err()
-│   ├── errors.ts           EngineError union and constructors
+│   ├── result.ts           Result<T, E>, ok(), err()
+│   ├── errors.ts           EngineError union, EngineResult<T> = Result<T, EngineError>, constructors
 │   ├── profiles.ts         built-in profiles, defineProfile(), validateProfile()
 │   ├── weaves.ts           validateWeave(), weavePeriod(), evaluateWeave()
 │   ├── validate.ts         validateInput() in 3.7 order
