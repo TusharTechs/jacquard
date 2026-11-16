@@ -1442,6 +1442,23 @@ Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md
 - Spec versus vibe note: n/a.
 - Evidence: commit `02a1323`.
 
+### 2026-11-16 — User corrections: flaky root test run; AWS account number removed
+
+- Surface: IDE
+- Goal: Apply two fixes the user asked for: make the root `pnpm test` reliable, and remove the AWS account number from tracked files.
+- Kiro features used: steering `tech.md` (exit-code rule); hook `block-engine-fixture-edits` (checked the file edits).
+- Model / credits (start → end):
+- What worked:
+  - The four `@jacquard/export` property tests the user named (determinism, card-layout, pdf-structure, point-paper) took 728 to 998 ms alone at 100 runs. Each now has `const TIMEOUT_MS = NUM_RUNS * 300` (30 s) as its explicit test timeout. Runs and assertions are unchanged.
+  - The root `test` script is now `pnpm -r --workspace-concurrency=2 --if-present test`.
+  - Root `pnpm test` was run twice and both passed: `EXIT_CODE=0`, engine 35/148, mcp 22/110, export 15/52, motif 16/75, backend 4/45, web 16/144 (test files / tests). `pnpm typecheck` `EXIT_CODE=0`.
+  - The AWS account number was replaced with "your AWS account" in the Status section. `git grep` for it now finds nothing in tracked files.
+- What failed or surprised:
+  - **User correction:** the user found that all-packages-at-once runs of the root `pnpm test` time out on those four tests at vitest's 5 s default. My earlier root runs this session all passed, and I reported "every package passing" without running the root suite more than once per step. That did not show the run was reliable.
+  - The account number is still in earlier commits (for example `02a1323`). Removing it from history would need a history rewrite and a force push, which the rules forbid without asking, so it was not done.
+- Spec versus vibe note: n/a.
+- Evidence: `packages/export/test/{determinism,card-layout,pdf-structure,point-paper}.property.test.ts`, root `package.json`.
+
 ### Template
 
 ```

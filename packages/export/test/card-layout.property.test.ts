@@ -12,6 +12,9 @@ import { planCaseArb } from "./arbitraries.js";
 
 const SEED = 5106;
 const NUM_RUNS = 100;
+// About 10 ms per run alone; the root `pnpm test` runs every package at once and can be several
+// times slower, so the timeout allows 300 ms per run instead of vitest's 5 s default.
+const TIMEOUT_MS = NUM_RUNS * 300;
 
 describe("Feature: simulate-and-export, Property 6: Card count, order and positions", () => {
   it("lays out one card per pick, in lacing order, with every position in cardRows order", () => {
@@ -74,5 +77,5 @@ describe("Feature: simulate-and-export, Property 6: Card count, order and positi
       }),
       { seed: SEED, numRuns: NUM_RUNS, verbose: 1 },
     );
-  });
+  }, TIMEOUT_MS);
 });

@@ -17,6 +17,9 @@ import { planCaseArb, titleArb } from "./arbitraries.js";
 
 const SEED = 5108;
 const NUM_RUNS = 100;
+// About 10 ms per run alone; the root `pnpm test` runs every package at once and can be several
+// times slower, so the timeout allows 300 ms per run instead of vitest's 5 s default.
+const TIMEOUT_MS = NUM_RUNS * 300;
 
 const NOTE =
   "Schematic, not to scale. The card format is a configurable loom profile and has not been tested on a working loom.";
@@ -201,5 +204,5 @@ describe("Feature: simulate-and-export, Property 8: PDF structure", () => {
       }),
       { seed: SEED, numRuns: NUM_RUNS, verbose: 1 },
     );
-  });
+  }, TIMEOUT_MS);
 });

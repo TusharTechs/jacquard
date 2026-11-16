@@ -17,6 +17,9 @@ import { leafElements, startTags, unescapeXml, wellFormedProblem } from "./xml.j
 
 const SEED = 5109;
 const NUM_RUNS = 100;
+// About 10 ms per run alone; the root `pnpm test` runs every package at once and can be several
+// times slower, so the timeout allows 300 ms per run instead of vitest's 5 s default.
+const TIMEOUT_MS = NUM_RUNS * 300;
 
 describe("Feature: simulate-and-export, Property 9: Point-paper sheet", () => {
   it("draws every cell in its region colour, pick 0 at the bottom, numbered, with escaped text", () => {
@@ -112,5 +115,5 @@ describe("Feature: simulate-and-export, Property 9: Point-paper sheet", () => {
       }),
       { seed: SEED, numRuns: NUM_RUNS, verbose: 1 },
     );
-  });
+  }, TIMEOUT_MS);
 });

@@ -10,6 +10,9 @@ import { planCaseArb, pointPaperCaseArb, sideArb, titleArb, yarnsArb } from "./a
 
 const SEED = 5110;
 const NUM_RUNS = 100;
+// About 10 ms per run alone; the root `pnpm test` runs every package at once and can be several
+// times slower, so the timeout allows 300 ms per run instead of vitest's 5 s default.
+const TIMEOUT_MS = NUM_RUNS * 300;
 
 describe("Feature: simulate-and-export, Property 10: Determinism and purity", () => {
   it("gives identical output on repeated calls and leaves the inputs unchanged", () => {
@@ -61,5 +64,5 @@ describe("Feature: simulate-and-export, Property 10: Determinism and purity", ()
       ),
       { seed: SEED, numRuns: NUM_RUNS, verbose: 1 },
     );
-  });
+  }, TIMEOUT_MS);
 });
