@@ -277,6 +277,33 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: vibe.
 - Evidence: `~/Library/Application Support/Kiro/logs/20261116T000922/window1/exthost/kiro.kiroAgent/Kiro Logs.log` (reload lines at 00:09:24 and 13:30:27; no hook runs); `~/.kiro/sessions/0d5bca4c31eb7e9a/sess_1f4b5928-.../messages.jsonl` (the `fs_append` call at 08:07:35Z with no hook result); `.kiro/hooks/block-engine-fixture-edits.json` (matcher now starts with `write|`).
 
+### 2026-11-16 — Guard retest in the same chat session
+
+- Surface: IDE
+- Goal: Retest the fixture guard at the user's request.
+- Kiro features used: hook `block-engine-fixture-edits` (tested; did not run).
+- Model / credits (start → end):
+- What happened: I appended `guard test` to `packages/engine/test/fixtures/.gitkeep` with `fs_append`. It was not blocked and no hook message came back. I emptied the file with `fs_write` (0 bytes, `git status` clean). This was still the chat session that started at 00:09 with no hooks registered, so it did not test the new-session theory.
+- Evidence: `media/journey/2026-11-16-hooks-retest.mp4` (the user's recording, kept out of git; I have not watched it).
+
+### 2026-11-16 — weave-engine wave 6 (tasks 7.2, 7.3 and 7.4)
+
+- Surface: IDE
+- Goal: Seam warnings (7.2), `validatePlan` (7.3) and the design grid orientation example test (7.4).
+- Kiro features used: spec `weave-engine`, each task started by the user from the task list and run by Kiro's task execution in its own session (7.2 13:46:29 to 13:46:58, 7.3 13:47:14 to 13:48:01, 7.4 13:48:21 to 13:49:05, from `tasks.meta.json`). Kiro's log shows `hooks.reload.loaded {"read":3,"registered":3}` at the start of each task session (13:46:22, 13:47:07, 13:48:14). No property test in this wave, so no new `pbtResults`. No custom agent, MCP tool or checkpoint. I did not run these tasks; this entry is written from `tasks.meta.json`, the files, Kiro's session records and Kiro's log.
+- Model / credits (start → end):
+- What worked:
+  - `src/lift-plan.ts`: `buildLiftPlan` now returns `WEAVE_PERIOD_SEAM` warnings per used region in ascending order, picks before ends (2.12). New `validatePlan(plan, profile)` checks in the design's order and returns `PLAN_INVALID` with `problem`, `pick` and `hook` (2.13). `src/index.ts` exports `buildLiftPlan` and `validatePlan`.
+  - `test/lift-plan.test.ts`: a 3-pick by 2-end design with plain and satin regions, checked cell by cell against values worked out by hand, plus `idleHooks` `[2, 3]` (1.1).
+  - My own run after the wave: `pnpm typecheck` printed both `tsc` steps with `EXIT_CODE=0`; `pnpm test` printed `Test Files  5 passed (5)` and `Tests  55 passed (55)` with `EXIT_CODE=0`. Tasks 7.2, 7.3 and 7.4 are marked `[x]`.
+- What failed or surprised:
+  - **The "Finishing a spec task" rule in `tech.md` was not followed by two of the three tasks.** 7.2 ran `tsc -p tsconfig.test.json` and vitest, not `pnpm typecheck`. 7.3 ran `pnpm typecheck` but no tests. 7.4 ran vitest only, no typecheck. The checks happened to pass afterwards, but the rule did not hold.
+  - **Task 7.3 edited source files through the shell, not the file tools.** It rewrote `src/lift-plan.ts` with a Python script run in the shell, then tried `sed -i` on `src/index.ts`. That `sed` failed (`sed: 1: "src/index.ts": unterminated substitute pattern`, `EXIT_CODE=1`), and the task then used `str_replace` instead. Shell edits bypass any `PreToolUse` file hook and are not recorded as file edits. Nothing forbids this outside `packages/engine/test/fixtures`, but it is worth knowing.
+  - **The save hook did not visibly run, even in sessions where 3 hooks were registered.** 7.2 edited `src/lift-plan.ts` with `str_replace`, and 7.4 created `test/lift-plan.test.ts` with `fs_write`, both under `packages/engine/`. Kiro's log for 13:46 to 13:50 shows only the commands the tasks ran themselves, with no `pnpm --filter @jacquard/engine typecheck` or `TYPECHECK_EXIT_CODE` from a hook. This weakens my earlier theory that the hooks only failed because my test session predated them. Hook commands may run without a log line, so this is still not proof that the hook never ran. The user is adding on-disk markers to settle it.
+  - **Untested code:** `validatePlan` and the seam warnings have no test yet; Properties 10 and 11 (tasks 7.8, 7.9) come next. The orientation test's comment about the transpose is muddled (it trails off with "..."), though its assertions are sound: the plan has 3 picks, which a transposed 2-pick reading could not give.
+- Spec versus vibe note: spec.
+- Evidence: `packages/engine/src/lift-plan.ts`, `packages/engine/src/index.ts`, `packages/engine/test/lift-plan.test.ts`, `.kiro/specs/weave-engine/tasks.meta.json`; Kiro's log lines at 13:46:22 to 13:48:56; recordings in `media/journey/` (not watched by me, kept out of git): `2026-11-16-guard-test-and-wave6.mp4`, `2026-11-16-hooks-live-test.mp4`.
+
 ### Template
 
 ```
@@ -297,9 +324,9 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 5 done) |
+| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 6 done) |
 | Property-based tests / bugs they caught | 8 / 0 | Properties 1 to 6 (weaves) and 16, 17 (validation), all passed first run; Kiro recorded 16 and 17 |
-| Hooks | 3 | journey-entry-on-stop (wrote no entry after wave 0 or wave 5; unreliable for spec waves); engine-typecheck-and-test-on-save and block-engine-fixture-edits (both failed to run in live tests on Nov 16, probably because the test session predates them; not yet seen to fire) |
+| Hooks | 3 | journey-entry-on-stop (wrote no entry after wave 0 or wave 5; unreliable for spec waves); engine-typecheck-and-test-on-save and block-engine-fixture-edits (not seen to fire in live tests on Nov 16, including wave 6 task sessions where 3 hooks were registered) |
 | Steering files | 6 | 4 always-on, 2 file-matched |
 | Custom agents | 1 | journey-scribe (not yet invoked) |
 | MCP servers (third-party / our own) | 0 / 0 | |

@@ -88,13 +88,13 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - Runs `validateInput`, evaluates each cell from its own region's weave anchored at the origin, sets idle hooks unlifted and lists them, tiles with `repeatAcross`
     - Add the design-based lift-plan generator to test/arbitraries.ts, as Design specifies, and remove the note at the top of that file.
     - _Requirements: 2.1, 2.2, 2.4, 2.5, 2.6_
-  - [ ] 7.2 Implement seam warnings
+  - [x] 7.2 Implement seam warnings
     - `WEAVE_PERIOD_SEAM` per used region, ordered by region then picks before ends; never blocks output
     - _Requirements: 2.12_
-  - [ ] 7.3 Implement `validatePlan`
+  - [x] 7.3 Implement `validatePlan`
     - Checks in the order given in design Error Handling, Plan validation order; returns `PLAN_INVALID` with `problem`, `pick`, `hook`
     - _Requirements: 2.13_
-  - [ ] 7.4 Example test: design grid orientation
+  - [x] 7.4 Example test: design grid orientation
     - A 3-pick by 2-end design with distinct regions and contrasting weaves; `design[pick][end]` maps to `lifts[pick][hook]`, not the transpose
     - _Requirements: 1.1_
   - [ ] 7.5 Write property test for region weaves
