@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "jacquard-weave": {
+      "command": "node",
+      "args": ["packages/mcp/dist/index.js"],
+      "disabled": false,
+      "autoApprove": [
+        "list_profiles",
+        "build_lift_plan",
+        "check_floats",
+        "auto_fix",
+        "build_cards",
+        "decode_cards"
+      ]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@4.7.0"],
+      "disabled": false
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@1.13.0", "--isolated"],
+      "disabled": false
+    }
+  }
+}

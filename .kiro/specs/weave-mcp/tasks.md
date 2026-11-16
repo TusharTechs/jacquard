@@ -187,21 +187,21 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - No import path containing `@jacquard/engine/` or `engine/src` in `src` and `test` (13.3); no `console.log`, `console.info`, `console.debug` or `process.stdout` in `src` (1.6); no `Date`, `Math.random`, `process.env`, `Intl`, `toLocale`, `fetch`, `fs`, `net`, `http` in `src` (11.3, 12.1 to 12.3); `src` contains no weaving logic imports other than through `engine-api.ts`, and only `engine-api.ts` imports engine values (10.3)
     - _Requirements: 1.6, 10.3, 11.3, 12.1, 12.2, 12.3, 13.3_
 
-- [ ] 16. Checkpoint - Ensure all tests pass
+- [x] 16. Checkpoint - Ensure all tests pass
   - Run the full mcp and engine test suites and typecheck once and confirm everything passes; confirm `git diff --stat packages/engine/test/fixtures` is empty (13.6); ask the user if questions arise.
   - _Requirements: 13.5, 13.6_
 
 - [ ] 17. Final task: registration and custom agents (configuration, not server code)
-  - [ ] 17.1 Register the server in `.kiro/settings/mcp.json`
+  - [x] 17.1 Register the server in `.kiro/settings/mcp.json`
     - Read the file first if it exists and only add the entry; never overwrite other servers. If it does not exist, create it with the single entry
     - Entry: command `node`, args `["packages/mcp/dist/index.js"]`, no absolute path, no `~` or `/Users/`, no key or token, no `env` secrets
     - _Requirements: 14.1, 14.2_
-  - [ ] 17.2 Create `.kiro/agents/weave-auditor.json`
+  - [x] 17.2 Create `.kiro/agents/weave-auditor.json`
     - Read `.kiro/agents/journey-scribe.json` first and follow its schema
     - Read-only on the repository; allowed tools are exactly the six weave MCP tools (`list_profiles`, `build_lift_plan`, `check_floats`, `auto_fix`, `build_cards`, `decode_cards`) plus read tools; no write tools, no shell tools, no other MCP tools, no permission on `packages/engine/test/fixtures`
     - Prompt: audit a design or an engine change for float violations, card round-trip errors and loom facts without a Field_Label; report each finding with the affected file or design and the category; never edit files
     - _Requirements: 14.3, 14.4, 14.7_
-  - [ ] 17.3 Create `.kiro/agents/design-reviewer.json`
+  - [x] 17.3 Create `.kiro/agents/design-reviewer.json`
     - Same schema as above; read-only on the repository, no write tools, no shell tools, no MCP tools, no permission on `packages/engine/test/fixtures`
     - Prompt: review `apps/web` against `.kiro/steering/design-language.md` for empty, loading, error and mobile states and accessibility; report each finding with the file and the state or accessibility category; never edit files; intended for use from Phase C onwards
     - _Requirements: 14.5, 14.6, 14.7_

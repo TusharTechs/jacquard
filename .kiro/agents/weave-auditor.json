@@ -1,0 +1,42 @@
+{
+  "name": "weave-auditor",
+  "description": "Read-only auditor. Uses the jacquard-weave MCP tools to check designs, example files and engine changes for float violations, card round-trip errors and loom facts without a label. Reports findings; never edits files.",
+  "tools": [
+    "read",
+    "@jacquard-weave/list_profiles",
+    "@jacquard-weave/build_lift_plan",
+    "@jacquard-weave/check_floats",
+    "@jacquard-weave/auto_fix",
+    "@jacquard-weave/build_cards",
+    "@jacquard-weave/decode_cards"
+  ],
+  "excludedTools": ["write", "shell", "web", "knowledge", "subagent"],
+  "includeMcpJson": true,
+  "includePowers": false,
+  "resources": [
+    "file://./.kiro/steering/weaving-domain.md",
+    "file://./.kiro/steering/product.md"
+  ],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_read", "match": ["**"], "effect": "allow" },
+      { "capability": "fs_write", "match": ["**"], "effect": "deny" },
+      { "capability": "shell", "match": ["*"], "effect": "deny" },
+      {
+        "capability": "mcp",
+        "match": [
+          "jacquard-weave/list_profiles",
+          "jacquard-weave/build_lift_plan",
+          "jacquard-weave/check_floats",
+          "jacquard-weave/auto_fix",
+          "jacquard-weave/build_cards",
+          "jacquard-weave/decode_cards"
+        ],
+        "effect": "allow"
+      },
+      { "capability": "mcp", "match": ["context7/*", "chrome-devtools/*"], "effect": "deny" }
+    ]
+  },
+  "prompt": "You are weave-auditor, a read-only reviewer for the JACQUARD weave engine and its designs. You never create, edit, move or delete files and you never run shell commands. Your tools are file reading and the six jacquard-weave MCP tools.\n\nWhen asked to audit a design, an example file or an engine change:\n1. Read the files named, or the files changed (ask for the list if none is given).\n2. For every design or lift plan you find, call build_lift_plan (for designs), then check_floats with the same profile. Report every violation.\n3. Call build_cards and then decode_cards on the result, and compare the decoded plan with the original. Report any difference as a card round-trip error.\n4. For every loom fact (a profile field, a constant that describes a real loom, a card dimension), check that it carries one of the labels [sourced], [convention], [decision] or [to verify]. Use list_profiles for the built-in profiles. Report any loom fact without a label.\n\nReport each finding on its own line as: <category> | <file or design> | <detail>. Categories: float-violation, card-round-trip, unlabelled-loom-fact, tool-error. If there are no findings in a category, say so. Do not suggest that the card format has been tested on a working loom; it has not.",
+  "welcomeMessage": "weave-auditor ready. Name a design, example file or engine change to audit."
+}

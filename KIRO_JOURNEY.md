@@ -955,6 +955,22 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/test/process.test.ts`, `packages/mcp/test/package.test.ts`.
 
+### 2026-11-16 — weave-mcp checkpoint (task 16) and wave 16 (tasks 17.1, 17.2, 17.3)
+
+- Surface: IDE
+- Goal: Checkpoint, then register the MCP servers and create the two read-only agents.
+- Kiro features used: spec `weave-mcp` (tasks 16, 17.1 to 17.3); MCP configuration `.kiro/settings/mcp.json` (new); custom agents `weave-auditor` and `design-reviewer` (new, not yet invoked). The Kiro custom-agent configuration reference (kiro.dev/docs/custom-agents/configuration-reference) was read to get the `tools` and `permissions` selectors right.
+- Model / credits (start → end):
+- What worked:
+  - Checkpoint: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine `35 passed` files / `148 passed`; mcp `20 passed` / `83 passed`). `git diff --stat 339477f -- packages/engine/test/fixtures` is empty (13.6).
+  - `.kiro/settings/mcp.json` did not exist, so it was created. It holds three servers: `jacquard-weave` (`node packages/mcp/dist/index.js`, relative path, the six tools auto-approved), `context7` (`@upstash/context7-mcp@4.7.0`) and `chrome-devtools` (`chrome-devtools-mcp@1.13.0 --isolated`). Versions are pinned to the current npm releases. There are no secrets or absolute paths in the file.
+  - `weave-auditor`: tools are `read` plus the six `@jacquard-weave/<tool>` selectors; it denies `fs_write`, `shell` and the other MCP servers. `design-reviewer`: `read` only; it denies `fs_write`, `shell` and all MCP.
+- What failed or surprised:
+  - The playbook's Phase B prompt names `validate_design` and `export_wif` as tools; the spec has six other names (`list_profiles` to `decode_cards`) and no WIF export. WIF export belongs to Phase D (`simulate-and-export`), so the MCP server will gain an export tool then.
+  - The new server only appears in Kiro after a reload, so this session cannot call it yet. I have not checked that Kiro accepts the `@jacquard-weave/<tool>` selectors; that is checked when the agent is first run at the end of the phase.
+- Spec versus vibe note: spec.
+- Evidence: `.kiro/settings/mcp.json`, `.kiro/agents/weave-auditor.json`, `.kiro/agents/design-reviewer.json`.
+
 ### Template
 
 ```
