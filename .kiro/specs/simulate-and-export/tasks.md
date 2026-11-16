@@ -29,19 +29,19 @@ All 11 correctness properties have their own property test task. Every property 
   - [x] 2.4 `point-paper.ts` and `index.ts`
     - _Requirements: 5.1 to 5.3_
 
-- [ ] 3. Export properties and examples
-  - [ ] 3.1 Write property test: **Property 1: Cloth model matches the lift plan** — **Validates: Requirements 1.1, 1.2, 1.3, 1.5**
-  - [ ] 3.2 Write property test: **Property 2: Cloth model rejects bad yarns** — **Validates: Requirements 1.4**
-  - [ ] 3.3 Write property test: **Property 3: WIF round trip** — **Validates: Requirements 3.5, 3.2**
-  - [ ] 3.4 Write property test: **Property 4: WIF structure** — **Validates: Requirements 3.1 to 3.4**
-  - [ ] 3.5 Write property test: **Property 5: WIF reader rejects broken files** — **Validates: Requirements 3.6**
-  - [ ] 3.6 Write property test: **Property 6: Card count, order and positions** — **Validates: Requirements 4.1 to 4.4**
-  - [ ] 3.7 Write property test: **Property 7: Card SVG content** — **Validates: Requirements 4.1, 4.4, 4.5**
-  - [ ] 3.8 Write property test: **Property 8: PDF structure** — **Validates: Requirements 4.6, 4.5, 4.1**
-  - [ ] 3.9 Write property test: **Property 9: Point-paper sheet** — **Validates: Requirements 5.1 to 5.3**
-  - [ ] 3.10 Write property test: **Property 10: Determinism and purity** — **Validates: Requirements 1.5, 3.4, 4.7, 5.3**
-  - [ ] 3.11 Write property test: **Property 11: Engine errors pass through** — **Validates: Requirements 4.8**
-  - [ ] 3.12 Example tests (expected 2-pick WIF, one-card PDF, `PROFILE_400` card with 416 positions in 52 rows of 8) and the source scan
+- [x] 3. Export properties and examples
+  - [x] 3.1 Write property test: **Property 1: Cloth model matches the lift plan** — **Validates: Requirements 1.1, 1.2, 1.3, 1.5**
+  - [x] 3.2 Write property test: **Property 2: Cloth model rejects bad yarns** — **Validates: Requirements 1.4**
+  - [x] 3.3 Write property test: **Property 3: WIF round trip** — **Validates: Requirements 3.5, 3.2**
+  - [x] 3.4 Write property test: **Property 4: WIF structure** — **Validates: Requirements 3.1 to 3.4**
+  - [x] 3.5 Write property test: **Property 5: WIF reader rejects broken files** — **Validates: Requirements 3.6**
+  - [x] 3.6 Write property test: **Property 6: Card count, order and positions** — **Validates: Requirements 4.1 to 4.4**
+  - [x] 3.7 Write property test: **Property 7: Card SVG content** — **Validates: Requirements 4.1, 4.4, 4.5**
+  - [x] 3.8 Write property test: **Property 8: PDF structure** — **Validates: Requirements 4.6, 4.5, 4.1**
+  - [x] 3.9 Write property test: **Property 9: Point-paper sheet** — **Validates: Requirements 5.1 to 5.3**
+  - [x] 3.10 Write property test: **Property 10: Determinism and purity** — **Validates: Requirements 1.5, 3.4, 4.7, 5.3**
+  - [x] 3.11 Write property test: **Property 11: Engine errors pass through** — **Validates: Requirements 4.8**
+  - [x] 3.12 Example tests (expected 2-pick WIF, one-card PDF, `PROFILE_400` card with 416 positions in 52 rows of 8) and the source scan
     - _Requirements: 3.1, 4.3, 4.6, 7.1_
 
 - [ ] 4. Web

@@ -1205,6 +1205,39 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/export/src/*.ts`, `packages/export/test/smoke.test.ts`, `.kiro/specs/simulate-and-export/design.md` (Property 11, file table).
 
+### 2026-11-16 — simulate-and-export wave 2 (tasks 3.1 to 3.12)
+
+- Surface: IDE
+- Goal: Properties 1 to 11 and example tests for `@jacquard/export`.
+- Kiro features used: spec `simulate-and-export` (tasks 3.1 to 3.12, run by a `general-task-execution` sub-agent; I reran the checks); property tests (Properties 1 to 11); hook `block-engine-fixture-edits`.
+- Model / credits (start → end):
+- What worked:
+  - 11 property files (seeds 5101 to 5111, 100 runs each). Properties 3 and 6 are the ones the playbook asks for: the WIF round-trips to the same lift plan, card count equals pick count, and every card has `hookCount + spareHookCount` positions.
+  - The PDF property parses the raw bytes itself: xref offsets, `startxref`, each stream's `/Length`, the A4 MediaBox, the footer on every page, and filled circles against the punched count.
+  - `test/expected/two-pick.wif` was written by hand from the design layout and matches the writer line by line. Card 1 of `PROFILE_400` has 416 positions in 52 rows of 8.
+  - Rerun by me: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (export `15 passed` files / `52 passed` tests; engine 148, mcp 88, motif 75, backend 45, web 80).
+- What failed or surprised:
+  - All 11 properties passed against the real code on the first run.
+  - The sub-agent then planted seven bugs one at a time, and each was caught:
+
+    | Planted bug | Caught by |
+    |---|---|
+    | Cloth model ignores `wovenFaceDown` | P1 |
+    | Point paper drawn with pick 0 at the top | P9 |
+    | Stream `/Length` off by one | P8 |
+    | Threading not checked | P5 |
+    | Last hole dropped | P6 |
+    | Profile checked after the plan | P11 |
+    | xref offset off by one | P8 |
+
+    `src` was restored and compared with `cmp`. It kept only the first 200 characters of each counterexample and no seeds, so these planted failures cannot be quoted in full. They are not real failures and are not counted.
+  - Spec gaps it reported:
+    - The design's WIF layout block leaves out the private `[JACQUARD]` section that the text describes.
+    - "Cards per page" is not defined, so P8 reads it from page 1.
+    - Point-paper fills are lower-cased, so colours are compared ignoring case.
+- Spec versus vibe note: spec.
+- Evidence: `packages/export/test/*.ts`, `packages/export/test/expected/two-pick.wif`.
+
 ### Template
 
 ```

@@ -82,6 +82,9 @@ Range=0,255
 2=2 ...
 [LIFTPLAN]
 1=<lifted shafts, ascending, comma-separated; empty when none>
+[JACQUARD]
+DesignWidth=<designWidth>
+RepeatAcross=<true|false>
 ```
 
 `readWif` parses sections and keys (case-insensitive section and key names, `;` comment lines ignored), checks `[THREADING]` maps end i to shaft i for every end, builds `lifts[pick][hook]` from `[LIFTPLAN]`, and returns a Lift_Plan with `pickCount` from `[WEFT] Threads`, `hookCount` from `[WEAVING] Shafts`, and `designWidth` and `repeatAcross` taken from a private `[JACQUARD]` section that `writeWif` adds (`DesignWidth=`, `RepeatAcross=`). WIF 1.1 allows private sections; readers ignore unknown ones. Without `[JACQUARD]`, `designWidth` is `hookCount` and `repeatAcross` is false.
