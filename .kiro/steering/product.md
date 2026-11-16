@@ -30,9 +30,9 @@ The builder is not a weaver. Do not write copy that implies weaving expertise or
 ## Must ship
 
 - Input: text prompt or uploaded sketch, turned into a motif.
-- Loom setup: hook count, colour limit, repeat size.
+- Loom setup: hook count, region limit, repeat size.
 - Point paper editor with manual touch-up.
-- Weave engine: colour reduction to the grid, binding weave per colour region, float check with highlighted violations and auto-fix.
+- Weave engine: reduction of the motif to weave regions on the grid, a binding weave per region, float check with highlighted violations and auto-fix.
 - Fabric simulator.
 - Export: punch-card set (SVG and PDF, numbered, in lacing order), graph-paper sheet, WIF file.
 - Gallery of three or four finished examples.

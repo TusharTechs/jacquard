@@ -23,6 +23,13 @@ inclusion: always
 - Use `pnpm` only. Do not create `package-lock.json` or `yarn.lock`.
 - Run tests once (`pnpm vitest --run`), never in watch mode.
 
+## Shell exit codes
+
+- In this workspace the shell tool reports `Exit Code: -1` for every command, so that exit code cannot be trusted.
+- Append `; echo "EXIT_CODE=$?"` to every shell command and read that value instead.
+- For test runs, also read the test runner's summary line (passed and failed counts).
+- Never report tests as passing unless both `EXIT_CODE=0` and the summary line show success.
+
 ## Commands (update when the scripts exist)
 
 - Install: `pnpm install`
