@@ -971,6 +971,21 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `.kiro/settings/mcp.json`, `.kiro/agents/weave-auditor.json`, `.kiro/agents/design-reviewer.json`.
 
+### 2026-11-16 — weave-mcp wave 17 (task 17.4)
+
+- Surface: IDE
+- Goal: Configuration scan test and the final report for weave-mcp.
+- Kiro features used: spec `weave-mcp` (task 17.4). No hook output observed, no property test in this wave.
+- Model / credits (start → end):
+- What worked:
+  - `test/config.test.ts` (5 tests) reads `.kiro/settings/mcp.json` and both agent files. It fails, naming the file and value, if the registration has an absolute path, `~`, `/Users/`, a key or a token. It also fails if either agent lists a write or shell tool, allows `fs_write` or `shell`, or grants anything on `packages/engine/test/fixtures`; if `weave-auditor`'s MCP tools are not exactly the six weave tools; or if `design-reviewer` has any tool other than `read` or any MCP allow rule.
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine `35 passed` / `148 passed`; mcp `21 passed` / `88 passed`).
+  - Final report (14.10): the pinned MCP SDK version is `@modelcontextprotocol/sdk` `1.32.2`.
+  - The manual checks 14.4 (`weave-auditor`) and 14.6 (`design-reviewer`) are the user's. Under the standing orders, the end-of-phase review runs `weave-auditor` now; `design-reviewer` starts in Phase C, when `apps/web` exists.
+- What failed or surprised: nothing in this wave.
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/test/config.test.ts`.
+
 ### Template
 
 ```

@@ -191,7 +191,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
   - Run the full mcp and engine test suites and typecheck once and confirm everything passes; confirm `git diff --stat packages/engine/test/fixtures` is empty (13.6); ask the user if questions arise.
   - _Requirements: 13.5, 13.6_
 
-- [ ] 17. Final task: registration and custom agents (configuration, not server code)
+- [x] 17. Final task: registration and custom agents (configuration, not server code)
   - [x] 17.1 Register the server in `.kiro/settings/mcp.json`
     - Read the file first if it exists and only add the entry; never overwrite other servers. If it does not exist, create it with the single entry
     - Entry: command `node`, args `["packages/mcp/dist/index.js"]`, no absolute path, no `~` or `/Users/`, no key or token, no `env` secrets
@@ -205,7 +205,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - Same schema as above; read-only on the repository, no write tools, no shell tools, no MCP tools, no permission on `packages/engine/test/fixtures`
     - Prompt: review `apps/web` against `.kiro/steering/design-language.md` for empty, loading, error and mobile states and accessibility; report each finding with the file and the state or accessibility category; never edit files; intended for use from Phase C onwards
     - _Requirements: 14.5, 14.6, 14.7_
-  - [ ] 17.4 Write the configuration scan test and the final report
+  - [x] 17.4 Write the configuration scan test and the final report
     - File `test/config.test.ts`: reads `.kiro/settings/mcp.json` and both agent files; fails with the offending file and value if the registration has an absolute path (starts with `/` or a drive letter), `~`, `/Users/`, a key or a token; if an agent lists a write tool, a shell tool, a tool outside its allowed set, or any permission on `packages/engine/test/fixtures`; or if `weave-auditor` lists any MCP tool other than the six weave tools (14.8)
     - The reply of this task, whether it succeeds or fails (including a failure unrelated to the SDK), states the pinned MCP SDK version `1.32.2` (14.10) and lists the manual checks below as steps for the user
     - Finish per Task rules
