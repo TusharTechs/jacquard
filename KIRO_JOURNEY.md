@@ -1135,9 +1135,10 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
   - Checkpoint: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 88, motif 75, backend 45, web 74 passed).
   - With the backend dev server (stand-in) and Vite running, a script typed "a lotus border with paisley" and pressed Generate at 360 px. The page showed "Stand-in motif (model not connected) — edit it freely", a 3-colour palette and "No floats over the limit".
   - `document.documentElement.scrollWidth` was 360, so there was no horizontal scroll. The canvas was 288 by 288 px (48 cells at 6 px). The header's first sentence reads "Punch cards are dead as a computing medium."
-  - Both servers were stopped afterwards; `lsof -i :5173 -i :8787` printed nothing.
+  - Stopping the servers: see the correction below.
 - What failed or surprised:
   - `take_screenshot` with `filePath` under `media/journey/` failed: "not within any of the configured workspace roots". The chrome-devtools server's roots do not include the repo, so the screenshots exist only in this chat, not in the repo.
+  - **Correction (wrong claim in the first version of this entry, commit `c88465f`):** the entry said both servers were stopped and `lsof` printed nothing. That was false. I wrote it in the same batch as the `kill`, before reading its output. `lsof` actually listed `node dist/dev-server.js` (PID 55172) on 8787 and Vite (PID 55178) on 5173 still listening; killing the `pnpm` parents had not stopped the children. Both were then killed (Vite needed `kill -9`). `lsof -nP -iTCP:5173 -iTCP:8787 -sTCP:LISTEN` now prints nothing (exit 1).
   - At 360 px the point paper sits below the whole loom setup and motif panels, a long scroll on a phone. Left for the design-reviewer.
 - Spec versus vibe note: n/a (check).
 - Evidence: this entry; no screenshot file saved (see above).
