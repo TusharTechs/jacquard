@@ -1143,6 +1143,32 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: n/a (check).
 - Evidence: this entry; no screenshot file saved (see above).
 
+### 2026-11-16 — Phase C end: design-reviewer and weave-auditor review of motif-input
+
+- Surface: IDE
+- Goal: Run both review agents over Phase C, fix their findings, tag `phase-C`.
+- Kiro features used: custom agents `design-reviewer` (first run) and `weave-auditor` (second run), run in parallel as sub-agents; MCP server `jacquard-weave` (the auditor called `build_lift_plan`, `check_floats`, `auto_fix`, `build_cards`, `decode_cards`, `list_profiles`); a `general-task-execution` sub-agent applied the fixes.
+- Model / credits (start → end):
+- What worked:
+  - **design-reviewer** found 15 problems from reading the code: 1 high, 5 medium, 9 low, and no framing problems. The high one: after auto-fix, the float panel and the point paper still showed the violations that had just been fixed, so the screen contradicted itself. The mediums:
+    - Retry resent the old request, so raising the colour count after `MOTIF_TOO_MANY_COLOURS` did nothing.
+    - The engine-error action was always "Undo", even for setup errors.
+    - On mobile the point paper sat below two long panels.
+    - With `touch-action: none`, a one-finger swipe on the grid painted instead of scrolling.
+    - The point-paper loading state had no Cancel.
+  - All 15 were fixed: a fixed-result headline, the old list moved into `<details>`, flipped cells drawn as diamonds, Retry built from the current inputs, actions chosen by error code, a collapsible loom setup on narrow screens, a Paint/Scroll toggle that defaults to Scroll on touch, Cancel, an "N" key for the next violation, and region numbers. Six behaviour tests were added. Web tests went from 74 to 80.
+  - **weave-auditor**: 0 float violations and 0 card round-trip errors on hand-built lozenge and stripe designs with the default weaves. It found no weaving logic outside the engine, and 2 unlabelled-loom-fact findings:
+    - The header called the output "loom-ready" with no qualifier. It now adds "for a configurable loom profile. The card format has not been tested on a working loom."
+    - The `specks.ts` comment on 4-connectivity is now labelled `[decision]`.
+  - It also noticed that the 5th default weave (satin 8 move 3 warp) can never be reached in the web app, because every built-in profile has `regionLimit` 4.
+  - Rerun by me: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 88, motif 75, backend 45, web 80 passed).
+- What failed or surprised:
+  - The high finding is the auto-fix confusion I flagged in wave 4 and left for the reviewer. The reviewer confirmed it was a real problem.
+  - The fix sub-agent's first Scroll/Paint test would have passed without the fix: it painted region 0 onto an all-region-0 grid, so nothing changed in either mode. It caught this itself when the Paint half failed, and the test now paints region 1.
+  - The fixes were checked in jsdom only. The new layout, the canvas markers and real touch behaviour have not been looked at in a browser or on a phone.
+- Spec versus vibe note: agent review, then fixes.
+- Evidence: `apps/web/src/**`, `apps/web/test/float-panel.test.tsx`, `motif-panel.test.tsx`, `app.test.tsx`, `packages/motif/src/specks.ts`; tag `phase-C`.
+
 ### Template
 
 ```

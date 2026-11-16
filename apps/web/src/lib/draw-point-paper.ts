@@ -1,5 +1,6 @@
 // Draws the point paper on a canvas (9.1, 10.2, 10.4). Display only: region numbers become
-// colours, and the engine's violations and errors become outlines and markers. Pick 0 is the
+// colours, the engine's violations and errors become outlines and markers, and the engine's
+// auto-fix flips become small diamonds. Pick 0 is the
 // bottom row and end 0 the left column. Positions are rounded to device pixels so lines stay sharp.
 import type { Design } from "@jacquard/engine";
 import type { MarkKind } from "./violation-marks";
@@ -13,6 +14,7 @@ export const PAPER_COLOURS = {
   error: "#1b1a17",
   cursor: "#1d5c63",
   hover: "rgba(27, 26, 23, 0.7)",
+  flip: "#1b1a17",
 } as const;
 
 /** Every 8 cells a heavier line (design-language.md). */
@@ -21,6 +23,8 @@ export const HEAVY_EVERY = 8;
 export const LIGHT_LINES_FROM = 6;
 /** Largest canvas side in device pixels; the pixel ratio is lowered past it [decision]. */
 export const MAX_CANVAS_SIDE = 8192;
+/** Region numbers are drawn only from this cell size, so the digits stay legible [decision]. */
+export const NUMBERS_FROM = 12;
 
 export interface PaperView {
   readonly design: Design;
@@ -29,8 +33,22 @@ export interface PaperView {
   readonly pixelRatio: number;
   readonly marks: ReadonlyMap<string, MarkKind>;
   readonly errorCell: { readonly end: number; readonly pick: number } | null;
+  /** Cells auto-fix flipped in the lift plan, keyed like `marks`. */
+  readonly flips?: ReadonlySet<string>;
+  readonly regionNumbers?: boolean;
   readonly cursor: { readonly end: number; readonly pick: number } | null;
   readonly hover: { readonly end: number; readonly pick: number } | null;
+}
+
+/** Black or white text, whichever reads better on a `#rrggbb` colour. */
+function textOn(colour: string): string {
+  const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(colour);
+  if (match === null) return "#1b1a17";
+  const [r, g, b] = [match[1], match[2], match[3]].map((part) => {
+    const c = parseInt(part ?? "0", 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  }) as [number, number, number];
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.18 ? "#1b1a17" : "#ffffff";
 }
 
 /** The pixel ratio actually used, capped so the canvas stays under MAX_CANVAS_SIDE. */
@@ -99,6 +117,22 @@ export function drawPointPaper(canvas: HTMLCanvasElement, view: PaperView): void
   if (cs >= LIGHT_LINES_FROM) drawLines(false);
   drawLines(true);
 
+  // Region numbers, when asked for and the cells are large enough.
+  if (view.regionNumbers === true && cs >= NUMBERS_FROM) {
+    ctx.font = `${Math.round(cs * 0.55 * ratio)}px ui-monospace, Menlo, monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    for (let pick = 0; pick < picks; pick += 1) {
+      const row = view.design[pick] ?? [];
+      for (let end = 0; end < ends; end += 1) {
+        const region = row[end] ?? 0;
+        const [x, y, w, h] = rect(end, pick);
+        ctx.fillStyle = textOn(colourOf(region));
+        ctx.fillText(String(region), x + w / 2, y + h / 2);
+      }
+    }
+  }
+
   // Violations: a halo and a strong outline on every cell of the float, and a triangle in the top
   // right corner of its first cell, so colour is never the only signal.
   const stroke = Math.max(1, Math.round(Math.min(2, cs / 4) * ratio));
@@ -129,6 +163,29 @@ export function drawPointPaper(canvas: HTMLCanvasElement, view: PaperView): void
       ctx.strokeStyle = PAPER_COLOURS.halo;
       ctx.stroke();
     }
+  }
+
+  // Auto-fix flips: a small filled diamond with a white edge in the cell centre, a shape of its own.
+  for (const key of view.flips ?? []) {
+    const [pickText, endText] = key.split(",");
+    const pick = Number(pickText);
+    const end = Number(endText);
+    if (!(pick >= 0 && pick < picks && end >= 0 && end < ends)) continue;
+    const [x, y, w, h] = rect(end, pick);
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    const r = Math.max(2 * ratio, w * 0.28);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r);
+    ctx.lineTo(cx + r, cy);
+    ctx.lineTo(cx, cy + r);
+    ctx.lineTo(cx - r, cy);
+    ctx.closePath();
+    ctx.fillStyle = PAPER_COLOURS.flip;
+    ctx.fill();
+    ctx.lineWidth = Math.max(1, ratio);
+    ctx.strokeStyle = PAPER_COLOURS.halo;
+    ctx.stroke();
   }
 
   // An engine error that names a cell: a dashed outline and a cross, a different shape.

@@ -64,9 +64,14 @@ export interface MotifPanelProps {
   /** Display colours of the current motif palette, or null before the first motif. */
   readonly paletteColours: readonly string[] | null;
   readonly onStartBlank: () => void;
+  /** Set by the point paper's empty state: open the describe or upload tab and focus it. */
+  readonly focusRequest?: { readonly kind: "text" | "sketch"; readonly id: number } | null;
 }
 
-export function MotifPanel({ setup, online, request, paletteColours, onStartBlank }: MotifPanelProps) {
+/** Failures where sending the same thing again will not help: the wording says "Generate again". */
+const GENERATE_AGAIN: ReadonlySet<MotifFailureKind> = new Set<MotifFailureKind>(["invalidMotif", "request"]);
+
+export function MotifPanel({ setup, online, request, paletteColours, onStartBlank, focusRequest = null }: MotifPanelProps) {
   const [tab, setTab] = useState<"text" | "sketch">("text");
   const [prompt, setPrompt] = useState("");
   const [sketch, setSketch] = useState<Sketch | null>(null);
@@ -154,6 +159,16 @@ export function MotifPanel({ setup, online, request, paletteColours, onStartBlan
     setTab("sketch");
     requestAnimationFrame(() => fileRef.current?.click());
   };
+
+  useEffect(() => {
+    if (focusRequest === null) return;
+    setTab(focusRequest.kind);
+    requestAnimationFrame(() => {
+      const target = focusRequest.kind === "text" ? promptRef.current : fileRef.current;
+      target?.focus();
+      target?.scrollIntoView?.({ block: "center" });
+    });
+  }, [focusRequest]);
 
   let status: PanelStatus = "ready";
   if (state.status === "idle") status = "empty";
@@ -256,8 +271,12 @@ export function MotifPanel({ setup, online, request, paletteColours, onStartBlan
             <p className="state-title">{FAILURE_TITLES[state.failure.kind]}</p>
             <p className="small">{state.failure.message}</p>
             <div className="state-actions">
-              <Button small variant="primary" onClick={request.retry} disabled={!online || request.lastRequest === null}>
-                {online ? "Retry" : "Retry when you are back online"}
+              <Button small variant="primary" onClick={generate} disabled={!online || input === null}>
+                {!online
+                  ? "Retry when you are back online"
+                  : GENERATE_AGAIN.has(state.failure.kind)
+                    ? "Generate again"
+                    : "Retry"}
               </Button>
               <Button small onClick={onStartBlank}>
                 Start from a blank grid
@@ -271,7 +290,7 @@ export function MotifPanel({ setup, online, request, paletteColours, onStartBlan
         {state.status === "cancelled" ? (
           <div className="note" role="status">
             <p>{state.message}</p>
-            <Button small variant="quiet" onClick={request.retry} disabled={!online}>
+            <Button small variant="quiet" onClick={generate} disabled={!online || input === null}>
               Try again
             </Button>
           </div>

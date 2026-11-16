@@ -24,7 +24,7 @@ function checked(design: Design, profile: LoomProfile): Extract<CheckResult, { o
 }
 
 function renderPanel(props: Partial<FloatPanelProps> & Pick<FloatPanelProps, "check" | "profile">) {
-  const handlers = { onAutoFix: vi.fn(), onUndo: vi.fn(), onStartBlank: vi.fn() };
+  const handlers = { onAutoFix: vi.fn(), onUndo: vi.fn(), onStartBlank: vi.fn(), onTurnOffRepeatAcross: vi.fn(), onChooseProfile: vi.fn() };
   const view = render(<FloatPanel checking={false} fix={{ status: "none" }} canUndo={false} {...handlers} {...props} />);
   return { ...view, ...handlers };
 }
@@ -94,11 +94,74 @@ describe("float panel", () => {
       source: { design: STRIPES, weaves: defaultWeaves(4), profile: STRICT, repeatAcross: false },
     };
     rerender(
-      <FloatPanel check={check} checking={false} profile={STRICT} fix={fix} canUndo={false} onAutoFix={onAutoFix} onUndo={vi.fn()} onStartBlank={vi.fn()} />,
+      <FloatPanel
+        check={check}
+        checking={false}
+        profile={STRICT}
+        fix={fix}
+        canUndo={false}
+        onAutoFix={onAutoFix}
+        onUndo={vi.fn()}
+        onStartBlank={vi.fn()}
+        onTurnOffRepeatAcross={vi.fn()}
+        onChooseProfile={vi.fn()}
+      />,
     );
     const n = fixed.flips.length;
     expect(textOf(floatPanel())).toContain(`Auto-fix flipped ${n} ${n === 1 ? "lift-plan cell" : "lift-plan cells"}`);
     expect(textOf(floatPanel())).toContain("0 violations");
+  });
+
+  it("after auto-fix the fixed result is the headline and the earlier list is folded in a details element (10.3)", () => {
+    const check = checked(STRIPES, STRICT);
+    const fixed = fixDesign(check.plan, STRICT);
+    if (!fixed.ok) throw new Error(`autoFix failed: ${fixed.error.code}`);
+    const fix: FixState = {
+      status: "fixed",
+      plan: fixed.plan,
+      flips: fixed.flips,
+      remaining: 0,
+      source: { design: STRIPES, weaves: defaultWeaves(4), profile: STRICT, repeatAcross: false },
+    };
+    renderPanel({ check, profile: STRICT, fix });
+    const panel = floatPanel();
+    const n = fixed.flips.length;
+    expect(textOf(within(panel).getByRole("status"))).toBe(`Fixed lift plan: 0 violations · ${n} ${n === 1 ? "cell" : "cells"} flipped`);
+    const list = within(panel).getByRole("list", { name: "Float violations" });
+    const details = list.closest("details");
+    expect(details).not.toBeNull();
+    expect(details!.open).toBe(false);
+    expect(textOf(details!.querySelector("summary")!)).toBe(`Before auto-fix (${check.violations.length})`);
+    // Auto-fix is not offered again while the fixed plan is current, and no export is promised.
+    expect(within(panel).queryByRole("button", { name: "Auto-fix" })).toBeNull();
+    expect(textOf(panel)).toContain("kept until you edit the design");
+    expect(textOf(panel)).not.toContain("kept for export");
+  });
+
+  it("chooses the error action from the engine error code (10.4)", () => {
+    // REPEAT_NOT_DIVISIBLE: 120 hooks and a 48-end repeat with repeat across on.
+    const repeat = checkDesign({ design: grid(48, 8, () => 0), weaves: defaultWeaves(4), profile: PROFILE_120, repeatAcross: true });
+    if (repeat.ok || repeat.error.code !== "REPEAT_NOT_DIVISIBLE") throw new Error("expected REPEAT_NOT_DIVISIBLE from the engine");
+    const first = renderPanel({ check: repeat, profile: PROFILE_120, canUndo: true });
+    fireEvent.click(within(floatPanel()).getByRole("button", { name: "Turn off repeat across" }));
+    expect(first.onTurnOffRepeatAcross).toHaveBeenCalledTimes(1);
+    expect(within(floatPanel()).queryByRole("button", { name: "Undo last change" })).toBeNull();
+    first.unmount();
+
+    // DESIGN_TOO_WIDE: 130 ends on 120 hooks.
+    const wide = checkDesign({ design: grid(130, 8, () => 0), weaves: defaultWeaves(4), profile: PROFILE_120, repeatAcross: false });
+    if (wide.ok || wide.error.code !== "DESIGN_TOO_WIDE") throw new Error("expected DESIGN_TOO_WIDE from the engine");
+    const second = renderPanel({ check: wide, profile: PROFILE_120, canUndo: true });
+    fireEvent.click(within(floatPanel()).getByRole("button", { name: "Choose a larger profile" }));
+    expect(second.onChooseProfile).toHaveBeenCalledTimes(1);
+    second.unmount();
+
+    // Any other error keeps Undo.
+    const other = checkDesign({ design: grid(8, 8, () => 9), weaves: defaultWeaves(4), profile: PROFILE_120, repeatAcross: false });
+    if (other.ok) throw new Error("expected an engine error");
+    const third = renderPanel({ check: other, profile: PROFILE_120, canUndo: true });
+    fireEvent.click(within(floatPanel()).getByRole("button", { name: "Undo last change" }));
+    expect(third.onUndo).toHaveBeenCalledTimes(1);
   });
 
   it("AUTOFIX_FAILED shows the violations that remain (10.3)", () => {

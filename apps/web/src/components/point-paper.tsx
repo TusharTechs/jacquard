@@ -2,12 +2,15 @@
 // ratio; Pointer Events paint with mouse, pen and touch, one stroke per press-drag-release, with
 // every cell between two pointer events filled in; two fingers pinch to change the cell size and
 // pan the grid; the keyboard moves a cursor and paints it. All edits go through editorReducer.
+// In Scroll mode one finger is left to the browser (scroll and pinch-zoom) and touch never paints;
+// mouse and pen still paint.
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent, PointerEvent, RefObject } from "react";
 import type { Design } from "@jacquard/engine";
 import { cellLine } from "../lib/cell-line";
 import type { GridCell } from "../lib/cell-line";
 import { drawPointPaper } from "../lib/draw-point-paper";
+import { cellKey, violationStarts } from "../lib/violation-marks";
 import type { MarkKind } from "../lib/violation-marks";
 import type { EditorAction } from "../state/editor-state";
 
@@ -22,6 +25,9 @@ const TOUCH_SLOP = 6;
 export function clampCell(size: number): number {
   return Math.min(MAX_CELL, Math.max(MIN_CELL, Math.round(size)));
 }
+
+/** What one finger does on the grid. */
+export type TouchMode = "paint" | "scroll";
 
 type Mode = "idle" | "pending" | "paint" | "pinch" | "settle";
 
@@ -38,6 +44,12 @@ export interface PointPaperProps {
   readonly colours: readonly string[];
   readonly marks: ReadonlyMap<string, MarkKind>;
   readonly errorCell: GridCell | null;
+  /** Cells auto-fix flipped, keyed like `marks`; drawn as diamonds. */
+  readonly flips?: ReadonlySet<string>;
+  readonly regionNumbers?: boolean;
+  readonly touchMode?: TouchMode;
+  /** True on a coarse (touch) pointer: shows a one-line hint about the touch mode. */
+  readonly coarsePointer?: boolean;
   readonly regionCount: number;
   readonly cellSize: number;
   readonly onCellSize: (size: number) => void;
@@ -50,7 +62,22 @@ function sameCell(a: GridCell | null, b: GridCell | null): boolean {
   return a === b || (a !== null && b !== null && a.end === b.end && a.pick === b.pick);
 }
 
-export function PointPaper({ design, colours, marks, errorCell, regionCount, cellSize, onCellSize, dispatch, viewportRef, canvasRef }: PointPaperProps) {
+export function PointPaper({
+  design,
+  colours,
+  marks,
+  errorCell,
+  flips,
+  regionNumbers = false,
+  touchMode = "paint",
+  coarsePointer = false,
+  regionCount,
+  cellSize,
+  onCellSize,
+  dispatch,
+  viewportRef,
+  canvasRef,
+}: PointPaperProps) {
   const picks = design.length;
   const ends = design[0]?.length ?? 0;
   const [cursor, setCursorState] = useState<GridCell>({ end: 0, pick: 0 });
@@ -99,10 +126,12 @@ export function PointPaper({ design, colours, marks, errorCell, regionCount, cel
       pixelRatio: ratio,
       marks,
       errorCell,
+      ...(flips === undefined ? {} : { flips }),
+      regionNumbers,
       cursor: focused && keyboard ? cursor : null,
       hover: keyboard ? null : hover,
     });
-  }, [canvasRef, design, colours, cellSize, ratio, marks, errorCell, cursor, focused, keyboard, hover]);
+  }, [canvasRef, design, colours, cellSize, ratio, marks, errorCell, flips, regionNumbers, cursor, focused, keyboard, hover]);
 
   // After a pinch changes the cell size, scroll so the point under the fingers stays put.
   useLayoutEffect(() => {
@@ -199,6 +228,8 @@ export function PointPaper({ design, colours, marks, errorCell, regionCount, cel
 
   const onPointerDown = (event: PointerEvent<HTMLCanvasElement>): void => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    // Scroll mode: the browser scrolls and zooms; a finger never paints.
+    if (event.pointerType === "touch" && touchMode === "scroll") return;
     event.preventDefault();
     const canvas = event.currentTarget;
     canvas.focus({ preventScroll: true });
@@ -365,6 +396,16 @@ export function PointPaper({ design, colours, marks, errorCell, regionCount, cel
         event.preventDefault();
         onCellSize(clampCell(cellSize - 2));
         return;
+      case "n":
+      case "N": {
+        // The next violation's first cell after the cursor, in pick-major order, wrapping.
+        const starts = violationStarts(marks);
+        if (starts.length === 0) return;
+        next =
+          starts.find((cell) => cell.pick > cursor.pick || (cell.pick === cursor.pick && cell.end > cursor.end)) ?? starts[0] ?? null;
+        if (next === null) return;
+        break;
+      }
       default:
         return;
     }
@@ -377,7 +418,11 @@ export function PointPaper({ design, colours, marks, errorCell, regionCount, cel
   const shown = keyboard && focused ? cursor : (hover ?? (focused ? cursor : null));
   const regionAt = (cell: GridCell): number | undefined => design[cell.pick]?.[cell.end];
   const readout = shown === null ? null : `end ${shown.end} · pick ${shown.pick} · region ${regionAt(shown) ?? "?"}`;
-  const announcement = keyboard && focused ? `end ${cursor.end}, pick ${cursor.pick}, region ${regionAt(cursor) ?? "unknown"}` : "";
+  const inViolation = marks.has(cellKey(cursor.end, cursor.pick));
+  const announcement =
+    keyboard && focused
+      ? `end ${cursor.end}, pick ${cursor.pick}, region ${regionAt(cursor) ?? "unknown"}${inViolation ? ", in a float violation" : ""}`
+      : "";
   const keys = Math.min(8, Math.max(1, regionCount));
 
   return (
@@ -389,8 +434,10 @@ export function PointPaper({ design, colours, marks, errorCell, regionCount, cel
           tabIndex={0}
           role="application"
           aria-roledescription="point paper"
-          aria-label={`Point paper, ${ends} ends by ${picks} picks. Pick 0 is the bottom row and end 0 the left column. Arrow keys move the cursor, Space or Enter paints it, keys 1 to ${keys} choose the region.`}
-          aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter"
+          aria-label={`Point paper, ${ends} ends by ${picks} picks. Pick 0 is the bottom row and end 0 the left column. Arrow keys move the cursor, Space or Enter paints it, keys 1 to ${keys} choose the region, N goes to the next float violation.`}
+          aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter N"
+          data-touch-mode={touchMode}
+          style={{ touchAction: touchMode === "scroll" ? "pan-x pan-y pinch-zoom" : "none" }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={(event) => onPointerEnd(event, false)}
@@ -414,6 +461,13 @@ export function PointPaper({ design, colours, marks, errorCell, regionCount, cel
       <p className="readout" aria-hidden="true">
         {readout ?? <span className="muted">Point at a cell, or focus the grid and use the arrow keys.</span>}
       </p>
+      {coarsePointer ? (
+        <p className="small muted touch-hint">
+          {touchMode === "scroll"
+            ? "Scroll mode: one finger scrolls the grid. Choose Paint in the toolbar to paint with a finger."
+            : "Paint mode: one finger paints; two fingers pinch to zoom and drag to scroll."}
+        </p>
+      ) : null}
       <p className="sr-only" aria-live="polite">
         {announcement}
       </p>

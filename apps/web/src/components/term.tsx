@@ -2,7 +2,7 @@
 // plan on first use). The wording follows the glossary in .kiro/steering/weaving-domain.md.
 // The term is a button, so it is reachable by keyboard; the tip shows on hover, on focus and on
 // tap, and Escape hides it.
-import { useId, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 
 export type TermName = "end" | "pick" | "float" | "liftPlan";
@@ -27,6 +27,23 @@ export function Term({ name, children }: TermProps) {
   const [pinned, setPinned] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const open = !dismissed && (hover || focus || pinned);
+  // Keep the tip inside the viewport: shift it left when it would overflow the right edge.
+  const tipRef = useRef<HTMLSpanElement | null>(null);
+  const [shift, setShift] = useState(0);
+  useLayoutEffect(() => {
+    const tip = tipRef.current;
+    if (!open || tip === null || typeof window === "undefined") {
+      setShift(0);
+      return;
+    }
+    const margin = 8;
+    const box = tip.getBoundingClientRect();
+    const left = box.left - shift;
+    const right = left + box.width;
+    const limit = document.documentElement.clientWidth || window.innerWidth;
+    const next = right > limit - margin ? Math.max(margin - left, limit - margin - right) : left < margin ? margin - left : 0;
+    if (next !== shift) setShift(next);
+  }, [open]);
 
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>): void => {
     if (event.key === "Escape" && open) {
@@ -57,7 +74,14 @@ export function Term({ name, children }: TermProps) {
       >
         {children}
       </button>
-      <span role="tooltip" id={tipId} className="term-tip" hidden={!open}>
+      <span
+        role="tooltip"
+        id={tipId}
+        ref={tipRef}
+        className="term-tip"
+        hidden={!open}
+        style={shift === 0 ? undefined : { transform: `translateX(${shift}px)` }}
+      >
         {TERM_DEFINITIONS[name]}
       </span>
     </span>

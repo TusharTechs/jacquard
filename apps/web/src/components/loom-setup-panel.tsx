@@ -1,6 +1,9 @@
 // Loom setup (11.1 to 11.3): profile, colour count, repeat, minimum feature, symmetry and
 // "repeat across". Every limit comes from the engine's profiles through setup-state.ts.
+// The settings sit in a <details> whose summary repeats the main values, so on a narrow screen the
+// panel can fold to one line; the app opens it by default on wide screens.
 import { useId } from "react";
+import type { RefObject } from "react";
 import type { Symmetry } from "@jacquard/motif";
 import { PROFILE_NAMES, SYMMETRIES, resolveProfile, setupLimits } from "../state/setup-state";
 import type { ProfileName, SetupAction, SetupState } from "../state/setup-state";
@@ -21,9 +24,19 @@ export interface LoomSetupPanelProps {
   readonly onChange: (action: SetupAction) => void;
   /** The engine's REPEAT_NOT_DIVISIBLE message, when the current check returned it. */
   readonly repeatAcrossMessage: string | null;
+  /** Whether the settings are shown; defaults to open. */
+  readonly open?: boolean;
+  readonly onOpenChange?: (open: boolean) => void;
+  /** Lets the app focus the profile select (DESIGN_TOO_WIDE). */
+  readonly profileRef?: RefObject<HTMLSelectElement | null>;
 }
 
-export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage }: LoomSetupPanelProps) {
+/** One-line summary of the setup, for example "240 hooks · 3 colours · 48×48". */
+export function setupSummary(setup: SetupState): string {
+  return `${setup.profile} hooks · ${setup.colourCount} colours · ${setup.repeat.ends}×${setup.repeat.picks}`;
+}
+
+export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = true, onOpenChange, profileRef }: LoomSetupPanelProps) {
   const limits = setupLimits(setup.profile);
   const profile = resolveProfile(setup.profile);
   const switchId = useId();
@@ -31,6 +44,18 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage }: LoomSet
 
   return (
     <Panel title="Loom setup">
+      <details
+        className="setup-details"
+        open={open}
+        onToggle={(event) => {
+          const next = event.currentTarget.open;
+          if (next !== open) onOpenChange?.(next);
+        }}
+      >
+        <summary className="setup-summary">
+          <span className="mono">{setupSummary(setup)}</span>
+          {setup.repeatAcross ? " · repeat across" : ""}
+        </summary>
       <div className="stack">
         <p className="small muted">
           The repeat is counted in <Term name="end">ends</Term> across and <Term name="pick">picks</Term> up. Colour count,
@@ -40,6 +65,7 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage }: LoomSet
           {(control) => (
             <select
               {...control}
+              ref={profileRef}
               className="select"
               value={setup.profile}
               onChange={(event) => onChange({ type: "setProfile", profile: event.target.value as ProfileName })}
@@ -127,6 +153,7 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage }: LoomSet
           The card format is a configurable loom profile. It has not been tested on a working loom.
         </p>
       </div>
+      </details>
     </Panel>
   );
 }

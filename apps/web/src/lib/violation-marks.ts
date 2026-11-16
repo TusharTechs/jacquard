@@ -1,6 +1,6 @@
 // Where to draw the engine's violations and errors on the point paper. Display only: the
 // violations themselves come from the engine's checkFloats, unchanged.
-import type { EngineError, Violation } from "@jacquard/engine";
+import type { EngineError, Flip, Violation } from "@jacquard/engine";
 
 export type MarkKind = "start" | "run";
 
@@ -33,6 +33,29 @@ export function violationMarks(violations: readonly Violation[], ends: number, p
     }
   }
   return marks;
+}
+
+/**
+ * Point-paper cells under the engine's auto-fix flips. A flip names a lift-plan pick and hook;
+ * with "repeat across" a hook past the repeat width shows on the design end it repeats, the same
+ * wrap the violation marks use. Display only.
+ */
+export function flipCells(flips: readonly Flip[], ends: number, picks: number): Set<string> {
+  const cells = new Set<string>();
+  if (ends < 1 || picks < 1) return cells;
+  for (const flip of flips) cells.add(cellKey(flip.end % ends, flip.pick % picks));
+  return cells;
+}
+
+/** Violation start cells in pick-major order: the targets of the "next violation" key. */
+export function violationStarts(marks: ReadonlyMap<string, MarkKind>): { end: number; pick: number }[] {
+  const starts: { end: number; pick: number }[] = [];
+  for (const [key, kind] of marks) {
+    if (kind !== "start") continue;
+    const [pick, end] = key.split(",").map(Number);
+    if (pick !== undefined && end !== undefined) starts.push({ end, pick });
+  }
+  return starts.sort((a, b) => a.pick - b.pick || a.end - b.end);
 }
 
 /** The cell an engine error names, when it names both a pick and an end (10.4). */

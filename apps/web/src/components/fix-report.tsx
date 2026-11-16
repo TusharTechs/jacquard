@@ -15,17 +15,18 @@ export function FixReport({ fix }: { readonly fix: FixState }) {
     case "discarded":
       return (
         <p className="note" role="status">
-          The design, weaves or setup changed after auto-fix, so the fixed lift plan was discarded. Run auto-fix again before
-          you export.
+          The design, weaves or setup changed after auto-fix, so the fixed lift plan was discarded. Run auto-fix again if
+          the float check still shows violations.
         </p>
       );
     case "fixed":
       return (
-        <div className="note" role="status">
+        <div className="note">
           <p>
             Auto-fix flipped <span className="mono">{plural(fix.flips.length, "lift-plan cell", "lift-plan cells")}</span>. The
-            fixed lift plan has <span className="mono">{plural(fix.remaining, "violation", "violations")}</span>. It is kept for
-            export; the point paper still shows the design before the fix.
+            fixed lift plan has <span className="mono">{plural(fix.remaining, "violation", "violations")}</span>. It is kept until
+            you edit the design, the weaves or the setup. Your regions on the point paper are unchanged; choose “Auto-fix
+            changes” above the grid to see the flipped cells, each marked with a diamond.
           </p>
         </div>
       );

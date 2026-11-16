@@ -1,5 +1,6 @@
 // Shared Toast: a polite live region that is always in the page, so screen readers hear each new
-// message. A message disappears after `timeoutMs` or when dismissed.
+// message. A message disappears after `timeoutMs` or when dismissed; a sticky message (one the
+// user may want to act on, such as Undo after a resize) stays until dismissed.
 import { useEffect } from "react";
 import { Button } from "./button";
 
@@ -7,6 +8,7 @@ export interface ToastMessage {
   /** Changes for every new message, so the same text twice is still announced. */
   readonly id: number;
   readonly text: string;
+  readonly sticky?: boolean;
 }
 
 export interface ToastProps {
@@ -17,7 +19,7 @@ export interface ToastProps {
 
 export function Toast({ message, onDismiss, timeoutMs = 6000 }: ToastProps) {
   useEffect(() => {
-    if (message === null) return;
+    if (message === null || message.sticky === true) return;
     const timer = setTimeout(onDismiss, timeoutMs);
     return () => clearTimeout(timer);
   }, [message, onDismiss, timeoutMs]);

@@ -939,3 +939,77 @@ a {
   padding-left: var(--space-4);
   font-size: 0.875rem;
 }
+
+/* ---------- Review fixes: loom setup summary, legends, touch and narrow screens ---------- */
+.setup-summary {
+  min-height: var(--target);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.setup-details[open] > .setup-summary {
+  margin-bottom: var(--space-3);
+}
+.before-fix > summary {
+  min-height: var(--target);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.marker-diamond {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  margin: 0 3px;
+  border: 1px solid var(--card-raised);
+  background: var(--ink);
+  transform: rotate(45deg);
+  vertical-align: middle;
+}
+.paper-legend .marker-triangle {
+  vertical-align: middle;
+}
+.toolbar-floats {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+@media (min-width: 768px) {
+  /* The float panel sits beside the grid on wide screens. */
+  .toolbar-floats {
+    display: none;
+  }
+}
+.term-tip {
+  max-width: min(280px, calc(100vw - var(--space-4)));
+}
+@media (pointer: coarse) {
+  .term-button {
+    position: relative;
+  }
+  .term-button::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 44px);
+    height: 44px;
+    transform: translate(-50%, -50%);
+  }
+}
+@media (max-width: 480px) {
+  .shortcut-list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+  }
+  .shortcut-list dt {
+    white-space: normal;
+  }
+  .shortcut-list dd {
+    margin-bottom: var(--space-2);
+  }
+}

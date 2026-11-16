@@ -1,5 +1,6 @@
 // The motif request lifecycle for the motif panel (3.6, 3.7): one request at a time, cancel
-// aborts it, retry repeats the last request, and a new request aborts the one in progress.
+// aborts it, and a new request aborts the one in progress. Retry is a new generate call built by the
+// motif panel from the current prompt or sketch and setup, so it never resends stale settings.
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { MotifRequest, MotifResponse } from "@jacquard/motif";
 import { requestMotif } from "./motif-client";
@@ -20,7 +21,6 @@ export interface MotifRequestControls {
   readonly lastRequest: MotifRequest | null;
   readonly generate: (request: MotifRequest) => void;
   readonly cancel: () => void;
-  readonly retry: () => void;
 }
 
 export function useMotifRequest(apply: ApplyMotif): MotifRequestControls {
@@ -64,9 +64,5 @@ export function useMotifRequest(apply: ApplyMotif): MotifRequestControls {
     controller.current?.abort();
   }, []);
 
-  const retry = useCallback(() => {
-    if (lastRequest !== null) generate(lastRequest);
-  }, [generate, lastRequest]);
-
-  return { state, lastRequest, generate, cancel, retry };
+  return { state, lastRequest, generate, cancel };
 }

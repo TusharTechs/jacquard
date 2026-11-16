@@ -11,6 +11,7 @@ import { FloatPanel } from "./components/float-panel";
 import { LoomSetupPanel } from "./components/loom-setup-panel";
 import { MotifPanel } from "./components/motif-panel";
 import { PointPaper, clampCell } from "./components/point-paper";
+import type { TouchMode } from "./components/point-paper";
 import { RegionLegend } from "./components/region-legend";
 import { Button } from "./components/ui/button";
 import { Dialog } from "./components/ui/dialog";
@@ -29,7 +30,7 @@ import { designFromMotif } from "./lib/motif-design";
 import { regionColours } from "./lib/palette";
 import { useMotifRequest } from "./lib/use-motif-request";
 import { useOnline } from "./lib/use-online";
-import { errorCell, violationMarks } from "./lib/violation-marks";
+import { errorCell, flipCells, violationMarks } from "./lib/violation-marks";
 import { editorReducer, initialEditorState } from "./state/editor-state";
 import { DEFAULT_SETUP, resolveProfile, setupReducer } from "./state/setup-state";
 import type { SetupAction } from "./state/setup-state";
@@ -46,6 +47,15 @@ function isTextEntry(target: EventTarget | null): boolean {
   return false;
 }
 
+/** A media query's current answer, or `fallback` where matchMedia is missing (tests, old browsers). */
+function mediaMatches(query: string, fallback: boolean): boolean {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return fallback;
+  return window.matchMedia(query).matches;
+}
+
+/** What the point paper marks: the design's float violations, or the cells auto-fix flipped. */
+type PaperLayer = "violations" | "fixes";
+
 function allZero(design: readonly (readonly number[])[]): boolean {
   return design.every((row) => row.every((cell) => cell === 0));
 }
@@ -60,6 +70,14 @@ export function App() {
   const [fix, setFix] = useState<FixState>({ status: "none" });
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [coarsePointer] = useState(() => mediaMatches("(pointer: coarse)", false));
+  const [touchMode, setTouchMode] = useState<TouchMode>(() => (coarsePointer ? "scroll" : "paint"));
+  const [regionNumbers, setRegionNumbers] = useState(false);
+  const [layer, setLayer] = useState<PaperLayer>("violations");
+  // The loom setup is open on wide screens and folded to its summary below 768px.
+  const [setupOpen, setSetupOpen] = useState(() => mediaMatches("(min-width: 768px)", true));
+  const [motifFocus, setMotifFocus] = useState<{ kind: "text" | "sketch"; id: number } | null>(null);
+  const profileRef = useRef<HTMLSelectElement | null>(null);
   const toastId = useRef(0);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -69,9 +87,9 @@ export function App() {
   const design = editor.design;
   const size = sizeOf(design);
 
-  const say = useCallback((text: string) => {
+  const say = useCallback((text: string, sticky = false) => {
     toastId.current += 1;
-    setToast({ id: toastId.current, text });
+    setToast(sticky ? { id: toastId.current, text, sticky } : { id: toastId.current, text });
   }, []);
   const dismissToast = useCallback(() => setToast(null), []);
   const setCellSize = useCallback((value: number) => setCellSizeRaw(clampCell(value)), []);
@@ -84,7 +102,7 @@ export function App() {
   );
   const checking = checkedDesign !== design;
   const checkedSize = sizeOf(checkedDesign);
-  const marks = useMemo(
+  const allMarks = useMemo(
     () => violationMarks(check.ok ? check.violations : [], checkedSize.ends, checkedSize.picks),
     [check, checkedSize.ends, checkedSize.picks],
   );
@@ -119,6 +137,15 @@ export function App() {
     );
   }, [currentSource]);
 
+  const fixed = fix.status === "fixed" ? fix : null;
+  const shownLayer: PaperLayer = fixed === null ? "violations" : layer;
+  const flips = useMemo(
+    () => (fixed === null ? new Set<string>() : flipCells(fixed.flips, size.ends, size.picks)),
+    [fixed, size.ends, size.picks],
+  );
+  const noMarks = useMemo(() => new Map<string, never>(), []);
+  const marks = shownLayer === "fixes" ? noMarks : allMarks;
+
   const runAutoFix = (): void => {
     if (!check.ok) return;
     const source: FixSource = { design: checkedDesign, weaves, profile, repeatAcross: setup.repeatAcross };
@@ -130,6 +157,7 @@ export function App() {
         return;
       }
       setFix({ status: "fixed", plan: fixed.plan, flips: fixed.flips, remaining: after.value.length, source });
+      setLayer("fixes");
       say(`Auto-fix flipped ${fixed.flips.length} lift-plan ${fixed.flips.length === 1 ? "cell" : "cells"}. Your regions are unchanged.`);
       return;
     }
@@ -144,7 +172,7 @@ export function App() {
     if (next.repeat.ends !== size.ends || next.repeat.picks !== size.picks) {
       if (next.repeat.ends !== setup.repeat.ends || next.repeat.picks !== setup.repeat.picks) {
         dispatchEditor({ type: "replace", design: resizeDesign(design, next.repeat) });
-        say(`Grid resized to ${next.repeat.ends} ends by ${next.repeat.picks} picks. Undo brings back the previous grid.`);
+        say(`Grid resized to ${next.repeat.ends} ends by ${next.repeat.picks} picks. Undo brings back the previous grid.`, true);
       }
     }
     if (editor.region >= next.colourCount) dispatchEditor({ type: "setRegion", region: 0 });
@@ -156,6 +184,18 @@ export function App() {
 
   const focusGrid = (): void => {
     requestAnimationFrame(() => canvasRef.current?.focus());
+  };
+
+  const focusProfile = (): void => {
+    setSetupOpen(true);
+    requestAnimationFrame(() => {
+      profileRef.current?.focus();
+      profileRef.current?.scrollIntoView?.({ block: "center" });
+    });
+  };
+
+  const focusMotif = (kind: "text" | "sketch"): void => {
+    setMotifFocus((current) => ({ kind, id: (current?.id ?? 0) + 1 }));
   };
 
   const startBlank = (): void => {
@@ -186,6 +226,9 @@ export function App() {
       dispatchEditor({ type: "replace", design: result.value.design });
       setPalette(result.value.palette);
       setStarted(true);
+      // Bring the new design into view, as "Start from a blank grid" does (on a phone the point
+      // paper sits below the setup and motif panels). Focus stays where it is.
+      requestAnimationFrame(() => viewportRef.current?.scrollIntoView?.({ block: "nearest" }));
       say(
         response.source === "standIn"
           ? "Stand-in motif placed on the grid. Edit it freely; Undo brings back the previous grid."
@@ -258,7 +301,7 @@ export function App() {
         <div className="holes" aria-hidden="true" />
         <p className="app-lede">
           Punch cards are dead as a computing medium. Handlooms still use them. JACQUARD helps designers and card punchers turn
-          a motif into a loom-ready design.
+          a motif into a loom-ready design for a configurable loom profile. The card format has not been tested on a working loom.
         </p>
         <p className="app-sublede">
           Describe or sketch a motif and the model suggests a clean, limited-colour version. You edit every cell on point paper,
@@ -275,13 +318,21 @@ export function App() {
 
       <main className="layout">
         <div className="column column-side">
-          <LoomSetupPanel setup={setup} onChange={changeSetup} repeatAcrossMessage={repeatAcrossMessage} />
+          <LoomSetupPanel
+            setup={setup}
+            onChange={changeSetup}
+            repeatAcrossMessage={repeatAcrossMessage}
+            open={setupOpen}
+            onOpenChange={setSetupOpen}
+            profileRef={profileRef}
+          />
           <MotifPanel
             setup={setup}
             online={online}
             request={motif}
             paletteColours={palette === null ? null : regionColours(palette, palette.length)}
             onStartBlank={startBlank}
+            focusRequest={motifFocus}
           />
         </div>
 
@@ -296,12 +347,25 @@ export function App() {
                   Every cell is region <span className="mono">0</span>. Choose a region and paint with a finger, pen or mouse, or
                   generate a motif to start from.
                 </p>
+                <div className="state-actions">
+                  <Button small onClick={() => focusMotif("text")}>
+                    Describe a motif
+                  </Button>
+                  <Button small onClick={() => focusMotif("sketch")}>
+                    Upload a sketch
+                  </Button>
+                </div>
               </>
             }
             loading={
               <>
                 <p className="small">A motif is on its way. You can keep painting; the new motif replaces the grid when it arrives, and Undo brings this one back.</p>
                 <div className="progress" aria-hidden="true" />
+                <div className="state-actions">
+                  <Button small onClick={motif.cancel}>
+                    Cancel
+                  </Button>
+                </div>
               </>
             }
             error={
@@ -324,6 +388,15 @@ export function App() {
               region={editor.region}
               regionColour={colours[editor.region] ?? "transparent"}
               onShowShortcuts={() => setShortcutsOpen(true)}
+              touchMode={touchMode}
+              onTouchMode={setTouchMode}
+              regionNumbers={regionNumbers}
+              onRegionNumbers={setRegionNumbers}
+              floats={
+                check.ok && paperStatus !== "empty" && (fixed !== null || check.violations.length > 0)
+                  ? { violations: check.violations.length, fixedFlips: fixed === null ? null : fixed.flips.length, onAutoFix: runAutoFix }
+                  : null
+              }
             />
             <div className="stack">
               <RegionLegend colours={paintColours} region={editor.region} onChange={(region) => dispatchEditor({ type: "setRegion", region })} />
@@ -338,11 +411,26 @@ export function App() {
                   </Button>
                 </div>
               ) : null}
+              {fixed === null ? null : (
+                <div className="toolbar-group" role="group" aria-label="Show on the point paper">
+                  <span className="small">Show:</span>
+                  <Button small variant={shownLayer === "violations" ? "primary" : "secondary"} aria-pressed={shownLayer === "violations"} onClick={() => setLayer("violations")}>
+                    Design violations
+                  </Button>
+                  <Button small variant={shownLayer === "fixes" ? "primary" : "secondary"} aria-pressed={shownLayer === "fixes"} onClick={() => setLayer("fixes")}>
+                    Auto-fix changes
+                  </Button>
+                </div>
+              )}
               <PointPaper
                 design={design}
                 colours={colours}
                 marks={marks}
                 errorCell={badCell}
+                flips={shownLayer === "fixes" ? flips : undefined}
+                regionNumbers={regionNumbers}
+                touchMode={touchMode}
+                coarsePointer={coarsePointer}
                 regionCount={setup.colourCount}
                 cellSize={cellSize}
                 onCellSize={setCellSize}
@@ -350,13 +438,24 @@ export function App() {
                 viewportRef={viewportRef}
                 canvasRef={canvasRef}
               />
+              {shownLayer === "fixes" ? (
+                <p className="small paper-legend">
+                  <span className="marker-diamond" aria-hidden="true" /> Diamond: a lift-plan cell auto-fix flipped (
+                  <span className="mono">{flips.size}</span> on this repeat). Your regions are unchanged.
+                </p>
+              ) : allMarks.size > 0 ? (
+                <p className="small paper-legend">
+                  <span className="marker-triangle" aria-hidden="true" /> Outline: a float over the limit; triangle: its first
+                  cell. Press <kbd>N</kbd> on the grid to go to the next one.
+                </p>
+              ) : null}
             </div>
           </Panel>
         </div>
 
         <div className="column column-checks">
           <FloatPanel
-            check={size.ends === 0 || size.picks === 0 ? null : check}
+            check={size.ends === 0 || size.picks === 0 || paperStatus === "empty" ? null : check}
             checking={checking}
             profile={profile}
             fix={fix}
@@ -364,6 +463,8 @@ export function App() {
             onAutoFix={runAutoFix}
             onUndo={() => dispatchEditor({ type: "undo" })}
             onStartBlank={startBlank}
+            onTurnOffRepeatAcross={() => changeSetup({ type: "setRepeatAcross", repeatAcross: false })}
+            onChooseProfile={focusProfile}
           />
           <WeavePanel
             regions={weaveRegions}
@@ -386,6 +487,10 @@ export function App() {
             <kbd>Space</kbd> or <kbd>Enter</kbd>
           </dt>
           <dd>Paint the cursor cell with the current region.</dd>
+          <dt>
+            <kbd>N</kbd>
+          </dt>
+          <dd>Move the cursor to the next float violation.</dd>
           <dt>
             <kbd>1</kbd> to <kbd>{Math.min(8, setup.colourCount)}</kbd>
           </dt>

@@ -12,7 +12,7 @@
 // every step, are the same as with full relabelling. Each step lowers the component count by at
 // least one, so there are at most `ends * picks` steps.
 //
-// 4-connectivity, because cells that touch only at a corner do not interlace on point paper.
+// 4-connectivity [decision], because cells that touch only at a corner do not interlace on point paper.
 
 type Grid = readonly (readonly number[])[];
 

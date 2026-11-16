@@ -1,7 +1,8 @@
 // The float check (10.1 to 10.4): the violation count and list from the engine, auto-fix through
-// the engine, AUTOFIX_FAILED with what remains, and engine errors in plain words.
+// the engine, AUTOFIX_FAILED with what remains, and engine errors in plain words. After a
+// successful auto-fix the fixed lift plan is the headline and the earlier list folds away.
 import { useEffect, useState } from "react";
-import type { LoomProfile } from "@jacquard/engine";
+import type { EngineError, LoomProfile } from "@jacquard/engine";
 import type { CheckResult } from "../lib/engine-check";
 import { engineNextStep } from "../lib/engine-messages";
 import type { FixState } from "../lib/fix-state";
@@ -24,13 +25,34 @@ export interface FloatPanelProps {
   readonly onAutoFix: () => void;
   readonly onUndo: () => void;
   readonly onStartBlank: () => void;
+  /** REPEAT_NOT_DIVISIBLE: switch "repeat across" off in the loom setup. */
+  readonly onTurnOffRepeatAcross: () => void;
+  /** DESIGN_TOO_WIDE: open the loom setup and focus the profile select. */
+  readonly onChooseProfile: () => void;
+}
+
+interface ErrorAction {
+  readonly label: string;
+  readonly run: () => void;
+  readonly disabled: boolean;
 }
 
 function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`;
 }
 
-export function FloatPanel({ check, checking, profile, fix, canUndo, onAutoFix, onUndo, onStartBlank }: FloatPanelProps) {
+export function FloatPanel({
+  check,
+  checking,
+  profile,
+  fix,
+  canUndo,
+  onAutoFix,
+  onUndo,
+  onStartBlank,
+  onTurnOffRepeatAcross,
+  onChooseProfile,
+}: FloatPanelProps) {
   // Engine work that takes longer than 100 ms shows progress (design-language.md).
   const [slow, setSlow] = useState(false);
   useEffect(() => {
@@ -48,6 +70,18 @@ export function FloatPanel({ check, checking, profile, fix, canUndo, onAutoFix, 
   else if (slow) status = "loading";
 
   const cell = check !== null && !check.ok ? errorCell(check.error) : null;
+  const errorAction = (error: EngineError): ErrorAction => {
+    switch (error.code) {
+      case "REPEAT_NOT_DIVISIBLE":
+        return { label: "Turn off repeat across", run: onTurnOffRepeatAcross, disabled: false };
+      case "DESIGN_TOO_WIDE":
+        return { label: "Choose a larger profile", run: onChooseProfile, disabled: false };
+      default:
+        return { label: "Undo last change", run: onUndo, disabled: !canUndo };
+    }
+  };
+  const action = check !== null && !check.ok ? errorAction(check.error) : null;
+  const fixed = fix.status === "fixed" ? fix : null;
 
   return (
     <Panel
@@ -77,11 +111,13 @@ export function FloatPanel({ check, checking, profile, fix, canUndo, onAutoFix, 
                 cross.
               </p>
             )}
-            <div className="state-actions">
-              <Button small onClick={onUndo} disabled={!canUndo}>
-                Undo last change
-              </Button>
-            </div>
+            {action === null ? null : (
+              <div className="state-actions">
+                <Button small onClick={action.run} disabled={action.disabled}>
+                  {action.label}
+                </Button>
+              </div>
+            )}
           </>
         ) : undefined
       }
@@ -92,7 +128,22 @@ export function FloatPanel({ check, checking, profile, fix, canUndo, onAutoFix, 
             A <Term name="float">float</Term> may cross at most <span className="mono">{profile.maxWarpFloat}</span> picks
             (warp) and <span className="mono">{profile.maxWeftFloat}</span> ends (weft) on this profile.
           </p>
-          {check.violations.length === 0 ? (
+          {fixed !== null ? (
+            <>
+              <p className="status-line" role="status">
+                <span className="marker-ok" aria-hidden="true" />
+                Fixed lift plan: {plural(fixed.remaining, "violation", "violations")} ·{" "}
+                {plural(fixed.flips.length, "cell", "cells")} flipped
+              </p>
+              <FixReport fix={fix} />
+              {check.violations.length === 0 ? null : (
+                <details className="before-fix">
+                  <summary>Before auto-fix ({check.violations.length})</summary>
+                  <ViolationList violations={check.violations} label="Float violations" />
+                </details>
+              )}
+            </>
+          ) : check.violations.length === 0 ? (
             <p className="status-line" role="status">
               <span className="marker-ok" aria-hidden="true" />
               No floats over the limit
@@ -115,7 +166,7 @@ export function FloatPanel({ check, checking, profile, fix, canUndo, onAutoFix, 
               </p>
             </>
           )}
-          {fix.status === "discarded" && check.violations.length === 0 ? null : <FixReport fix={fix} />}
+          {fixed !== null || (fix.status === "discarded" && check.violations.length === 0) ? null : <FixReport fix={fix} />}
         </div>
       ) : null}
     </Panel>

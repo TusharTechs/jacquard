@@ -126,12 +126,15 @@ describe("motif panel: loading and cancel (3.7)", () => {
 
 describe("motif panel: error states (3.6)", () => {
   const cases = [
-    { name: "model unavailable (503)", status: 503, code: "MODEL_UNAVAILABLE", title: "The motif model failed" },
-    { name: "model timeout (504)", status: 504, code: "MODEL_TIMEOUT", title: "The motif model failed" },
-    { name: "invalid motif (502)", status: 502, code: "MOTIF_SVG_INVALID", title: "The motif could not be used" },
+    { name: "model unavailable (503)", status: 503, code: "MODEL_UNAVAILABLE", title: "The motif model failed", action: "Retry" },
+    { name: "model timeout (504)", status: 504, code: "MODEL_TIMEOUT", title: "The motif model failed", action: "Retry" },
+    { name: "invalid motif (502)", status: 502, code: "MOTIF_SVG_INVALID", title: "The motif could not be used", action: "Generate again" },
   ] as const;
 
-  async function errorText(answer: (url: string, init?: RequestInit) => Promise<Response>): Promise<{ text: string; title: string; fake: FakeFetch }> {
+  async function errorText(
+    answer: (url: string, init?: RequestInit) => Promise<Response>,
+    action: "Retry" | "Generate again" = "Retry",
+  ): Promise<{ text: string; title: string; fake: FakeFetch }> {
     const fake = stubFetch(answer);
     render(<App />);
     paintFirstCell();
@@ -139,8 +142,8 @@ describe("motif panel: error states (3.6)", () => {
     const alert = await waitFor(() => within(motifPanel()).getByRole("alert"));
     const text = textOf(alert);
     const title = textOf(alert.querySelector(".state-title") ?? alert);
-    // A retry is offered and sends the same request again.
-    const retry = within(alert).getByRole("button", { name: "Retry" }) as HTMLButtonElement;
+    // A retry is offered and, with nothing changed, sends the same request again.
+    const retry = within(alert).getByRole("button", { name: action }) as HTMLButtonElement;
     expect(retry.disabled).toBe(false);
     fireEvent.click(retry);
     await waitFor(() => expect(fake).toHaveBeenCalledTimes(2));
@@ -160,7 +163,10 @@ describe("motif panel: error states (3.6)", () => {
 
   for (const entry of cases) {
     it(`shows a ${entry.name} with its own wording and a retry`, async () => {
-      const { text } = await errorText(() => Promise.resolve(jsonResponse(entry.status, { code: entry.code, message: "server text" })));
+      const { text } = await errorText(
+        () => Promise.resolve(jsonResponse(entry.status, { code: entry.code, message: "server text" })),
+        entry.action,
+      );
       expect(text).toContain(entry.title);
       expect(text).not.toContain("server text");
     });
@@ -174,7 +180,7 @@ describe("motif panel: error states (3.6)", () => {
   it("uses different wording for each kind of failure", async () => {
     const results: { text: string; title: string }[] = [];
     for (const entry of cases) {
-      results.push(await errorText(() => Promise.resolve(jsonResponse(entry.status, { code: entry.code, message: "x" }))));
+      results.push(await errorText(() => Promise.resolve(jsonResponse(entry.status, { code: entry.code, message: "x" })), entry.action));
       cleanup();
     }
     results.push(await errorText(() => Promise.reject(new TypeError("Failed to fetch"))));
@@ -183,6 +189,34 @@ describe("motif panel: error states (3.6)", () => {
     const [unavailable, timeout, invalid, network] = results.map((result) => result.title);
     expect(unavailable).toBe(timeout);
     expect(new Set([unavailable, invalid, network]).size).toBe(3);
+  });
+});
+
+describe("motif panel: retry uses the current settings (3.6)", () => {
+  it("Retry rebuilds the request from the current prompt and colour count", async () => {
+    const fake = stubFetch(() => Promise.resolve(jsonResponse(503, { code: "MODEL_UNAVAILABLE", message: "x" })));
+    render(<App />);
+    describeAndGenerate("a lozenge border");
+    await waitFor(() => within(motifPanel()).getByRole("alert"));
+    expect(requestBody(fake, 0).colourCount).toBe(3);
+    const setup = screen.getByRole("heading", { name: "Loom setup" }).closest("section")!;
+    const colours = within(setup).getByLabelText("Colour count") as HTMLInputElement;
+    fireEvent.change(colours, { target: { value: "4" } });
+    fireEvent.blur(colours);
+    fireEvent.change(within(motifPanel()).getByLabelText("Describe the motif"), { target: { value: "a peacock" } });
+    fireEvent.click(within(within(motifPanel()).getByRole("alert")).getByRole("button", { name: "Retry" }));
+    await waitFor(() => expect(fake).toHaveBeenCalledTimes(2));
+    expect(requestBody(fake, 1).colourCount).toBe(4);
+    expect(requestBody(fake, 1).input).toEqual({ kind: "text", prompt: "a peacock" });
+  });
+
+  it("labels the action Generate again when the motif could not be used", async () => {
+    stubFetch(() => Promise.resolve(jsonResponse(502, { code: "MOTIF_SVG_INVALID", message: "x" })));
+    render(<App />);
+    describeAndGenerate();
+    const alert = await waitFor(() => within(motifPanel()).getByRole("alert"));
+    expect(within(alert).queryByRole("button", { name: "Retry" })).toBeNull();
+    expect(within(alert).getByRole("button", { name: "Generate again" })).toBeTruthy();
   });
 });
 

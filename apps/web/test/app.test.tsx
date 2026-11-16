@@ -1,6 +1,6 @@
 // The whole app (12.1 to 12.4, 9.3, 9.5): framing copy, accessible names on every control, the
 // offline banner with the editor still usable, and keyboard painting with undo and redo.
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 import { App } from "../src/app";
 import { accessibleName, installDom, textOf } from "./dom-setup";
@@ -127,5 +127,41 @@ describe("app", () => {
     fireEvent.keyDown(canvas, { key: "Enter" });
     fireEvent.keyDown(canvas, { key: "ArrowDown" });
     expect(readout()).toBe("end 2 · pick 0 · region 0");
+  });
+
+  it("the REPEAT_NOT_DIVISIBLE action in the float panel turns repeat across off (10.4)", async () => {
+    render(<App />);
+    const setup = screen.getByRole("heading", { name: "Loom setup" }).closest("section")!;
+    fireEvent.change(within(setup).getByLabelText("Loom profile"), { target: { value: "120" } });
+    const toggle = within(setup).getByRole("switch") as HTMLInputElement;
+    fireEvent.click(toggle);
+    expect(toggle.checked).toBe(true);
+    const floats = screen.getByRole("heading", { name: "Float check" }).closest("section")!;
+    const action = await waitFor(() => within(floats).getByRole("button", { name: "Turn off repeat across" }));
+    fireEvent.click(action);
+    expect(toggle.checked).toBe(false);
+    await waitFor(() => expect(within(floats).queryByRole("alert")).toBeNull());
+  });
+
+  it("in Scroll mode a one-finger drag does not paint; in Paint mode it does (9.2)", () => {
+    render(<App />);
+    const canvas = screen.getByRole("application");
+    // jsdom reports a zero-sized box, so client coordinates are grid coordinates at 8px cells.
+    const drag = (pointerId: number): void => {
+      fireEvent.pointerDown(canvas, { pointerId, pointerType: "touch", isPrimary: true, clientX: 4, clientY: 380 });
+      fireEvent.pointerMove(canvas, { pointerId, pointerType: "touch", isPrimary: true, clientX: 60, clientY: 380 });
+      fireEvent.pointerUp(canvas, { pointerId, pointerType: "touch", isPrimary: true, clientX: 60, clientY: 380 });
+    };
+    // Region 1, so a painted cell differs from the blank grid and makes an undoable edit.
+    fireEvent.keyDown(window, { key: "2" });
+    fireEvent.click(button("Scroll"));
+    expect(button("Scroll").getAttribute("aria-pressed")).toBe("true");
+    expect(canvas.style.touchAction).toBe("pan-x pan-y pinch-zoom");
+    drag(1);
+    expect(button("Undo").disabled).toBe(true);
+    fireEvent.click(button("Paint"));
+    expect(canvas.style.touchAction).toBe("none");
+    drag(2);
+    expect(button("Undo").disabled).toBe(false);
   });
 });
