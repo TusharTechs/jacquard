@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@jacquard/engine": "workspace:*",
+    "@jacquard/export": "workspace:*",
     "@jacquard/motif": "workspace:*",
     "react": "19.3.1",
     "react-dom": "19.3.1"

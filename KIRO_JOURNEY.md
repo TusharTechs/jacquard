@@ -1169,6 +1169,25 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: agent review, then fixes.
 - Evidence: `apps/web/src/**`, `apps/web/test/float-panel.test.tsx`, `motif-panel.test.tsx`, `app.test.tsx`, `packages/motif/src/specks.ts`; tag `phase-C`.
 
+### 2026-11-16 — simulate-and-export spec and wave 0 (task 1)
+
+- Surface: IDE
+- Goal: Write the Phase D spec (requirements, gap analysis, design, tasks) and scaffold `@jacquard/export`.
+- Kiro features used: spec `simulate-and-export` (new; written in this session); steering `weaving-domain.md` (the WIF mapping is "to verify" and belongs to the export spec, not the engine), `design-language.md` ("never silently export"), `structure.md` (updated); web search (`remote_web_search`) and `web_fetch` for the WIF format.
+- Model / credits (start → end):
+- What worked:
+  - `requirements.md` has 7 requirements: cloth model, simulator view, WIF export, card set export, point-paper sheet, export panel, package boundaries. The Decision log has 12 rows.
+  - `design.md` has 11 properties, including the three the playbook names: WIF round trip (3), card count equals pick count (6), and every card has the profile's number of positions (6).
+  - `tasks.md` has 5 top-level tasks and waves 0 to 4.
+  - Wave 0: `packages/export` (runtime dependency only `@jacquard/engine`) with a smoke test, added to `apps/web`. `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, export 4, mcp 88, motif 75, backend 45, web 80).
+- What failed or surprised:
+  - The published WIF 1.1 text at mhsoft.com could not be fetched (`connect EHOSTUNREACH 64.98.135.7:443`). The section list comes from secondary descriptions (a CRAN `weaveDraft` page and the `erys/wif-weave` README), so the mapping and the section list are labelled `[to verify]`. The user's Phase D manual step (open the WIF in an independent tool) is now the only real check.
+  - No WIF `Date` field, so that output stays byte-identical. Some readers may require it; that is to verify.
+  - The playbook's Phase B tool list named `export_wif` for the MCP server. It is still not added; the weave-mcp spec fixes six tools.
+  - I tagged `phase-C` before rerunning the tests after the reviewer fixes. The rerun passed (web 80), but the order was wrong.
+- Spec versus vibe note: spec.
+- Evidence: `.kiro/specs/simulate-and-export/*.md`, `packages/export/package.json`, `.kiro/steering/structure.md`.
+
 ### Template
 
 ```
