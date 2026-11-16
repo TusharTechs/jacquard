@@ -7,7 +7,7 @@ export type ProfileResolution =
   | { readonly ok: true; readonly profile: LoomProfile }
   | { readonly ok: false; readonly error: EngineError };
 
-const BUILT_IN_INDEX: Readonly<Record<string, 0 | 1 | 2>> = { "120": 0, "240": 1, "400": 2 };
+const BUILT_IN_NAMES: readonly string[] = ["120", "240", "400"];
 
 /**
  * A built-in name returns the engine's frozen profile unmodified. An object goes through
@@ -16,8 +16,10 @@ const BUILT_IN_INDEX: Readonly<Record<string, 0 | 1 | 2>> = { "120": 0, "240": 1
  */
 export function resolveProfile(argument: unknown, engine: EngineApi): ProfileResolution {
   if (typeof argument === "string") {
-    const index = BUILT_IN_INDEX[argument];
-    if (index !== undefined) return { ok: true, profile: engine.profiles[index] };
+    const profile = BUILT_IN_NAMES.includes(argument)
+      ? engine.profiles.find((candidate) => String(candidate.hookCount) === argument)
+      : undefined;
+    if (profile !== undefined) return { ok: true, profile };
   }
   const defined = engine.defineProfile(argument as ProfileFields);
   const validated = engine.validateProfile(defined);

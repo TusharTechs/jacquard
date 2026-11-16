@@ -986,6 +986,23 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/test/config.test.ts`.
 
+### 2026-11-16 — Phase B end: weave-auditor review of weave-mcp
+
+- Surface: IDE
+- Goal: End-of-phase audit by the `weave-auditor` agent, fix findings, tag `phase-B`.
+- Kiro features used: custom agent `weave-auditor` (first run, as a sub-agent); MCP server `jacquard-weave` (our own; the auditor called `list_profiles`, `build_lift_plan`, `check_floats`, `auto_fix`, `build_cards` and `decode_cards` live); steering `autopilot.md` (phase-end step).
+- Model / credits (start → end):
+- What worked:
+  - The auditor reported 0 findings in all four categories (float-violation, card-round-trip, unlabelled-loom-fact, tool-error). It checked all 33 Label_Table entries against `profiles.ts` and against `list_profiles`.
+  - It ran the three golden fixtures through the MCP tools with `{hookCount:16, maxFloat:4}`. Before `auto_fix`: border-stripe 60 violations, solid-block 60, diamond 26. Flips: 49, 51 and 26. `check_floats` after `auto_fix` returned `[]` for all three. `build_cards` then `decode_cards` reproduced each plan. It also reported a correct `WEAVE_PERIOD_SEAM` warning on border-stripe (1/5 twill, period 6, 16 picks) and found no weaving logic in `packages/mcp/src`.
+  - This is the first time Kiro used our own MCP server: the `jacquard-weave` tools were loaded in the session without a reload.
+- What failed or surprised:
+  - The auditor's one note: `listProfiles` paired names with `engine.profiles` by position, so a reordered list would mislabel fields. Fixed: `handlers.ts` and `profile.ts` now pick the profile whose `hookCount` matches the name. `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 88 passed).
+  - The auditor round-tripped only the plans before `auto_fix`, not the fixed plans, and did not read the test files. It said so itself.
+  - The auditor ran as a sub-agent of this session, so the user's manual checks 14.4 and 14.6 are still the user's to do.
+- Spec versus vibe note: spec, then agent review.
+- Evidence: `packages/mcp/src/handlers.ts`, `packages/mcp/src/profile.ts`; tag `phase-B`.
+
 ### Template
 
 ```

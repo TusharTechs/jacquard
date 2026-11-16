@@ -16,8 +16,10 @@ const BUILT_IN_NAMES: readonly BuiltInName[] = ["120", "240", "400"];
 
 /** list_profiles (Requirement 2): the three built-in profiles, each field as { value, label }. */
 export const listProfiles: Handler = (_args, engine) => {
-  const profiles = BUILT_IN_NAMES.map((name, index) => {
-    const profile = engine.profiles[index as 0 | 1 | 2];
+  const profiles = BUILT_IN_NAMES.map((name) => {
+    // Paired by hook count, not by position, so a reordered profile list cannot mislabel fields.
+    const profile = engine.profiles.find((candidate) => String(candidate.hookCount) === name);
+    if (profile === undefined) throw new Error(`engine has no built-in profile ${name}`);
     const labels = LABEL_TABLE[name];
     const fields: Record<string, { value: unknown; label: string }> = {};
     for (const key of Object.keys(profile) as (keyof LoomProfile)[]) {

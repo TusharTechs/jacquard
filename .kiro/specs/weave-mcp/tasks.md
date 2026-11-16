@@ -63,7 +63,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - `content` is one text item with `canonicalJson`; `structuredContent` is the parse of that text; `isError: true` only for errors
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 9.6, 11.4_
 
-- [ ] 5. Engine seam and argument checking
+- [x] 5. Engine seam and argument checking
   - [x] 5.1 Implement `src/engine-api.ts`
     - `EngineApi` interface and `realEngine` (the only value import of `@jacquard/engine`); `profiles` in order 120, 240, 400
     - _Requirements: 10.3, 13.3_
