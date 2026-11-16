@@ -75,6 +75,42 @@
     "12.5 Write property test for custom profiles": {
       "status": "passed",
       "lastRunTimestamp": 1794824889357
+    },
+    "11.6 Write property test for auto-fix success": {
+      "status": "passed",
+      "lastRunTimestamp": 1794825509534
+    },
+    "11.7 Write property test for clean plans": {
+      "status": "passed",
+      "lastRunTimestamp": 1794825572141
+    },
+    "11.8 Write property test for idempotence": {
+      "status": "passed",
+      "lastRunTimestamp": 1794825639308
+    },
+    "11.9 Write property test for flip locations": {
+      "status": "passed",
+      "lastRunTimestamp": 1794825713943
+    },
+    "11.10 Write property test for changed cells": {
+      "status": "passed",
+      "lastRunTimestamp": 1794825798701
+    },
+    "11.11 Write property test for periodic output": {
+      "status": "passed",
+      "lastRunTimestamp": 1794825869321
+    },
+    "11.12 Write property test for the failure rule": {
+      "status": "passed",
+      "lastRunTimestamp": 1794825948183
+    },
+    "12.3 Write property test for determinism": {
+      "status": "passed",
+      "lastRunTimestamp": 1794826076802
+    },
+    "12.4 Write property test for input immutability": {
+      "status": "passed",
+      "lastRunTimestamp": 1794826186772
     }
   },
   "executionHistory": {
@@ -578,6 +614,152 @@
         "executionId": "87e25d99-7a2e-4230-b3f8-a159f153a224",
         "chatSessionId": "sess_2e47ed03-7107-422d-84bf-779d92aba9e4",
         "timestamp": 1794824904597
+      }
+    ],
+    "11.5 Example test: golden fixtures": [
+      {
+        "executionId": "c568edd7-8392-42c7-a700-0de4c0d1c831",
+        "chatSessionId": "sess_c8f09ef6-9427-4ed9-9a7b-b19721d43d4e",
+        "timestamp": 1794825385211
+      },
+      {
+        "executionId": "c568edd7-8392-42c7-a700-0de4c0d1c831",
+        "chatSessionId": "sess_c8f09ef6-9427-4ed9-9a7b-b19721d43d4e",
+        "timestamp": 1794825453423
+      }
+    ],
+    "11.6 Write property test for auto-fix success": [
+      {
+        "executionId": "3f952159-c04f-4e6b-8c8d-e1f6f1c6f8da",
+        "chatSessionId": "sess_6fe3260b-eb54-4b33-ad5b-6a92d47adb66",
+        "timestamp": 1794825471800
+      },
+      {
+        "executionId": "3f952159-c04f-4e6b-8c8d-e1f6f1c6f8da",
+        "chatSessionId": "sess_6fe3260b-eb54-4b33-ad5b-6a92d47adb66",
+        "timestamp": 1794825521005
+      }
+    ],
+    "11.7 Write property test for clean plans": [
+      {
+        "executionId": "36275563-7276-433d-83c0-987591d7c07b",
+        "chatSessionId": "sess_9df9f30a-9fbb-4037-99c4-4aaf8087094d",
+        "timestamp": 1794825540101
+      },
+      {
+        "executionId": "36275563-7276-433d-83c0-987591d7c07b",
+        "chatSessionId": "sess_9df9f30a-9fbb-4037-99c4-4aaf8087094d",
+        "timestamp": 1794825587272
+      }
+    ],
+    "11.8 Write property test for idempotence": [
+      {
+        "executionId": "fb7a6c28-2089-43fb-bb64-e06028a6f66d",
+        "chatSessionId": "sess_89b2c2d0-2885-43fe-a8c1-610eba9e18a9",
+        "timestamp": 1794825612097
+      },
+      {
+        "executionId": "fb7a6c28-2089-43fb-bb64-e06028a6f66d",
+        "chatSessionId": "sess_89b2c2d0-2885-43fe-a8c1-610eba9e18a9",
+        "timestamp": 1794825649888
+      }
+    ],
+    "11.9 Write property test for flip locations": [
+      {
+        "executionId": "be3a6c2e-cb01-4950-96ee-0d3402800fc3",
+        "chatSessionId": "sess_1f41ac52-0334-4a85-86dd-ef7561ea372b",
+        "timestamp": 1794825669114
+      },
+      {
+        "executionId": "be3a6c2e-cb01-4950-96ee-0d3402800fc3",
+        "chatSessionId": "sess_1f41ac52-0334-4a85-86dd-ef7561ea372b",
+        "timestamp": 1794825729205
+      }
+    ],
+    "11.10 Write property test for changed cells": [
+      {
+        "executionId": "0ce908ea-47a5-4227-9e2d-5a0bbbe0ee13",
+        "chatSessionId": "sess_56cca206-b755-4661-8c95-1b1f5580c9f6",
+        "timestamp": 1794825748533
+      },
+      {
+        "executionId": "0ce908ea-47a5-4227-9e2d-5a0bbbe0ee13",
+        "chatSessionId": "sess_56cca206-b755-4661-8c95-1b1f5580c9f6",
+        "timestamp": 1794825808356
+      }
+    ],
+    "11.11 Write property test for periodic output": [
+      {
+        "executionId": "a268eb23-c9d2-4ec5-b5c6-0a378209c512",
+        "chatSessionId": "sess_54bda558-7632-469d-9fb1-46d941d138b5",
+        "timestamp": 1794825828952
+      },
+      {
+        "executionId": "a268eb23-c9d2-4ec5-b5c6-0a378209c512",
+        "chatSessionId": "sess_54bda558-7632-469d-9fb1-46d941d138b5",
+        "timestamp": 1794825885986
+      }
+    ],
+    "11.12 Write property test for the failure rule": [
+      {
+        "executionId": "cc758805-8bcd-4431-9bd4-c7a43098fd20",
+        "chatSessionId": "sess_913dc632-9805-4d62-93fa-c64e770ce123",
+        "timestamp": 1794825910352
+      },
+      {
+        "executionId": "cc758805-8bcd-4431-9bd4-c7a43098fd20",
+        "chatSessionId": "sess_913dc632-9805-4d62-93fa-c64e770ce123",
+        "timestamp": 1794825958070
+      }
+    ],
+    "11. Auto-fix": [
+      {
+        "executionId": "cc758805-8bcd-4431-9bd4-c7a43098fd20",
+        "chatSessionId": "sess_913dc632-9805-4d62-93fa-c64e770ce123",
+        "timestamp": 1794825958101
+      }
+    ],
+    "12.3 Write property test for determinism": [
+      {
+        "executionId": "18fcb8d1-b6f1-4b56-9509-94a61734e3d2",
+        "chatSessionId": "sess_55a72c3e-5d2c-4977-a632-4f2b8a4ce15d",
+        "timestamp": 1794826033437
+      },
+      {
+        "executionId": "18fcb8d1-b6f1-4b56-9509-94a61734e3d2",
+        "chatSessionId": "sess_55a72c3e-5d2c-4977-a632-4f2b8a4ce15d",
+        "timestamp": 1794826092517
+      }
+    ],
+    "12.4 Write property test for input immutability": [
+      {
+        "executionId": "db61d270-a7af-407d-b2a4-324c67ea2dcc",
+        "chatSessionId": "sess_031a9408-5558-472f-94a0-bada1434e418",
+        "timestamp": 1794826109865
+      },
+      {
+        "executionId": "db61d270-a7af-407d-b2a4-324c67ea2dcc",
+        "chatSessionId": "sess_031a9408-5558-472f-94a0-bada1434e418",
+        "timestamp": 1794826198718
+      }
+    ],
+    "12. Public API and determinism": [
+      {
+        "executionId": "db61d270-a7af-407d-b2a4-324c67ea2dcc",
+        "chatSessionId": "sess_031a9408-5558-472f-94a0-bada1434e418",
+        "timestamp": 1794826198747
+      }
+    ],
+    "13. Final checkpoint: run the full engine test suite and typecheck once; record results and any shrunk counterexamples in `KIRO_JOURNEY.md`; ask the user if questions arise": [
+      {
+        "executionId": "db6ce354-9ef8-4513-a7d0-e6df568b0860",
+        "chatSessionId": "sess_23702e0f-491e-4ae7-b5cf-75c9966ffd59",
+        "timestamp": 1794826261497
+      },
+      {
+        "executionId": "db6ce354-9ef8-4513-a7d0-e6df568b0860",
+        "chatSessionId": "sess_23702e0f-491e-4ae7-b5cf-75c9966ffd59",
+        "timestamp": 1794826310201
       }
     ]
   }

@@ -167,7 +167,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - **Property 23: Violations are over the limit, exclusive and sorted**
     - **Validates: Requirements 4.3, 4.4, 4.6**
 
-- [ ] 11. Auto-fix
+- [x] 11. Auto-fix
   - [x] 11.1 Implement badness and incremental run tables in `src/auto-fix.ts`
     - Badness `B` as in design Auto-fix, Badness; recompute only the two lines through a flipped cell
     - _Requirements: 5.1_
@@ -180,52 +180,52 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
   - [x] 11.4 Example test: satin-lattice placement
     - Solid 24 × 24 region, limits 8, run all lifted and all unlifted; every flip satisfies `(p − 2e) mod 9 = 0`; no three flips on consecutive ends at consecutive picks
     - _Requirements: 5.7_
-  - [ ] 11.5 Example test: golden fixtures
+  - [x] 11.5 Example test: golden fixtures
     - Create a few small gallery-like designs in `test/fixtures/` that auto-fix must fix; fixtures are read-only once committed
     - _Requirements: 5.1_
-  - [ ] 11.6 Write property test for auto-fix success
+  - [x] 11.6 Write property test for auto-fix success
     - **Property 24: Auto-fix success leaves no violations**
     - **Validates: Requirements 5.1**
-  - [ ] 11.7 Write property test for clean plans
+  - [x] 11.7 Write property test for clean plans
     - **Property 25: Clean plans are returned unchanged**
     - **Validates: Requirements 5.2**
-  - [ ] 11.8 Write property test for idempotence
+  - [x] 11.8 Write property test for idempotence
     - **Property 26: Auto-fix is idempotent**
     - **Validates: Requirements 5.3**
-  - [ ] 11.9 Write property test for flip locations
+  - [x] 11.9 Write property test for flip locations
     - **Property 27: Every flip lies in a current violation**
     - **Validates: Requirements 5.4**
-  - [ ] 11.10 Write property test for changed cells
+  - [x] 11.10 Write property test for changed cells
     - **Property 28: Only flipped lift cells change**
     - **Validates: Requirements 5.5, 6.3**
-  - [ ] 11.11 Write property test for periodic output
+  - [x] 11.11 Write property test for periodic output
     - **Property 29: Auto-fix keeps repeat-across plans periodic**
     - **Validates: Requirements 5.6**
-  - [ ] 11.12 Write property test for the failure rule
+  - [x] 11.12 Write property test for the failure rule
     - **Property 30: Never partly fixed**
     - **Validates: Requirements 5.8**
   - [x] 11.13 Write property test for badness
     - **Property 33: Badness strictly decreases with every flip**
     - **Validates: Requirements 5.1, 5.8**
 
-- [ ] 12. Public API and determinism
+- [x] 12. Public API and determinism
   - [x] 12.1 Export the public API from `src/index.ts`
     - Types, built-in profiles, `defineProfile`, `validateProfile`, `evaluateWeave`, `weavePeriod`, `buildLiftPlan`, `validatePlan`, `buildCards`, `decodeCards`, `cardRows`, `nextCard`, `checkFloats`, `autoFix`
     - _Requirements: 1.4, 6.1_
   - [x] 12.2 Example test: no forbidden globals or runtime dependencies
     - Scans `src/` for `Date`, `Math.random`, `Intl`, `toLocale`, `process`, `globalThis`, `fetch`; checks `package.json` has no `dependencies`
     - _Requirements: 6.2_
-  - [ ] 12.3 Write property test for determinism
+  - [x] 12.3 Write property test for determinism
     - **Property 31: Identical input gives identical output**
     - **Validates: Requirements 6.1**
-  - [ ] 12.4 Write property test for input immutability
+  - [x] 12.4 Write property test for input immutability
     - **Property 32: Inputs are never modified**
     - **Validates: Requirements 6.3**
   - [x] 12.5 Write property test for custom profiles
     - **Property 34: A custom profile is used in place of a built-in**
     - **Validates: Requirements 1.4**
 
-- [ ] 13. Final checkpoint: run the full engine test suite and typecheck once; record results and any shrunk counterexamples in `KIRO_JOURNEY.md`; ask the user if questions arise
+- [x] 13. Final checkpoint: run the full engine test suite and typecheck once; record results and any shrunk counterexamples in `KIRO_JOURNEY.md`; ask the user if questions arise
 
 ## Notes
 
