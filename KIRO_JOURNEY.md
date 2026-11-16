@@ -1091,7 +1091,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Kiro features used: spec `motif-input` (tasks 6.1 to 6.3, run by one `general-task-execution` sub-agent); vibe mode for the editor's interaction feel (task 6.3, as `BUILD_PLAYBOOK.md` asks); steering `design-language.md` and `product.md` (both given to the sub-agent as binding); hook `block-engine-fixture-edits` (checked file writes). The sub-agent reports that it loaded the page in Chrome DevTools at 360 px and 1280 px and measured `scrollWidth`. I have not seen that session, so I cannot say which tool it used.
 - Model / credits (start → end):
 - What worked:
-  - `apps/web/src`: `app.tsx`, `styles.css`, the shared set in `components/ui/` (Button, Field, Panel, Dialog, Toast, Tabs), 11 feature components and 8 display/plumbing helpers in `lib/` (3,375 lines in all under `src`).
+  - `apps/web/src`: `app.tsx`, `styles.css`, the shared set in `components/ui/` (Button, Field, Panel, Dialog, Toast, Tabs), 11 feature components and 8 display/plumbing helpers in `lib/` (2,965 lines of `.ts` and `.tsx` in `app.tsx`, `components/` and `lib/`, by `wc -l`).
   - The first line of the header says punch cards are dead as a computing medium. The loom setup carries the untested-card-format note. Model output is labelled "Suggestion from the model — edit it freely", and stand-in output "Stand-in motif (model not connected)".
   - Point paper: canvas with pick 0 at the bottom; violations drawn as an outline plus a corner triangle; pointer painting that fills the cells between moves; two-finger pinch zoom; keyboard cursor; undo and redo shortcuts; a monospace readout.
   - Reported browser check: a stand-in motif with region 0 set to twill 3/1 S gave 18 violations, and auto-fix flipped 19 lift-plan cells leaving 0. Through the Vite proxy, `POST /api/motif` returned a stand-in SVG.
@@ -1107,6 +1107,23 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
   - No component tests yet; they are wave 5.
 - Spec versus vibe note: spec gave the behaviour (paint, undo, zoom, keyboard, states). Vibe found the problems you only see on screen: the 3 px overflow, wrapping labels and the cursor race. The spec would not have caught them, and vibe alone would not have produced the undo cap or the keyboard path.
 - Evidence: `apps/web/src/**`.
+
+### 2026-11-16 — motif-input wave 5 (tasks 7.1, 7.2)
+
+- Surface: IDE
+- Goal: Component tests for the required states and framing, plus credential and import scans.
+- Kiro features used: spec `motif-input` (tasks 7.1, 7.2, run by a fresh `general-task-execution` sub-agent that had not written the UI, working from the requirements); hook `block-engine-fixture-edits` (checked file writes). No property test in this wave, no MCP tool, no custom agent.
+- Model / credits (start → end):
+- What worked:
+  - 6 new files in `apps/web/test`, 37 new tests: motif panel states (empty; loading with a cancel that aborts the fetch signal; model, invalid-motif and network errors with distinct wording and Retry; stand-in and suggestion labels), float panel states (including a real `AUTOFIX_FAILED` from a 1-pick plain design), the loom setup's untested-format note and `REPEAT_NOT_DIVISIBLE` message, whole-app framing and accessible names, the offline banner, keyboard paint/undo/redo, and scans.
+  - The scans check `src` for model endpoints and `Authorization`, a fresh Vite build for AWS key patterns, all tracked files for `AKIA…` keys, and that imports use only package names.
+  - Rerun by me: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 88, motif 75, backend 45, web `11 passed` files / `74 passed` tests).
+- What failed or surprised:
+  - Every test passed against the UI on the first run, so no UI bug was found. To check the tests can fail, the sub-agent planted three changes: it renamed the stand-in label, removed the untested-loom note, and added an `Authorization` comment to `src`. Each was caught, and all three were reverted.
+  - `AUTOFIX_FAILED` cannot be reached through the app, because the minimum repeat is 8 picks. It is tested on the panel with a real engine result.
+  - The build scan runs `vite build` into a temporary folder inside the test rather than adding a `pretest` script as I suggested. That keeps `dist/` alone.
+- Spec versus vibe note: spec.
+- Evidence: `apps/web/test/motif-panel.test.tsx`, `float-panel.test.tsx`, `loom-setup-panel.test.tsx`, `app.test.tsx`, `scans.test.ts`, `dom-setup.ts`.
 
 ### Template
 

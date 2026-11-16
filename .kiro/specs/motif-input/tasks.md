@@ -66,10 +66,10 @@ All 14 correctness properties have their own property test task. Every property 
   - [x] 6.3 `point-paper.tsx` and `editor-toolbar.tsx` (vibe mode for the interaction feel: drag painting, zoom, pinch, cursor)
     - _Requirements: 9.1 to 9.6, 10.2, 10.4_
 
-- [ ] 7. Web tests
-  - [ ] 7.1 Component tests: motif panel states, float panel states, loom-setup untested-format note, stand-in label
+- [x] 7. Web tests
+  - [x] 7.1 Component tests: motif panel states, float panel states, loom-setup untested-format note, stand-in label
     - _Requirements: 3.6, 3.7, 8.5, 10.3, 11.3, 12.1, 12.2_
-  - [ ] 7.2 Scans: no model endpoint in `apps/web/src`; no credentials in the built `dist`; imports only through package names; repository contains no AWS key pattern
+  - [x] 7.2 Scans: no model endpoint in `apps/web/src`; no credentials in the built `dist`; imports only through package names; repository contains no AWS key pattern
     - _Requirements: 2.1, 2.4, 13.3_
 
 - [ ] 8. Checkpoint and visual check
