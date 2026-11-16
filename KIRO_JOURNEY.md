@@ -398,6 +398,20 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec; the design's Float checker section was specific enough to implement without further questions.
 - Evidence: `packages/engine/src/floats.ts`, `.kiro/specs/weave-engine/tasks.md` (9.1 and 10.2 checked).
 
+### 2026-11-16 — Main chat session: checkpoint commit mid-wave 10; tasks 10.4 and 10.9 reset
+
+- Surface: IDE
+- Goal: Commit the work from task 8 and waves 9 and 10 so far as a checkpoint, at the user's request, and reset two tasks that ran too early.
+- Kiro features used: spec `weave-engine` (task checkboxes in `tasks.md`, run history in `tasks.meta.json`); hook `journey-entry-on-stop` (fired at the end of this turn; this entry is the response). No spec task was run in this session, no agent, MCP tool, property test or checkpoint restore.
+- Model / credits (start → end):
+- What worked: Before committing, `pnpm typecheck` printed `EXIT_CODE=0` and `pnpm test` printed `Test Files  12 passed (12)` and `Tests  78 passed (78)` with `EXIT_CODE=0`. Commit `ea7c4bd` covers tasks 8, 9.1, 9.2, 9.3, 10.2 and 11.1 and the wave 8 and 9 entries, pushed to `origin/main`.
+- What failed or surprised:
+  - **Tasks 10.4 and 10.9 were started before their dependency.** `tasks.meta.json` shows them at 09:10:29 to 09:11:22Z, before task 10.2 (09:11:59Z) existed. They changed nothing: `.kiro/hook-runs.log` has no file edits in that window and there is no `pbtResults` entry for either. They were left as `[~]`. At the user's request I reset both to `[ ]` so they can be started again; the reset is in the same commit.
+  - **Wave 10 is still open.** Tasks 9.2, 9.3 and 11.1 are done but belong to wave 10 in the dependency graph, so they are committed but not yet journalled. They go in the wave 10 entry after 9.4 to 9.7 and 10.4 to 10.9 finish.
+  - **A wave was committed before it finished**, at the user's request, against the usual commit-per-wave pattern.
+- Spec versus vibe note: n/a.
+- Evidence: commit `ea7c4bd`; `.kiro/specs/weave-engine/tasks.md` (10.4 and 10.9 unchecked); `.kiro/specs/weave-engine/tasks.meta.json` (execution times).
+
 ### Template
 
 ```
