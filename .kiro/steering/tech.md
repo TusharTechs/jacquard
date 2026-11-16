@@ -35,6 +35,11 @@ inclusion: always
 - Files under `packages/engine/test/fixtures` are read-only once they exist. The `block-engine-fixture-edits` hook blocks edits, moves and deletes of existing files there; creating a new file is allowed.
 - Never modify files under `packages/engine/test/fixtures` with shell commands (`sed -i`, redirects, `mv`, `rm`, `git checkout`, editors, scripts). The hook cannot see shell commands, so this rule is the only guard for them.
 
+## Pushing
+
+- After every wave's commit, push `main` to `origin` with `git push origin main; echo "EXIT_CODE=$?"`, and report the push output to the user.
+- Never force-push. If the push is rejected or fails, stop and report; do not retry with other options.
+
 ## Finishing a spec task
 
 - Every spec task must finish by running both `pnpm typecheck` and `pnpm test`, each with `; echo "EXIT_CODE=$?"`.

@@ -245,6 +245,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: vibe; a small tooling change.
 - Evidence: `.kiro/hooks/block-engine-fixture-edits.py`, `.kiro/hooks/block-engine-fixture-edits.json`, `.kiro/steering/tech.md`.
 
+### 2026-11-16 — Push rule added to steering
+
+- Surface: IDE
+- Goal: Make the user's push-after-every-wave rule persist across sessions.
+- Kiro features used: steering `tech.md` (new "Pushing" section: after every wave's commit, push `main` to `origin`, report the push output, never force-push, stop and report on failure). No spec task, hook, agent, MCP tool, property test or checkpoint.
+- Model / credits (start → end):
+- What worked: The rule is now in an always-included steering file. The "never force-push, stop and report on failure" lines are my additions to the user's wording.
+- What failed or surprised: Nothing.
+- Spec versus vibe note: vibe.
+- Evidence: `.kiro/steering/tech.md`.
+
 ### Template
 
 ```
