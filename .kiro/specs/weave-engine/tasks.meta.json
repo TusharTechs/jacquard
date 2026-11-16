@@ -27,6 +27,30 @@
     "7.9 Write property test for plan validation": {
       "status": "passed",
       "lastRunTimestamp": 1794818260324
+    },
+    "10.4 Write property test against the oracle": {
+      "status": "passed",
+      "lastRunTimestamp": 1794820938647
+    },
+    "10.5 Write property test for ring invariance along the picks": {
+      "status": "passed",
+      "lastRunTimestamp": 1794821007056
+    },
+    "10.6 Write property test for ring invariance across the ends": {
+      "status": "passed",
+      "lastRunTimestamp": 1794821101768
+    },
+    "10.7 Write property test for the complement": {
+      "status": "passed",
+      "lastRunTimestamp": 1794821165755
+    },
+    "10.8 Write property test for wovenFaceDown": {
+      "status": "passed",
+      "lastRunTimestamp": 1794821225862
+    },
+    "10.9 Write property test for violation shape and order": {
+      "status": "passed",
+      "lastRunTimestamp": 1794821294217
     }
   },
   "executionHistory": {
@@ -275,6 +299,16 @@
         "executionId": "ac3b93ac-b102-424c-b9b3-fd3491fd774c",
         "chatSessionId": "sess_c3b3fa06-f330-43bb-8072-9e6a2d1cd324",
         "timestamp": 1794820241177
+      },
+      {
+        "executionId": "5e873878-e887-4495-9a88-bd5942e617bb",
+        "chatSessionId": "sess_ba924ad6-4cbf-44a9-9693-be35bbefc252",
+        "timestamp": 1794820909741
+      },
+      {
+        "executionId": "5e873878-e887-4495-9a88-bd5942e617bb",
+        "chatSessionId": "sess_ba924ad6-4cbf-44a9-9693-be35bbefc252",
+        "timestamp": 1794820949767
       }
     ],
     "10.9 Write property test for violation shape and order": [
@@ -287,6 +321,16 @@
         "executionId": "440ffbfc-993c-4a6d-9ce2-429451be3cdd",
         "chatSessionId": "sess_4f078a43-7dd3-4419-abbd-98212e87964a",
         "timestamp": 1794820282360
+      },
+      {
+        "executionId": "026dd912-ac0f-4aa8-afa6-308d6ebad32d",
+        "chatSessionId": "sess_4e1d3cda-e818-47a8-a99d-569bc52011c5",
+        "timestamp": 1794821259048
+      },
+      {
+        "executionId": "026dd912-ac0f-4aa8-afa6-308d6ebad32d",
+        "chatSessionId": "sess_4e1d3cda-e818-47a8-a99d-569bc52011c5",
+        "timestamp": 1794821304457
       }
     ],
     "10.2 Implement `checkFloats` in `src/floats.ts`": [
@@ -311,6 +355,61 @@
         "executionId": "ff8d14ce-78ae-4917-b726-3ce2152fe681",
         "chatSessionId": "sess_dbac8eaa-3523-48df-b471-8e3665326b13",
         "timestamp": 1794820486743
+      }
+    ],
+    "10.5 Write property test for ring invariance along the picks": [
+      {
+        "executionId": "bf8e76ca-f3c2-4e0f-aca1-da0781e519d3",
+        "chatSessionId": "sess_6fc29e46-905f-4cee-9ccd-8f2e141b19db",
+        "timestamp": 1794820977346
+      },
+      {
+        "executionId": "bf8e76ca-f3c2-4e0f-aca1-da0781e519d3",
+        "chatSessionId": "sess_6fc29e46-905f-4cee-9ccd-8f2e141b19db",
+        "timestamp": 1794821035667
+      }
+    ],
+    "10.6 Write property test for ring invariance across the ends": [
+      {
+        "executionId": "cab4b910-8940-4243-ba2c-cc78be4c1f71",
+        "chatSessionId": "sess_2457ef72-ef46-484e-a00b-cc3eec7317d2",
+        "timestamp": 1794821057491
+      },
+      {
+        "executionId": "cab4b910-8940-4243-ba2c-cc78be4c1f71",
+        "chatSessionId": "sess_2457ef72-ef46-484e-a00b-cc3eec7317d2",
+        "timestamp": 1794821112737
+      }
+    ],
+    "10.7 Write property test for the complement": [
+      {
+        "executionId": "b1888d27-762d-4c41-9363-d57bfa0add52",
+        "chatSessionId": "sess_21d70066-ca39-46b2-9dde-50c9c26b4875",
+        "timestamp": 1794821136072
+      },
+      {
+        "executionId": "b1888d27-762d-4c41-9363-d57bfa0add52",
+        "chatSessionId": "sess_21d70066-ca39-46b2-9dde-50c9c26b4875",
+        "timestamp": 1794821174621
+      }
+    ],
+    "10.8 Write property test for wovenFaceDown": [
+      {
+        "executionId": "fca42382-f3e7-4ebf-848a-0c6f5bb2b60c",
+        "chatSessionId": "sess_4d26a9e5-f548-46b4-b799-385e2f9568f5",
+        "timestamp": 1794821200996
+      },
+      {
+        "executionId": "fca42382-f3e7-4ebf-848a-0c6f5bb2b60c",
+        "chatSessionId": "sess_4d26a9e5-f548-46b4-b799-385e2f9568f5",
+        "timestamp": 1794821235670
+      }
+    ],
+    "10. Float checker": [
+      {
+        "executionId": "026dd912-ac0f-4aa8-afa6-308d6ebad32d",
+        "chatSessionId": "sess_4e1d3cda-e818-47a8-a99d-569bc52011c5",
+        "timestamp": 1794821304505
       }
     ]
   }

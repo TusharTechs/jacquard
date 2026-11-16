@@ -138,7 +138,7 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
     - **Property 15: Bad card sets are rejected**
     - **Validates: Requirements 2.11, 2.13**
 
-- [ ] 10. Float checker
+- [x] 10. Float checker
   - [x] 10.1 Implement `src/runs.ts`
     - Constant, linear and ring run extraction; a ring run starts where its ring predecessor differs
     - _Requirements: 4.2, 4.4_
@@ -148,22 +148,22 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
   - [x] 10.3 Implement the naive oracle in `test/oracle.ts`
     - Tiles the unit 3 times (along picks, and along ends with repeat on) and scans linearly; imports only types from `src`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
-  - [ ] 10.4 Write property test against the oracle
+  - [x] 10.4 Write property test against the oracle
     - **Property 18: Float checker agrees with a naive oracle**
     - **Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5**
-  - [ ] 10.5 Write property test for ring invariance along the picks
+  - [x] 10.5 Write property test for ring invariance along the picks
     - **Property 19: Ring invariance along the picks**
     - **Validates: Requirements 4.2, 4.3**
-  - [ ] 10.6 Write property test for ring invariance across the ends
+  - [x] 10.6 Write property test for ring invariance across the ends
     - **Property 20: Ring invariance across the ends**
     - **Validates: Requirements 4.2**
-  - [ ] 10.7 Write property test for the complement
+  - [x] 10.7 Write property test for the complement
     - **Property 21: Complement swaps face and back**
     - **Validates: Requirements 4.1**
-  - [ ] 10.8 Write property test for wovenFaceDown
+  - [x] 10.8 Write property test for wovenFaceDown
     - **Property 22: wovenFaceDown swaps face and back**
     - **Validates: Requirements 1.2, 4.1**
-  - [ ] 10.9 Write property test for violation shape and order
+  - [x] 10.9 Write property test for violation shape and order
     - **Property 23: Violations are over the limit, exclusive and sorted**
     - **Validates: Requirements 4.3, 4.4, 4.6**
 

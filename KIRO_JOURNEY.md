@@ -412,6 +412,26 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: n/a.
 - Evidence: commit `ea7c4bd`; `.kiro/specs/weave-engine/tasks.md` (10.4 and 10.9 unchecked); `.kiro/specs/weave-engine/tasks.meta.json` (execution times).
 
+### 2026-11-16 — weave-engine wave 10 (tasks 9.2, 9.3, 10.4, 10.5, 10.6, 10.7, 10.8, 10.9, 11.1)
+
+- Surface: IDE
+- Goal: Finish wave 10: `decodeCards` (9.2), the 400-hook card layout test (9.3), the six float property tests (10.4 to 10.9) and the badness code (11.1).
+- Kiro features used: spec `weave-engine` (tasks listed above, all marked completed in `tasks.md`). Task 10.9 went through the orchestrator: `task_update` to in progress, the `spec-task-execution` sub-agent, then `task_update` to completed, which also completed parent task 10. Property tests: Properties 18 to 23 (`float-oracle`, `float-ring-picks`, `float-ring-ends`, `float-complement`, `float-face-down`, `float-violations` under `packages/engine/test/`). Example tests: `cards-400.test.ts` (9.3) and `auto-fix-badness.test.ts` (11.1). Steering `tech.md` (the `EXIT_CODE` rule, "Finishing a spec task"). Hooks: `engine-typecheck-and-test-on-save` (caught a type error, see below), `block-engine-fixture-edits` and `journey-entry-on-stop` (both fired; see the additions below). No custom agent of ours, no MCP tool.
+- Model / credits (start -> end):
+- What worked: After task 10.9 the sub-agent reported `pnpm typecheck` with `EXIT_CODE=0` and `pnpm test` with `EXIT_CODE=0`, `Test Files  18 passed (18)` and `Tests  84 passed (84)`. Property 23 ran 500 cases and passed on its first run. Tasks 9.4 to 9.7 and 11.2 became ready.
+- What failed or surprised:
+  - Property 23 passing on its first run means it has not been seen to fail. Its sort-order and exclusivity checks have not been tried against a deliberately broken `checkFloats`.
+  - Tasks 9.2, 9.3 and 11.1 were committed earlier in `ea7c4bd` (see the previous entry) and are only journalled here.
+  - Task 10.9 was first started too early and reset (previous entry), then ran properly in this session. Task 10.4 had the same history: started at 09:10:29Z before task 10.2 existed, reset, then run at 09:21:49Z.
+- **Added after the wave by the main chat session, from `tasks.meta.json`, `.kiro/hook-runs.log` and Kiro's session records** (the lines above were written by the 10.9 session before these checks):
+  - **Properties 18 to 23 all passed and are recorded by Kiro.** `tasks.meta.json` `pbtResults` has `"status": "passed"` for 10.4 (09:22:18Z), 10.5 (09:23:27Z), 10.6 (09:25:01Z), 10.7 (09:26:05Z), 10.8 (09:27:05Z) and 10.9 (09:28:14Z). Each of the six float property files runs 500 cases. No property failed, so there is no shrunk counterexample or seed to record.
+  - **The save hook caught a real type error.** In task 10.5, the first write of `test/float-ring-picks.property.test.ts` (09:23:21Z, `fs_write`) had `import type { LiftPlan, Violation } from "../src/index.js";`. `src/index.ts` exports functions only, not these types. The save hook logged `save-hook result: typecheck=1 test=0` at 09:23:22Z. The tests still passed because vitest does not typecheck. The task's own `pnpm typecheck` at 09:23:27Z showed the same error, `error TS2305: Module '"../src/index.js"' has no exported member 'LiftPlan'`. The next save (09:23:40Z, `str_replace`) moved the type import to `../src/types.js`, and the hook logged `typecheck=0 test=0` at 09:23:41Z. This is the first time a hook in this project caught a mistake. I cannot tell from the records whether the hook's own output reached the agent, or whether the agent acted on its own typecheck run five seconds later.
+  - **Every other save in the wave was clean.** The save hook logged `typecheck=0 test=0` after the saves at 09:22:10Z (10.4), 09:24:57Z (10.6), 09:25:57Z (10.7), 09:27:01Z (10.8) and 09:28:09Z (10.9). The fixture guard fired before each of the seven edits from 09:22 on and allowed them, which is correct: none was under `test/fixtures`. Kiro's session records for 10.5 show `ContextualHookInvoked` events for all three hooks: the guard (09:23:21Z, 09:23:40Z), the save hook (09:23:22Z, 09:23:41Z) and the Stop hook (09:23:59Z).
+  - **Correction to my previous entry.** It said wave 10 would finish only after tasks 9.4 to 9.7 and 10.4 to 10.9. By the dependency graph in `tasks.md`, 9.4 to 9.7 are in wave 11, not wave 10. Wave 10 is the nine tasks in this entry's title.
+  - **Checked by me afterwards:** `pnpm typecheck` printed both `tsc` steps with `EXIT_CODE=0`; `pnpm test` printed `Test Files  18 passed (18)` and `Tests  84 passed (84)` with `EXIT_CODE=0`.
+- Spec versus vibe note: spec; the design's Property 23 and the 4.6 ordering key were specific enough to test without questions.
+- Evidence: `packages/engine/test/float-oracle.property.test.ts`, `float-ring-picks`, `float-ring-ends`, `float-complement`, `float-face-down` and `float-violations` property tests, `.kiro/specs/weave-engine/tasks.md` (wave 10 tasks checked), `.kiro/specs/weave-engine/tasks.meta.json` (`pbtResults` for 10.4 to 10.9), `.kiro/hook-runs.log` (local, ignored by git; lines at 09:23:21Z to 09:23:41Z), commit `ea7c4bd` for 9.2, 9.3 and 11.1. Files in `media/journey/`: `2026-11-16-save-hook-catches-type-error.png` (committed; I viewed it: `tail -f .kiro/hook-runs.log` showing `typecheck=1` at 09:23:22Z then `typecheck=0` at 09:23:41Z, next to task 10.5's report, which names the wrong import); `2026-11-16-clip-save-hook-catches-type-error.mp4` (27 MB; 50 s according to the user); `2026-11-16-wave10-float-properties.mp4` (307 MB, the user's full recording of wave 10). Both MP4s are kept out of git, and I have not watched them.
+
 ### Template
 
 ```
@@ -432,9 +452,9 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 9 done) |
-| Property-based tests / bugs they caught | 13 / 0 | Properties 1 to 11 (weaves, lift plan) and 16, 17 (validation); no failures; Kiro recorded 7 to 11, 16 and 17 as passed |
-| Hooks | 3 | All three did not run before the workspace was trusted (log line `hooks.v2.executionDisabledUntrustedWorkspace`). After trusting: journey-entry-on-stop fired in all five wave 7 task sessions, deferred in four and wrote the wave entry in the last; engine-typecheck-and-test-on-save fired on all six engine saves in wave 7, each logging `typecheck=0 test=0`; block-engine-fixture-edits blocked one edit (08:27:11Z, hook test session) and allowed six in wave 7 |
+| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 10 done) |
+| Property-based tests / bugs they caught | 19 / 0 | Properties 1 to 11 (weaves, lift plan), 16, 17 (validation) and 18 to 23 (floats); no failures; Kiro recorded 7 to 11, 16, 17 and 18 to 23 as passed |
+| Hooks | 3 | All three did not run before the workspace was trusted (log line `hooks.v2.executionDisabledUntrustedWorkspace`). After trusting: journey-entry-on-stop fired in all five wave 7 task sessions, deferred in four and wrote the wave entry in the last; engine-typecheck-and-test-on-save fired on all six engine saves in wave 7, each logging `typecheck=0 test=0`; block-engine-fixture-edits blocked one edit (08:27:11Z, hook test session) and allowed six in wave 7. In wave 10 the save hook caught one type error (`typecheck=1` at 09:23:22Z, fixed by the next save at 09:23:41Z) |
 | Steering files | 6 | 4 always-on, 2 file-matched |
 | Custom agents | 1 | journey-scribe (not yet invoked) |
 | MCP servers (third-party / our own) | 0 / 0 | |
