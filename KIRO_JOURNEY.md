@@ -864,6 +864,19 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/src/server.ts`; `node_modules/@modelcontextprotocol/sdk/dist/esm/types.js` (`CallToolRequestParamsSchema`).
 
+### 2026-11-16 — weave-mcp wave 10 (tasks 8.3, 9.1)
+
+- Surface: IDE
+- Goal: Test harness and the stdio entry point.
+- Kiro features used: spec `weave-mcp` (tasks 8.3, 9.1). No hook output observed, no property test in this wave.
+- Model / credits (start → end):
+- What worked: `test/harness.ts` (`connect`, `withConnection`, `spyEngine`, `throwingEngine`, `autofixFailedEngine`) over `InMemoryTransport.createLinkedPair()`; `src/index.ts` connects `StdioServerTransport` and logs `server.onerror` to stderr. `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 43 passed).
+- What failed or surprised:
+  - Second process slip: wave 9 was committed (`56167d6`) before its journal entry, as in wave 5. Its entry is in this commit. I changed my local commit helper so it refuses to commit when `KIRO_JOURNEY.md` has no change.
+  - The engine does not export `autofixFailed`, so the `AUTOFIX_FAILED` stub in the harness builds the error object itself with the engine's field set and message format.
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/test/harness.ts`, `packages/mcp/src/index.ts`.
+
 ### Template
 
 ```

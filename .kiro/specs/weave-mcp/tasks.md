@@ -89,14 +89,14 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - `build_cards` returns `{ cardSet, cardRows }` with one `cardRows(card, profile)` call per card in card order; `decode_cards` returns `{ plan }`; engine errors unchanged
     - _Requirements: 6.1, 6.2, 6.3, 6.5, 7.1, 7.2, 10.3, 10.4_
 
-- [ ] 8. Tool definitions, server and test support
+- [x] 8. Tool definitions, server and test support
   - [x] 8.1 Implement `src/tools.ts`
     - `TOOL_DEFS` in the order of the design table: name, description (non-empty, at most 1000 characters; `build_cards` and `decode_cards` say "The card format has not been tested on a working loom."), hand-written JSON Schema `inputSchema`, `annotations: { readOnlyHint: true }`, and the ordered `ArgSpec` list from which the schema is derived, plus the handler
     - _Requirements: 1.1, 1.3, 1.4, 12.5_
   - [x] 8.2 Implement `src/server.ts`
     - `createServer(engine: EngineApi)` using the low-level SDK `Server`; `tools/list` returns `TOOL_DEFS` without handlers; `tools/call` dispatch: unknown name gives `TOOL_UNKNOWN` with the name as sent, then `checkArguments`, then the handler; a thrown value is logged to stderr with `console.error` and returns `INTERNAL_ERROR`; no state kept between calls
     - _Requirements: 1.1, 1.5, 8.2, 8.3, 8.4, 8.5, 11.2_
-  - [ ] 8.3 Implement `test/harness.ts`
+  - [x] 8.3 Implement `test/harness.ts`
     - `connect(engine = realEngine)` returns `{ client, close }` over `InMemoryTransport.createLinkedPair()`; helpers for a spy engine (records calls and argument references), a throwing engine, and an `AUTOFIX_FAILED` stub
     - _Requirements: 1.1, 8.3_
   - [x] 8.4 Implement `test/arbitraries.ts`
@@ -104,7 +104,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - _Requirements: 3.3, 3.4, 9.5, 10.1_
 
 - [ ] 9. Stdio entry and bundle
-  - [ ] 9.1 Implement `src/index.ts`
+  - [x] 9.1 Implement `src/index.ts`
     - Create the server with `realEngine`, connect `StdioServerTransport`, set `server.onerror` to log to stderr; no `console.log`, `console.info`, `console.debug` or `process.stdout` anywhere in `src`
     - _Requirements: 1.2, 1.6, 1.7_
   - [ ] 9.2 Finish the esbuild bundle in `build.mjs`
