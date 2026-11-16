@@ -443,6 +443,32 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: n/a.
 - Evidence: commit `5d20b28`.
 
+### 2026-11-16 — Planted-bug check: off-by-one in checkFloats
+
+**This was a deliberate test, not a real bug.** The user asked for a bug to be planted on camera to show that the property tests catch a real mistake. It was fully undone; no engine code changed.
+
+- Surface: IDE
+- Goal: Plant a one-character off-by-one in `checkFloats`, show which property tests catch it, then restore the file exactly.
+- Kiro features used: property-based tests (Properties 18 and 23, fast-check); hooks `block-engine-fixture-edits` (fired and allowed the edit) and `engine-typecheck-and-test-on-save` (fired and caught the bug); steering `tech.md` (the `EXIT_CODE` rule). No spec task was run, no agent, MCP tool or checkpoint.
+- Model / credits (start → end):
+- The planted bug: in `packages/engine/src/floats.ts` line 64, `if (run.length <= limit) continue;` was changed to `if (run.length < limit) continue;`, using the file tool (`str_replace`) on a clean working tree (after commit `04bf473`). With `<`, a run exactly as long as the limit is reported as a float, although 4.3 requires a float to be longer than the limit.
+- **The save hook caught it on save.** `.kiro/hook-runs.log`: `09:37:53Z guard fired: str_replace`, `allowed`, `save-hook fired`, then `09:37:54Z save-hook result: typecheck=0 test=1`. The typecheck passed, as expected for a logic bug; the test run failed.
+- **Failing properties** (command: `pnpm --filter @jacquard/engine exec vitest --run test/float-oracle.property.test.ts test/float-violations.property.test.ts`; result `Test Files  2 failed (2)`, `Tests  2 failed (2)`, `EXIT_CODE=1`):
+  - **Property 18: Float checker agrees with a naive oracle** (Validates: Requirements 4.1, 4.2, 4.3, 4.4, 4.5). Failed after 1 test, shrunk 14 times.
+    - Seed and path: `{ seed: -1595061913, path: "0:18:1:0:1:0:0:1:1:1:1:1:3:2:2", endOnFailure: true }`
+    - Counterexample, verbatim: `[{"profile":{"hookCount":2,"hooksPerCardRow":9,"spareHookCount":19,"spareHookPlacement":"afterFiguring","maxFloat":7,"maxWarpFloat":1,"maxWeftFloat":2,"regionLimit":2,"holeMeans":"lift","cardFillOrder":"ascending","wovenFaceDown":false},"repeatAcross":false,"plan":{"pickCount":2,"hookCount":2,"designWidth":1,"repeatAcross":false,"lifts":[[true,false],[false,false]]}}]`
+    - Mismatch: actual `[{"kind":"unbound","direction":"weft","side":"face","line":1,"length":1},{"kind":"unbound","direction":"weft","side":"back","line":0,"length":1},{"kind":"float","direction":"warp","side":"face","pick":0,"end":0,"length":1},{"kind":"float","direction":"warp","side":"back","pick":1,"end":0,"length":1}]`; expected `[{"kind":"unbound","direction":"weft","side":"face","line":1,"length":1},{"kind":"unbound","direction":"weft","side":"back","line":0,"length":1}]`.
+  - **Property 23: Violations are over the limit, exclusive and sorted** (Validates: Requirements 4.3, 4.4, 4.6). Failed after 4 tests, shrunk 17 times.
+    - Seed and path: `{ seed: 141281982, path: "3:0:0:0:0:0:0:0:1:0:0:0:1:1:1:1:2:2", endOnFailure: true }`
+    - Counterexample, verbatim: `[{"profile":{"hookCount":1,"hooksPerCardRow":1,"spareHookCount":0,"spareHookPlacement":"afterFiguring","maxFloat":1,"maxWarpFloat":1,"maxWeftFloat":1,"regionLimit":1,"holeMeans":"lift","cardFillOrder":"ascending","wovenFaceDown":false},"repeatAcross":false,"plan":{"pickCount":2,"hookCount":1,"designWidth":1,"repeatAcross":false,"lifts":[[true],[false]]}}]`
+    - Message: `float not over limit 1: {"kind":"float","direction":"warp","side":"face","pick":0,"end":0,"length":1}`
+- Why the counterexample exposes the bug: the plan has one end and two picks, lifted then not lifted, so the warp line has two runs of length 1, and `maxWarpFloat` is 1. Each run is exactly at the limit, so it is allowed, but the planted `<` reports both as floats, which Property 23 rejects as "not over limit" and Property 18's naive oracle does not report. The two one-pick weft lines are correctly unbound in both outputs, which is why only the warp floats differ.
+- Restore: `git checkout -- packages/engine/src/floats.ts` (`EXIT_CODE=0`); line 64 reads `if (run.length <= limit) continue;` again. The same command then printed `Test Files  2 passed (2)`, `Tests  2 passed (2)`, `EXIT_CODE=0`. `git status --short` printed nothing. The full suite afterwards: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `Test Files  18 passed (18)`, `Tests  84 passed (84)`, `EXIT_CODE=0`. The restore went through the shell, so the save hook did not run on it; no hook line was logged after 09:37:54Z.
+- What failed or surprised: Both properties shrank to tiny plans (2 picks and 1 end) within a few tests, so a one-character boundary bug is caught almost at once. Only Properties 18 and 23 were run, as asked; the other float properties (19 to 22) were not run against the bug, so whether they also catch it is unknown.
+- **Tally:** this does not count as a bug caught by the property tests, because the bug was planted. The "bugs they caught" count stays 0.
+- Spec versus vibe note: n/a.
+- Evidence: `.kiro/hook-runs.log` lines at 09:37:53Z to 09:37:54Z (local, ignored by git); the vitest output quoted above.
+
 ### Template
 
 ```
@@ -464,7 +490,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 | Item | Count | Notes |
 |---|---|---|
 | Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 10 done) |
-| Property-based tests / bugs they caught | 19 / 0 | Properties 1 to 11 (weaves, lift plan), 16, 17 (validation) and 18 to 23 (floats); no failures; Kiro recorded 7 to 11, 16, 17 and 18 to 23 as passed |
+| Property-based tests / bugs they caught | 19 / 0 | Properties 1 to 11 (weaves, lift plan), 16, 17 (validation) and 18 to 23 (floats); no failures; Kiro recorded 7 to 11, 16, 17 and 18 to 23 as passed. A deliberately planted off-by-one in `checkFloats` was caught by Properties 18 and 23 and then undone (not counted as a bug caught) |
 | Hooks | 3 | All three did not run before the workspace was trusted (log line `hooks.v2.executionDisabledUntrustedWorkspace`). After trusting: journey-entry-on-stop fired in all five wave 7 task sessions, deferred in four and wrote the wave entry in the last; engine-typecheck-and-test-on-save fired on all six engine saves in wave 7, each logging `typecheck=0 test=0`; block-engine-fixture-edits blocked one edit (08:27:11Z, hook test session) and allowed six in wave 7. In wave 10 the save hook caught one type error (`typecheck=1` at 09:23:22Z, fixed by the next save at 09:23:41Z) |
 | Steering files | 6 | 4 always-on, 2 file-matched |
 | Custom agents | 1 | journey-scribe (not yet invoked) |
