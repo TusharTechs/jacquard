@@ -5,7 +5,7 @@
 import { useId, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 
-export type TermName = "end" | "pick" | "float" | "liftPlan";
+export type TermName = "end" | "pick" | "float" | "liftPlan" | "shaft";
 
 export const TERM_DEFINITIONS: Readonly<Record<TermName, string>> = {
   end: "End: one warp thread, the lengthwise threads held on the loom. End 0 is the leftmost column of the point paper.",
@@ -13,6 +13,7 @@ export const TERM_DEFINITIONS: Readonly<Record<TermName, string>> = {
   float:
     "Float: a run where a warp end or weft thread passes over (or under) several crossing threads without interlacing. Long floats snag and weaken cloth.",
   liftPlan: "Lift plan: for each pick, the set of hooks raised.",
+  shaft: "Shaft: on a shaft loom, a frame that lifts every warp end threaded on it. In this WIF each hook gets its own shaft.",
 };
 
 export interface TermProps {

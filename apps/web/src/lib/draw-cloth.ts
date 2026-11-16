@@ -13,6 +13,8 @@ export const MAX_ZOOM = 16;
 export const DEFAULT_ZOOM = 4;
 /** Largest canvas backing side in device pixels; the pixel ratio is lowered past it [decision]. */
 export const MAX_CLOTH_SIDE = 8192;
+/** Largest canvas backing area in device pixels; the pixel ratio is lowered past it [decision]. */
+export const MAX_CLOTH_AREA = 16_000_000;
 /** Edge shading appears from this zoom, the centre highlight from the next one [decision]. */
 export const SHADE_FROM = 3;
 export const HIGHLIGHT_FROM = 6;
@@ -31,6 +33,8 @@ export interface ClothSize {
   readonly height: number;
   /** Device pixels per CSS pixel actually used. */
   readonly scale: number;
+  /** False when the caps leave less than one device pixel per cell: the cloth cannot be drawn. */
+  readonly fits: boolean;
 }
 
 export function clampZoom(zoom: number): number {
@@ -38,20 +42,25 @@ export function clampZoom(zoom: number): number {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.round(zoom)));
 }
 
-/** Canvas size for `hookCount` by `pickCount` cells, with the backing capped at MAX_CLOTH_SIDE. */
+/**
+ * Canvas size for `hookCount` by `pickCount` cells, with the backing capped at MAX_CLOTH_SIDE per
+ * side and MAX_CLOTH_AREA in total.
+ */
 export function clothCanvasSize(hookCount: number, pickCount: number, zoom: number, pixelRatio: number): ClothSize {
   const cell = clampZoom(zoom);
   const cssWidth = Math.max(0, hookCount) * cell;
   const cssHeight = Math.max(0, pickCount) * cell;
   const ratio = Number.isFinite(pixelRatio) && pixelRatio > 0 ? pixelRatio : 1;
   const longest = Math.max(cssWidth, cssHeight, 1);
-  const scale = Math.min(ratio, MAX_CLOTH_SIDE / longest);
+  const area = Math.max(cssWidth * cssHeight, 1);
+  const scale = Math.min(ratio, Math.sqrt(MAX_CLOTH_AREA / area), MAX_CLOTH_SIDE / longest);
   return {
     cssWidth,
     cssHeight,
     width: Math.max(1, Math.min(MAX_CLOTH_SIDE, Math.floor(cssWidth * scale))),
     height: Math.max(1, Math.min(MAX_CLOTH_SIDE, Math.floor(cssHeight * scale))),
     scale,
+    fits: cell * scale >= 1,
   };
 }
 

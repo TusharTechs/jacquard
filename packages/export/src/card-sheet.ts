@@ -44,7 +44,10 @@ export interface CardLayout {
   readonly pick: number;
   /** Drawn positions in `cardRows` order; `null` slots are not drawn. */
   readonly holes: readonly CardHole[];
-  /** Centres of the lacing marks, two at each end of the card. */
+  /**
+   * Centres of the lacing marks, two at each end of the card. The placement is a schematic choice
+   * of ours, not taken from a loom source [decision].
+   */
   readonly laceMarks: readonly { readonly x: number; readonly y: number }[];
 }
 

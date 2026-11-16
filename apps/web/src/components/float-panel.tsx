@@ -2,6 +2,7 @@
 // the engine, AUTOFIX_FAILED with what remains, and engine errors in plain words. After a
 // successful auto-fix the fixed lift plan is the headline and the earlier list folds away.
 import { useEffect, useState } from "react";
+import type { Ref } from "react";
 import type { EngineError, LoomProfile } from "@jacquard/engine";
 import type { CheckResult } from "../lib/engine-check";
 import { engineNextStep } from "../lib/engine-messages";
@@ -29,6 +30,8 @@ export interface FloatPanelProps {
   readonly onTurnOffRepeatAcross: () => void;
   /** DESIGN_TOO_WIDE: open the loom setup and focus the profile select. */
   readonly onChooseProfile: () => void;
+  /** The panel heading, so other panels can move focus here. */
+  readonly headingRef?: Ref<HTMLHeadingElement>;
 }
 
 interface ErrorAction {
@@ -52,6 +55,7 @@ export function FloatPanel({
   onStartBlank,
   onTurnOffRepeatAcross,
   onChooseProfile,
+  headingRef,
 }: FloatPanelProps) {
   // Engine work that takes longer than 100 ms shows progress (design-language.md).
   const [slow, setSlow] = useState(false);
@@ -86,6 +90,7 @@ export function FloatPanel({
   return (
     <Panel
       title="Float check"
+      headingRef={headingRef}
       status={status}
       empty={
         <>

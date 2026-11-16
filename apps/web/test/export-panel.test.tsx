@@ -100,7 +100,7 @@ describe("export panel", () => {
     expect(file.name).toBe(name);
     expect(file.blob.size).toBeGreaterThan(0);
     expect(await blobText(file.blob)).toContain(marker);
-    expect(textOf(panel())).toContain(`Saved ${name}`);
+    expect(textOf(panel())).toContain(`Download started: ${name}. If nothing downloaded, check your browser's download settings.`);
   });
 
   it("uses the profile name in file names", async () => {
@@ -182,8 +182,65 @@ describe("export panel", () => {
     const text = textOf(panel());
     expect(CARD_SHEET_NOTE).toContain("has not been tested on a working loom");
     expect(text).toContain(CARD_SHEET_NOTE);
-    expect(WIF_NOTE).toBe("WIF mapping (one shaft per hook) is to verify: open the file in another weaving program to check it.");
+    expect(WIF_NOTE).toBe(
+      "Not yet checked: the WIF file maps each hook to one shaft. Open it in another weaving program to check it before relying on it.",
+    );
     expect(text).toContain(WIF_NOTE);
+    const shaft = within(panel()).getByRole("button", { name: "What is a shaft?" });
+    expect(textOf(document.getElementById(shaft.getAttribute("aria-describedby")!)!)).toBe(
+      "Shaft: on a shaft loom, a frame that lifts every warp end threaded on it. In this WIF each hook gets its own shaft.",
+    );
+  });
+
+  it("while the float check is catching up, Cards and WIF wait and say so; the gate then appears (6.2)", async () => {
+    // The check still describes the clean design, but the grid already has violations.
+    const props = { profile: STRICT, plan: CLEAN.plan, design: STRIPES, violationCount: 0, checking: true };
+    const { download, rerender, onAutoFix, onStartBlank } = renderPanel(props);
+    expect(textOf(panel())).toContain("Checking floats…");
+    for (const name of ["Cards (PDF)", "Cards (SVG)", "WIF file"]) {
+      const button = within(panel()).getByRole("button", { name });
+      expect(button.getAttribute("aria-disabled")).toBe("true");
+      fireEvent.click(button);
+    }
+    expect(within(panel()).getByRole("button", { name: "Point paper (SVG)" }).getAttribute("aria-disabled")).toBeNull();
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(download).not.toHaveBeenCalled();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    // The check catches up: the same click now opens the gate instead of exporting.
+    rerender(
+      <ExportPanel
+        profileName="120"
+        colours={regionColours(null, 3)}
+        yarns={{ warp: ["#2b2b2b"], weft: ["#f3ead8"] }}
+        blank={false}
+        planSource="design"
+        onAutoFix={onAutoFix}
+        onStartBlank={onStartBlank}
+        download={download}
+        {...props}
+        plan={BAD.plan}
+        violationCount={BAD.violations}
+        checking={false}
+      />,
+    );
+    expect(textOf(panel())).not.toContain("Checking floats…");
+    click("Cards (PDF)");
+    expect(textOf(screen.getByRole("dialog"))).toContain(`${BAD.violations} float violations`);
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(download).not.toHaveBeenCalled();
+  });
+
+  it("after Export anyway, focus returns to the export button, which stays focusable while preparing", async () => {
+    const { download } = renderPanel({ profile: STRICT, plan: BAD.plan, design: STRIPES, violationCount: BAD.violations });
+    const opener = within(panel()).getByRole("button", { name: "Cards (PDF)" }) as HTMLButtonElement;
+    opener.focus();
+    fireEvent.click(opener);
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Export anyway" }));
+    expect(document.activeElement).toBe(opener);
+    expect(opener.disabled).toBe(false);
+    expect(opener.getAttribute("aria-disabled")).toBe("true");
+    await waitFor(() => expect(download).toHaveBeenCalledTimes(1));
+    expect(document.activeElement).toBe(opener);
   });
 
   it("without a lift plan, cards and WIF are disabled and the point paper still works", () => {

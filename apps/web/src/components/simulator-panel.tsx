@@ -1,7 +1,9 @@
 // The fabric simulator (2.1 to 2.5): the Cloth_Model from @jacquard/export drawn on a canvas, face
 // or back, zoom 1 to 16 px per cell, warp and weft yarn colours. It says which lift plan it shows
 // and that it is a simulation, not a photograph. A large cloth is drawn in chunks, one per animation
-// frame, and shows progress when drawing takes longer than 100 ms.
+// frame, and shows progress when drawing takes longer than 100 ms. When the canvas cannot be made
+// (the backing caps leave under one device pixel per cell, or the browser gives no 2D context) it
+// shows an error asking for a lower zoom instead of a blank canvas.
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { clothModel } from "@jacquard/export";
 import type { LiftPlan, LoomProfile, Side } from "@jacquard/engine";
@@ -33,7 +35,14 @@ export interface SimulatorPanelProps {
   /** Why there is no plan: nothing painted yet, or the engine could not build one. */
   readonly emptyReason: "blank" | "engineError";
   readonly onStartBlank: () => void;
+  /** Moves focus to the float check, for the engine-error empty state. */
+  readonly onGoToFloatCheck?: () => void;
 }
+
+export const TOO_LARGE_MESSAGE = "This zoom is too large for this screen; lower the zoom.";
+/** When the cell count alone exceeds what the canvas can hold, zoom does not help (Phase D review). */
+export const TOO_MANY_CELLS_MESSAGE =
+  "This cloth has more cells than this screen can draw. The design and the exports are not affected.";
 
 /** Picks drawn per frame are limited by time, so a large cloth never blocks input for long. */
 const FRAME_BUDGET_MS = 12;
@@ -64,11 +73,13 @@ export function SimulatorPanel({
   onResetYarns,
   emptyReason,
   onStartBlank,
+  onGoToFloatCheck,
 }: SimulatorPanelProps) {
   const zoomId = useId();
   const [side, setSide] = useState<Side>("face");
   const [zoom, setZoom] = useState(DEFAULT_ZOOM);
-  const [attempt, setAttempt] = useState(0);
+  /** The backing size, as "width x height", at which getContext returned null. */
+  const [noContextAt, setNoContextAt] = useState<string | null>(null);
   const [drawing, setDrawing] = useState(false);
   const [slow, setSlow] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -76,22 +87,26 @@ export function SimulatorPanel({
 
   const model = useMemo(
     () => (plan === null ? null : clothModel(plan, profile, yarnColours(yarns), side)),
-    // `attempt` reruns the model on Retry.
-    [plan, profile, yarns.warp, yarns.weft, side, attempt],
+    [plan, profile, yarns.warp, yarns.weft, side],
   );
   const cells = model !== null && model.ok ? model.value : null;
   const hookCount = cells?.[0]?.length ?? 0;
   const pickCount = cells?.length ?? 0;
   const size = clothCanvasSize(hookCount, pickCount, zoom, ratio);
+  const sizeKey = `${size.width}x${size.height}`;
+  const tooLarge = cells !== null && (!size.fits || noContextAt === sizeKey);
 
   // Redraw when the cloth, the zoom or the pixel ratio change (2.3).
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas === null || cells === null) return;
+    if (canvas === null || cells === null || tooLarge) return;
     canvas.width = size.width;
     canvas.height = size.height;
     const context = canvas.getContext("2d");
-    if (context === null) return;
+    if (context === null) {
+      setNoContextAt(`${size.width}x${size.height}`);
+      return;
+    }
     const cell = clampZoom(zoom);
     context.setTransform(size.width / Math.max(1, size.cssWidth), 0, 0, size.height / Math.max(1, size.cssHeight), 0, 0);
     let pick = 0;
@@ -122,11 +137,11 @@ export function SimulatorPanel({
       clearTimeout(slowTimer);
       cancelFrame?.();
     };
-  }, [cells, zoom, size.width, size.height, size.cssWidth, size.cssHeight]);
+  }, [cells, tooLarge, zoom, size.width, size.height, size.cssWidth, size.cssHeight]);
 
   let status: PanelStatus = "ready";
   if (plan === null) status = "empty";
-  else if (model !== null && !model.ok) status = "error";
+  else if ((model !== null && !model.ok) || tooLarge) status = "error";
   else if (drawing && slow) status = "loading";
 
   return (
@@ -154,6 +169,13 @@ export function SimulatorPanel({
               The engine could not build a lift plan for this design. The float check says what to change; the cloth appears
               here as soon as the design can be woven on this profile.
             </p>
+            {onGoToFloatCheck === undefined ? null : (
+              <div className="state-actions">
+                <Button small onClick={onGoToFloatCheck}>
+                  Go to the float check
+                </Button>
+              </div>
+            )}
           </>
         )
       }
@@ -168,15 +190,24 @@ export function SimulatorPanel({
           <>
             <p className="state-title">The cloth could not be drawn</p>
             <p className="small">{model.error.message}</p>
-            <p className="small">Choose other yarn colours or reset them, then try again. Your design is unchanged.</p>
+            <p className="small">Change the yarn colours or the design, and the cloth is drawn again. Your design is unchanged.</p>
             <div className="state-actions">
-              <Button small onClick={() => setAttempt((count) => count + 1)}>
-                Retry
-              </Button>
-              <Button small onClick={onResetYarns}>
+              <Button small variant="primary" onClick={onResetYarns}>
                 Reset yarn colours
               </Button>
             </div>
+          </>
+        ) : tooLarge ? (
+          <>
+            <p className="state-title">The cloth could not be drawn</p>
+            <p className="small">{size.fits ? TOO_LARGE_MESSAGE : TOO_MANY_CELLS_MESSAGE}</p>
+            {size.fits && zoom > MIN_ZOOM ? (
+              <div className="state-actions">
+                <Button small variant="primary" onClick={() => setZoom(clampZoom(Math.floor(zoom / 2)))}>
+                  Lower the zoom
+                </Button>
+              </div>
+            ) : null}
           </>
         ) : undefined
       }
@@ -185,9 +216,7 @@ export function SimulatorPanel({
         <p className="small muted">{SIMULATION_NOTE}</p>
         {plan === null ? null : (
           <>
-            <p className="status-line small" role="status">
-              {PLAN_LINES[planSource]}
-            </p>
+            <p className="status-line small">{PLAN_LINES[planSource]}</p>
             <div className="toolbar-group" role="group" aria-label="Side of the cloth">
               <span className="small">Side:</span>
               <Button small variant={side === "face" ? "primary" : "secondary"} aria-pressed={side === "face"} onClick={() => setSide("face")}>
@@ -235,9 +264,9 @@ export function SimulatorPanel({
                 )}
               </Field>
             </div>
-            {cells === null ? null : (
+            {cells === null || tooLarge ? null : (
               <>
-                <div className="cloth-viewport">
+                <div className="cloth-viewport" tabIndex={0} role="region" aria-label="Cloth simulation, scrollable">
                   <canvas
                     ref={canvasRef}
                     className="cloth-canvas"

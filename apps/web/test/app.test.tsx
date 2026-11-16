@@ -1,7 +1,7 @@
 // The whole app (12.1 to 12.4, 9.3, 9.5): framing copy, accessible names on every control, the
 // offline banner with the editor still usable, and keyboard painting with undo and redo.
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "../src/app";
 import { accessibleName, installDom, textOf } from "./dom-setup";
 
@@ -178,6 +178,33 @@ describe("app", () => {
     const [warp, weft] = [...simulator.querySelectorAll<HTMLInputElement>('input[type="color"]')];
     expect(warp!.value).toBe("#2b2b2b");
     expect(weft!.value).toBe("#f3ead8");
+  });
+  it("exporting cards right after a stroke that adds violations never downloads without the gate (6.2)", async () => {
+    const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
+    render(<App />);
+    const weaves = screen.getByRole("heading", { name: "Weave per region" }).closest("section")!;
+    fireEvent.change(within(weaves).getByLabelText("Region 0"), { target: { value: "satin-8-3-warp" } });
+    const canvas = screen.getByRole("application");
+    fireEvent.keyDown(window, { key: "2" });
+    fireEvent.pointerDown(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, button: 0, buttons: 1, clientX: 164, clientY: 4 });
+    fireEvent.pointerMove(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, buttons: 1, clientX: 164, clientY: 380 });
+    fireEvent.pointerUp(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, clientX: 164, clientY: 380 });
+    // No waiting for the float check: click straight after the stroke.
+    const exports = screen.getByRole("heading", { name: "Export" }).closest("section")!;
+    const cards = within(exports).getByRole("button", { name: "Cards (PDF)" });
+    fireEvent.click(cards);
+    const gate = (): HTMLElement | null =>
+      [...document.querySelectorAll("dialog")].find((node) => node.hasAttribute("open") && textOf(node).includes("The float check reports violations")) ?? null;
+    // Either the button waits for the check, or the gate is open; a click is never a silent export.
+    if (cards.getAttribute("aria-disabled") === "true") {
+      expect(textOf(exports)).toContain("Checking floats…");
+      await waitFor(() => expect(cards.getAttribute("aria-disabled")).toBeNull());
+      fireEvent.click(cards);
+    }
+    await waitFor(() => expect(gate()).not.toBeNull());
+    expect(textOf(gate()!)).toMatch(/\d+ float violations?/);
+    await new Promise((resolve) => setTimeout(resolve, 30));
+    expect(anchorClick).not.toHaveBeenCalled();
   });
   it("after auto-fix the simulator and the exports use the fixed lift plan (2.4, 6.3)", async () => {
     render(<App />);

@@ -88,6 +88,7 @@ export function App() {
   const toastId = useRef(0);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const floatHeadingRef = useRef<HTMLHeadingElement | null>(null);
   const online = useOnline();
 
   const profile = resolveProfile(setup.profile);
@@ -312,6 +313,27 @@ export function App() {
   const planInUse = blankStart ? null : fixCurrent ? fixed.plan : check.ok ? check.plan : null;
   const planSource = fixCurrent ? "fixed" : "design";
 
+  // One polite live region for the simulator and the exports: it speaks only when the plan they
+  // use switches between the fixed plan and the design's plan, not on every render.
+  const [planAnnouncement, setPlanAnnouncement] = useState("");
+  const lastPlanSource = useRef(planSource);
+  useEffect(() => {
+    if (planSource === lastPlanSource.current) return;
+    lastPlanSource.current = planSource;
+    setPlanAnnouncement(
+      planSource === "fixed"
+        ? "The cloth simulation and the exports now use the fixed lift plan from auto-fix."
+        : "The cloth simulation and the exports now use the lift plan of the current design.",
+    );
+  }, [planSource]);
+
+  const goToFloatCheck = (): void => {
+    const heading = floatHeadingRef.current;
+    if (heading === null) return;
+    heading.scrollIntoView?.({ block: "start" });
+    heading.focus();
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -483,6 +505,7 @@ export function App() {
             onStartBlank={startBlank}
             onTurnOffRepeatAcross={() => changeSetup({ type: "setRepeatAcross", repeatAcross: false })}
             onChooseProfile={focusProfile}
+            headingRef={floatHeadingRef}
           />
           <SimulatorPanel
             plan={planInUse}
@@ -493,7 +516,11 @@ export function App() {
             onResetYarns={() => setYarnChoice({ warp: DEFAULT_WARP, weft: null })}
             emptyReason={blankStart ? "blank" : "engineError"}
             onStartBlank={startBlank}
+            onGoToFloatCheck={goToFloatCheck}
           />
+          <p className="sr-only" role="status" aria-live="polite">
+            {planAnnouncement}
+          </p>
           <WeavePanel
             regions={weaveRegions}
             colours={colours}
@@ -510,6 +537,7 @@ export function App() {
             colours={colours}
             yarns={exportYarns}
             violationCount={check.ok ? check.violations.length : 0}
+            checking={checking}
             blank={blankStart}
             onAutoFix={runAutoFix}
             onStartBlank={startBlank}

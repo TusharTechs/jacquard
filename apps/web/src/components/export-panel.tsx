@@ -2,7 +2,9 @@
 // Cards and WIF never export silently while the float check reports violations and no fixed plan
 // is current: a confirmation offers auto-fix or "Export anyway". When a fixed plan is current the
 // exports use it and the panel says so. An export failure has its own message and a Retry.
-import { useEffect, useState } from "react";
+// While the float check has not caught up with the latest edit (`checking`), Cards and WIF wait:
+// their plan and violation count would describe an older design.
+import { useEffect, useRef, useState } from "react";
 import { CARD_SHEET_NOTE, profileSummary } from "@jacquard/export";
 import type { YarnColours } from "@jacquard/export";
 import type { Design, LiftPlan, LoomProfile } from "@jacquard/engine";
@@ -11,12 +13,14 @@ import type { Downloader } from "../lib/download";
 import { EXPORT_KINDS, EXPORT_LABELS, buildExportFile, exportFileName, usesLiftPlan } from "../lib/export-files";
 import type { ExportKind } from "../lib/export-files";
 import type { PlanSource } from "./simulator-panel";
+import { Term } from "./term";
 import { Button } from "./ui/button";
 import { Dialog } from "./ui/dialog";
 import { Panel } from "./ui/panel";
 import type { PanelStatus } from "./ui/panel";
 
-export const WIF_NOTE = "WIF mapping (one shaft per hook) is to verify: open the file in another weaving program to check it.";
+export const WIF_NOTE =
+  "Not yet checked: the WIF file maps each hook to one shaft. Open it in another weaving program to check it before relying on it.";
 export const FIXED_PLAN_NOTE = "Exports use the fixed lift plan from auto-fix";
 
 export interface ExportPanelProps {
@@ -32,6 +36,8 @@ export interface ExportPanelProps {
   readonly yarns: YarnColours;
   /** Float violations in the design's lift plan. */
   readonly violationCount: number;
+  /** True while the float check still describes an older design than the one on the grid. */
+  readonly checking?: boolean;
   /** True while there is nothing on the grid yet. */
   readonly blank: boolean;
   readonly onAutoFix: () => void;
@@ -58,6 +64,7 @@ export function ExportPanel({
   colours,
   yarns,
   violationCount,
+  checking = false,
   blank,
   onAutoFix,
   onStartBlank,
@@ -67,14 +74,18 @@ export function ExportPanel({
   const [pending, setPending] = useState<ExportKind | null>(null);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
+  const headingRef = useRef<HTMLHeadingElement | null>(null);
 
   const gated = violationCount > 0 && planSource !== "fixed";
+  /** Cards and WIF wait for the float check, so they never use a plan the gate has not seen. */
+  const waiting = (kind: ExportKind): boolean => usesLiftPlan(kind) && checking;
 
-  // The export runs on the next task, so "Preparing…" is on screen while a large file is built.
+  // The export runs after the next paint, so "Preparing…" is on screen while a large file is built.
   useEffect(() => {
-    if (pending === null) return;
+    if (pending === null || waiting(pending)) return;
     const kind = pending;
-    const timer = setTimeout(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const run = (): void => {
       setPending(null);
       try {
         const built = buildExportFile(kind, { profileName, profile, plan, design, colours, yarns });
@@ -88,9 +99,15 @@ export function ExportPanel({
       } catch {
         setFailure({ kind, message: "Something went wrong while making or saving the file." });
       }
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [pending, profileName, profile, plan, design, colours, yarns, download]);
+    };
+    const frame = requestAnimationFrame(() => {
+      timer = setTimeout(run, 0);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      if (timer !== undefined) clearTimeout(timer);
+    };
+  }, [pending, checking, profileName, profile, plan, design, colours, yarns, download]);
 
   const start = (kind: ExportKind): void => {
     setSaved(null);
@@ -99,6 +116,8 @@ export function ExportPanel({
   };
 
   const request = (kind: ExportKind): void => {
+    // aria-disabled buttons stay focusable, so their clicks are ignored here.
+    if (pending !== null || waiting(kind)) return;
     if (usesLiftPlan(kind) && gated) {
       setConfirm(kind);
       return;
@@ -114,6 +133,7 @@ export function ExportPanel({
   return (
     <Panel
       title="Export"
+      headingRef={headingRef}
       status={status}
       empty={
         <>
@@ -160,17 +180,19 @@ export function ExportPanel({
       {blank ? null : (
         <div className="stack">
           {plan === null ? (
-            <p className="note" role="status">
+            <p className="note">
               Cards and the WIF file need a lift plan, and the engine could not build one for this design. The float check says
               what to change. The point-paper sheet can still be saved.
             </p>
+          ) : checking ? (
+            <p className="status-line small">Checking floats…</p>
           ) : planSource === "fixed" ? (
-            <p className="status-line small" role="status">
+            <p className="status-line small">
               <span className="marker-ok" aria-hidden="true" />
               {FIXED_PLAN_NOTE}
             </p>
           ) : gated ? (
-            <p className="status-line small" role="status">
+            <p className="status-line small">
               <span className="marker-triangle" aria-hidden="true" />
               {plural(violationCount, "float violation", "float violations")} in the lift plan. Cards and WIF ask before
               exporting.
@@ -183,7 +205,8 @@ export function ExportPanel({
               <Button
                 key={kind}
                 variant={kind === "cardsPdf" ? "primary" : "secondary"}
-                disabled={pending !== null || (usesLiftPlan(kind) && plan === null)}
+                disabled={usesLiftPlan(kind) && plan === null}
+                aria-disabled={pending !== null || waiting(kind) ? true : undefined}
                 onClick={() => request(kind)}
               >
                 {EXPORT_LABELS[kind]}
@@ -192,7 +215,8 @@ export function ExportPanel({
           </div>
           {saved === null ? null : (
             <p className="small" role="status">
-              Saved <span className="mono">{saved}</span>.
+              Download started: <span className="mono">{saved}</span>. If nothing downloaded, check your browser&apos;s download
+              settings.
             </p>
           )}
           <p className="small muted">
@@ -200,10 +224,18 @@ export function ExportPanel({
           </p>
           <p className="note">{CARD_SHEET_NOTE}</p>
           <p className="small muted">{profileSummary(profile)}</p>
-          <p className="note">{WIF_NOTE}</p>
+          <p className="note">
+            {WIF_NOTE} <Term name="shaft">What is a shaft?</Term>
+          </p>
         </div>
       )}
-      <Dialog open={confirm !== null} title="The float check reports violations" closeLabel="Cancel" onClose={() => setConfirm(null)}>
+      <Dialog
+        open={confirm !== null}
+        title="The float check reports violations"
+        closeLabel="Cancel"
+        onClose={() => setConfirm(null)}
+        fallbackFocus={headingRef}
+      >
         {confirm === null ? null : (
           <div className="stack">
             <p>

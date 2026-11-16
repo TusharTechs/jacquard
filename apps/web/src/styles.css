@@ -334,15 +334,16 @@ a {
   touch-action: manipulation;
 }
 
-.btn:hover:not(:disabled) {
+.btn:hover:not(:disabled):not([aria-disabled="true"]) {
   background: var(--card-sunk);
 }
 
-.btn:active:not(:disabled) {
+.btn:active:not(:disabled):not([aria-disabled="true"]) {
   transform: translateY(1px);
 }
 
-.btn:disabled {
+.btn:disabled,
+.btn[aria-disabled="true"] {
   border-color: var(--rule-strong);
   color: var(--ink-muted);
   cursor: not-allowed;
@@ -355,11 +356,12 @@ a {
   color: var(--accent-ink);
 }
 
-.btn-primary:hover:not(:disabled) {
+.btn-primary:hover:not(:disabled):not([aria-disabled="true"]) {
   background: #154a50;
 }
 
-.btn-primary:disabled {
+.btn-primary:disabled,
+.btn-primary[aria-disabled="true"] {
   background: var(--card-sunk);
 }
 
@@ -1021,7 +1023,15 @@ a {
   border: 1px solid var(--rule-strong);
   border-radius: var(--radius-small);
   background: var(--card-sunk);
-  overscroll-behavior: contain;
+}
+.cloth-viewport:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+@media (max-width: 767px) {
+  .cloth-viewport {
+    max-height: 45vh;
+  }
 }
 .cloth-canvas {
   display: block;

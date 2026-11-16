@@ -1,7 +1,9 @@
 // Shared Dialog on the native <dialog> element. Opening it remembers the focused element, and
-// closing it (button, Escape or backdrop form) returns focus there.
+// closing it (button, Escape, backdrop form, or the parent setting `open` false) returns focus
+// there. When that element is gone or disabled, focus goes to `fallbackFocus` instead, so it never
+// falls to the page body.
 import { useEffect, useId, useRef } from "react";
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import { Button } from "./button";
 
 export interface DialogProps {
@@ -10,12 +12,30 @@ export interface DialogProps {
   readonly onClose: () => void;
   readonly children: ReactNode;
   readonly closeLabel?: string;
+  /** Where focus goes on close when the element focused before opening is gone or disabled. */
+  readonly fallbackFocus?: RefObject<HTMLElement | null>;
 }
 
-export function Dialog({ open, title, onClose, children, closeLabel = "Close" }: DialogProps) {
+function canTakeFocus(element: HTMLElement | null): element is HTMLElement {
+  if (element === null || !element.isConnected || element === element.ownerDocument.body) return false;
+  return !(element as HTMLElement & { disabled?: boolean }).disabled;
+}
+
+export function Dialog({ open, title, onClose, children, closeLabel = "Close", fallbackFocus }: DialogProps) {
   const ref = useRef<HTMLDialogElement | null>(null);
   const returnTo = useRef<HTMLElement | null>(null);
   const titleId = useId();
+  const fallbackRef = useRef(fallbackFocus);
+  fallbackRef.current = fallbackFocus;
+
+  /** Returns focus once per opening; a second call (close event after a closed `open`) does nothing. */
+  const restoreFocus = (): void => {
+    if (returnTo.current === null) return;
+    const target = returnTo.current;
+    returnTo.current = null;
+    if (canTakeFocus(target)) target.focus();
+    else fallbackRef.current?.current?.focus();
+  };
 
   useEffect(() => {
     const dialog = ref.current;
@@ -27,6 +47,8 @@ export function Dialog({ open, title, onClose, children, closeLabel = "Close" }:
     } else if (!open && dialog.open) {
       if (typeof dialog.close === "function") dialog.close();
       else dialog.removeAttribute("open");
+      // Without a native close event (old browsers, jsdom) focus is returned here.
+      restoreFocus();
     }
   }, [open]);
 
@@ -34,8 +56,7 @@ export function Dialog({ open, title, onClose, children, closeLabel = "Close" }:
     const dialog = ref.current;
     if (dialog === null) return;
     const handleClose = (): void => {
-      returnTo.current?.focus();
-      returnTo.current = null;
+      restoreFocus();
       onClose();
     };
     dialog.addEventListener("close", handleClose);

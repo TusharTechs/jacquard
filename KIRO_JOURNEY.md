@@ -1274,6 +1274,28 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: n/a (check).
 - Evidence: this entry.
 
+### 2026-11-16 — Phase D end: weave-auditor and design-reviewer review of simulate-and-export
+
+- Surface: IDE
+- Goal: Run both review agents over Phase D, fix their findings, tag `phase-D`.
+- Kiro features used: custom agents `weave-auditor` (third run) and `design-reviewer` (second run), in parallel as sub-agents; MCP server `jacquard-weave` (the auditor ran `build_lift_plan`, `check_floats`, `auto_fix`, `build_cards`, `decode_cards` and `list_profiles` on 4 plans); a `general-task-execution` sub-agent applied the fixes.
+- Model / credits (start → end):
+- What worked:
+  - **weave-auditor:** 0 float violations and 0 card round-trip errors on 4 plans (lozenge and checker, each on `{hookCount:16}` and on `{hookCount:16, spareHookCount:2, hooksPerCardRow:4, holeMeans:"noLift"}`).
+    - It checked by reasoning that `cloth.ts`'s face/back rule matches the engine's `sideOf`, and that the WIF liftplan lists exactly the lifted hooks, 1-based.
+    - One unlabelled loom fact: the lacing-hole placement on the card sheet. Now labelled `[decision]`.
+    - It corrected my audit prompt: I said spare positions are always unpunched, but under `holeMeans:"noLift"` the engine punches them so their hooks stay down. The tests already expect that.
+  - **design-reviewer:** 11 problems, 2 high, 4 medium and 5 low. All fixed. Web tests went from 110 to 120.
+    - High: export could use a stale lift plan without the violation gate in the moment after a paint stroke (the float check runs on a deferred value), which breaks "never silently export". Cards and WIF now wait, with "Checking floats…".
+    - High: the cloth canvas capped each side but not its area, so on a 3× phone at zoom 16 it could draw nothing. The area is now capped at 16 MP, with an error state instead of a blank canvas.
+    - Mediums: focus fell to `<body>` after "Export anyway"; the cloth scroll region could not be reached by keyboard; overscroll trapped touch scrolling above the export buttons; the simulator offered a Retry that could never change the result.
+  - After my follow-up edit: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 88, export 52, motif 75, backend 45, web 120).
+- What failed or surprised:
+  - The fix sub-agent pointed out that its new "lower the zoom" message is wrong when the cell count alone is too large, because zoom does not change the backing size then. I added a second message for that case, with no zoom button.
+  - The stale-plan test in `app.test.tsx` cannot reproduce the stale window in jsdom, because React's test wrapper flushes the deferred check first. The window is tested only at the panel level.
+- Spec versus vibe note: agent review, then fixes.
+- Evidence: `apps/web/src/components/export-panel.tsx`, `simulator-panel.tsx`, `ui/dialog.tsx`, `apps/web/src/lib/draw-cloth.ts`, `packages/export/src/card-sheet.ts`, `apps/web/test/dialog.test.tsx`; tag `phase-D`.
+
 ### Template
 
 ```

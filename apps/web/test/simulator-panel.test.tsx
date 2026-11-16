@@ -1,5 +1,6 @@
 // Simulator panel (2.1 to 2.5): empty states, which plan is shown, the not-a-photograph note,
-// face and back, yarn colour inputs, the error state with Retry, and the canvas drawing helpers.
+// face and back, yarn colour inputs, the error states (bad yarns, a zoom too large for the screen)
+// with their actions, and the canvas drawing helpers.
 // clothModel is the real one from @jacquard/export, wrapped in a spy to see what it is called with.
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { PROFILE_120, defineProfile } from "@jacquard/engine";
@@ -7,10 +8,10 @@ import type { Design, LiftPlan, LoomProfile } from "@jacquard/engine";
 import { clothModel } from "@jacquard/export";
 import type { ClothCell } from "@jacquard/export";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PLAN_LINES, SIMULATION_NOTE, SimulatorPanel } from "../src/components/simulator-panel";
+import { PLAN_LINES, SIMULATION_NOTE, SimulatorPanel, TOO_LARGE_MESSAGE } from "../src/components/simulator-panel";
 import type { SimulatorPanelProps } from "../src/components/simulator-panel";
 import { defaultWeaves } from "../src/lib/default-weaves";
-import { CLOTH_SHADES, MAX_CLOTH_SIDE, clothCanvasSize, drawClothRows } from "../src/lib/draw-cloth";
+import { CLOTH_SHADES, MAX_CLOTH_AREA, MAX_CLOTH_SIDE, clothCanvasSize, drawClothRows } from "../src/lib/draw-cloth";
 import type { ClothContext } from "../src/lib/draw-cloth";
 import { checkDesign } from "../src/lib/engine-check";
 import { accessibleName, installDom, textOf } from "./dom-setup";
@@ -72,10 +73,33 @@ describe("simulator panel", () => {
   });
 
   it("empty state after an engine error points at the float check", () => {
-    renderPanel({ plan: null, emptyReason: "engineError" });
+    const onGoToFloatCheck = vi.fn();
+    renderPanel({ plan: null, emptyReason: "engineError", onGoToFloatCheck });
     const text = textOf(panel());
     expect(text).toContain("No lift plan to simulate");
     expect(text).toContain("float check");
+    fireEvent.click(within(panel()).getByRole("button", { name: "Go to the float check" }));
+    expect(onGoToFloatCheck).toHaveBeenCalledTimes(1);
+  });
+
+  it("the cloth viewport is a named, focusable scroll region", () => {
+    renderPanel();
+    const viewport = within(panel()).getByRole("region", { name: "Cloth simulation, scrollable" });
+    expect(viewport.tabIndex).toBe(0);
+    expect(viewport.querySelector("canvas")).not.toBeNull();
+  });
+
+  it("with no 2D context, shows the too-large error instead of a blank canvas; Lower the zoom lowers it", async () => {
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
+    renderPanel();
+    const zoom = within(panel()).getByRole("slider") as HTMLInputElement;
+    fireEvent.change(zoom, { target: { value: "16" } });
+    const alert = await waitFor(() => within(panel()).getByRole("alert"));
+    expect(textOf(alert)).toContain(TOO_LARGE_MESSAGE);
+    expect(TOO_LARGE_MESSAGE).toBe("This zoom is too large for this screen; lower the zoom.");
+    expect(panel().querySelector("canvas")).toBeNull();
+    fireEvent.click(within(alert).getByRole("button", { name: "Lower the zoom" }));
+    expect(Number(zoom.value)).toBeLessThan(16);
   });
 
   it("says which plan it shows (2.4)", () => {
@@ -154,16 +178,34 @@ describe("simulator panel", () => {
     expect(panel().querySelector("canvas")!.style.width).toBe(`${PROFILE_120.hookCount * 10}px`);
   });
 
-  it("shows the error state when clothModel rejects the yarns, with Retry and reset (2.5)", () => {
-    const { onResetYarns } = renderPanel({ yarns: { warp: "red", weft: "#f3ead8" } });
+  it("shows the error state when clothModel rejects the yarns, with reset as the action and a redraw on change (2.5)", () => {
+    const { onResetYarns, rerender } = renderPanel({ yarns: { warp: "red", weft: "#f3ead8" } });
     const alert = within(panel()).getByRole("alert");
     expect(textOf(alert)).toContain("The cloth could not be drawn");
+    expect(textOf(alert)).toContain("Change the yarn colours or the design, and the cloth is drawn again.");
     expect(panel().querySelector("canvas")).toBeNull();
-    const calls = spy.mock.calls.length;
-    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
-    expect(spy.mock.calls.length).toBe(calls + 1);
-    fireEvent.click(within(alert).getByRole("button", { name: "Reset yarn colours" }));
+    expect(within(alert).queryByRole("button", { name: "Retry" })).toBeNull();
+    const reset = within(alert).getByRole("button", { name: "Reset yarn colours" });
+    expect(reset.className).toContain("btn-primary");
+    fireEvent.click(reset);
     expect(onResetYarns).toHaveBeenCalledTimes(1);
+    // New yarn colours rerun the model and the cloth is drawn.
+    const calls = spy.mock.calls.length;
+    rerender(
+      <SimulatorPanel
+        plan={PLAN}
+        planSource="design"
+        profile={PROFILE_120}
+        yarns={{ warp: "#2b2b2b", weft: "#f3ead8" }}
+        emptyReason="blank"
+        onYarnsChange={vi.fn()}
+        onResetYarns={onResetYarns}
+        onStartBlank={vi.fn()}
+      />,
+    );
+    expect(spy.mock.calls.length).toBe(calls + 1);
+    expect(within(panel()).queryByRole("alert")).toBeNull();
+    expect(panel().querySelector("canvas")).not.toBeNull();
   });
 
   it("shows the error state when clothModel rejects the plan", () => {
@@ -182,6 +224,36 @@ describe("draw-cloth", () => {
     expect(clothCanvasSize(120, 16, 4, 2)).toMatchObject({ width: 960, height: 128, scale: 2 });
     const huge = clothCanvasSize(2400, 10, 16, 1);
     expect(huge.width).toBe(MAX_CLOTH_SIDE);
+  });
+
+  it("caps the backing area at 16 million device pixels as well as the side", () => {
+    // 480 by 480 cells at 16 px is 7680 CSS px a side: under the side cap, far over the area cap at ratio 2.
+    const size = clothCanvasSize(480, 480, 16, 2);
+    expect(size.width).toBeLessThanOrEqual(MAX_CLOTH_SIDE);
+    expect(size.width * size.height).toBeLessThanOrEqual(MAX_CLOTH_AREA);
+    expect(size.scale).toBeCloseTo(Math.sqrt(MAX_CLOTH_AREA / (7680 * 7680)), 10);
+    expect(size.fits).toBe(true);
+    for (const [hooks, picks, zoom, ratio] of [
+      [2400, 2400, 16, 3],
+      [1, 1, 1, 1],
+      [8000, 3, 16, 2],
+    ] as const) {
+      const s = clothCanvasSize(hooks, picks, zoom, ratio);
+      expect(s.width).toBeLessThanOrEqual(MAX_CLOTH_SIDE);
+      expect(s.height).toBeLessThanOrEqual(MAX_CLOTH_SIDE);
+      expect(s.width * s.height).toBeLessThanOrEqual(MAX_CLOTH_AREA);
+      expect(s.scale).toBeLessThanOrEqual(ratio);
+    }
+  });
+
+  it("reports fits = false when the caps leave less than one device pixel per cell", () => {
+    expect(clothCanvasSize(120, 16, 4, 2).fits).toBe(true);
+    // 5000 by 5000 cells: the area cap allows 4000 px a side, under one pixel per cell.
+    const tooBig = clothCanvasSize(5000, 5000, 16, 2);
+    expect(tooBig.scale * 16).toBeLessThan(1);
+    expect(tooBig.fits).toBe(false);
+    // 10000 ends in one pick: the side cap alone leaves under one pixel per cell.
+    expect(clothCanvasSize(10000, 1, 1, 1).fits).toBe(false);
   });
 
   function record(cells: ClothCell[][], cell: number) {
