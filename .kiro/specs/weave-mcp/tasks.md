@@ -179,11 +179,11 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - File `test/robustness.test.ts`: arguments from `fc.jsonValue()` to every tool; no result is `INTERNAL_ERROR` and no call rejects. A failure is reported as an engine bug or a missing shape check, and is not hidden by catching the exception
     - _Requirements: 8.3, 9.8_
 
-- [ ] 15. Process-level and package smoke tests
-  - [ ] 15.1 Write the process-level spawn test
+- [x] 15. Process-level and package smoke tests
+  - [x] 15.1 Write the process-level spawn test
     - File `test/process.test.ts`: spawn `node packages/mcp/dist/index.js` with the workspace root as working directory and the relative path; initialize handshake within 5 seconds (13.7); after `tools/list` and one call per tool, every stdout line is a complete JSON-RPC message (1.2, 1.6); a non-JSON line and a JSON non-JSON-RPC line leave the process running, a later `tools/list` is answered, and stdout holds only complete JSON-RPC messages, with no assertion about whether an error reply exists (1.7); two processes from the same build give byte-identical stdout for the same requests (11.1); close the child at the end
     - _Requirements: 1.2, 1.6, 1.7, 11.1, 13.7_
-  - [ ] 15.2 Extend `test/package.test.ts` with source scans
+  - [x] 15.2 Extend `test/package.test.ts` with source scans
     - No import path containing `@jacquard/engine/` or `engine/src` in `src` and `test` (13.3); no `console.log`, `console.info`, `console.debug` or `process.stdout` in `src` (1.6); no `Date`, `Math.random`, `process.env`, `Intl`, `toLocale`, `fetch`, `fs`, `net`, `http` in `src` (11.3, 12.1 to 12.3); `src` contains no weaving logic imports other than through `engine-api.ts`, and only `engine-api.ts` imports engine values (10.3)
     - _Requirements: 1.6, 10.3, 11.3, 12.1, 12.2, 12.3, 13.3_
 

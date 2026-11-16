@@ -941,6 +941,20 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec. The spec was wrong about the SDK's behaviour; writing the test showed it.
 - Evidence: `packages/mcp/test/protocol-examples.test.ts`, `packages/mcp/test/robustness.test.ts`, `.kiro/specs/weave-mcp/design.md` (Protocol-level example tests).
 
+### 2026-11-16 — weave-mcp wave 15 (tasks 15.1, 15.2)
+
+- Surface: IDE
+- Goal: Process-level spawn test and source scans.
+- Kiro features used: spec `weave-mcp` (tasks 15.1, 15.2). No hook output observed, no MCP tool, no custom agent.
+- Model / credits (start → end):
+- What worked:
+  - `test/process.test.ts` spawns `node packages/mcp/dist/index.js` from the workspace root and checks four things: the handshake answers within 5 s; stdout holds only complete JSON-RPC lines after `tools/list` and one call per tool; a non-JSON line and a JSON non-RPC line leave the process running and a later `tools/list` is answered; two processes give byte-identical stdout.
+  - `test/package.test.ts` gained source scans: no `@jacquard/engine/` or `engine/src` import paths; only `engine-api.ts` imports engine values; no `console.log`/`info`/`debug`/`warn` or `process.stdout` in `src`; no `Date`, `Math.random`, `process.env`, `Intl`, `toLocale`, `fetch`, or `fs`/`net`/`http` modules in `src`. Comments are stripped before scanning.
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine `148 passed`; mcp `20 passed` files, `83 passed` tests).
+- What failed or surprised: my first edit of `package.test.ts` left a placeholder `expect(true).toBe(true)` test where I had cut the engine-package check. I removed it before the run; the engine check now sits in its own `describe`.
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/test/process.test.ts`, `packages/mcp/test/package.test.ts`.
+
 ### Template
 
 ```
