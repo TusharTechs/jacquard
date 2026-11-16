@@ -1003,6 +1003,25 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec, then agent review.
 - Evidence: `packages/mcp/src/handlers.ts`, `packages/mcp/src/profile.ts`; tag `phase-B`.
 
+### 2026-11-16 — motif-input spec (requirements, gap analysis, design, tasks) and wave 0 (tasks 1.1, 1.2)
+
+- Surface: IDE
+- Goal: Write the Phase C spec without stopping for approval, as the standing orders require, then scaffold the three new packages.
+- Kiro features used: spec `motif-input` (new: `requirements.md`, `design.md`, `tasks.md`, written in this session, not by Kiro's spec workflow sub-agent); steering `autopilot.md`, `product.md`, `tech.md`, `structure.md`, `weaving-domain.md`, `design-language.md` (all read for the gap analysis; `structure.md` updated); hook `block-engine-fixture-edits` (since 13:03Z, `.kiro/hook-runs.log` shows 132 file-tool calls checked and allowed: 42 `fs_write`, 89 `str_replace`, 1 `fs_append`; none blocked).
+- Model / credits (start → end):
+- What worked:
+  - `requirements.md`: 13 requirements in EARS form covering the request/response contract, no key in the browser, model failures (timeout, invalid SVG, too many colours, unavailable), the Motif_SVG subset, rasterizing, speck removal, symmetry, the stand-in generator, the editor, engine checks, loom setup, required states, and package boundaries.
+  - The Decision log has 17 `[decision]` rows from the gap analysis.
+  - `design.md`: 14 correctness properties. `tasks.md`: 8 top-level tasks, one property task per property, none optional, waves 0 to 6.
+  - Wave 0: `packages/motif`, `backend` and `apps/web` skeletons with exact pins (React 19.3.1, Vite 8.3.8, `@aws-sdk/client-bedrock-runtime` 3.1169.0 and the rest), `backend` added to `pnpm-workspace.yaml`, and one package smoke test each. `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, motif 4, backend 3, mcp 88, web 3 passed).
+- What failed or surprised:
+  - **Gap-analysis decision that changes the layout:** `weaving-domain.md` rule 9 says image-to-region reduction is outside the engine, and `structure.md` keeps weaving logic out of `apps/web`. So rasterizing went to a new package, `@jacquard/motif`, and `structure.md` now lists it. This contradicts the playbook wording "the app rasterizes" only in where the code lives; the app still calls it.
+  - **Bedrock:** `aws bedrock list-foundation-models` in `us-west-2` lists `anthropic.claude-sonnet-5-5`, and inference profile `us.anthropic.claude-sonnet-5-5` exists. Listing does not show whether invocation access is granted. An `InvokeModel` call costs money, so it was not made (stop condition). The motif step is built behind a `Generator` interface with the deterministic Stand_In.
+  - The `tasks.md` dependency graph puts all 13 motif property tasks in one wave. That is a lot for one journal entry, but they share one generator file.
+  - Phase B tag `phase-B` was pushed before the Phase B end journal entry was committed. The tag is on the commit with the reviewer fix (`e021bdb`); the entry is in the next commit.
+- Spec versus vibe note: spec. The editor's interaction feel is marked for vibe mode in task 6.3.
+- Evidence: `.kiro/specs/motif-input/requirements.md`, `design.md`, `tasks.md`; `.kiro/steering/structure.md`; `packages/motif/package.json`, `backend/package.json`, `apps/web/package.json`.
+
 ### Template
 
 ```
@@ -1023,13 +1042,13 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 2 / 0 | weave-mcp: requirements (14 requirements), design (16 correctness properties) and tasks (17 top-level tasks); no tasks run yet. weave-engine complete: requirements (6 requirements, 45 acceptance criteria), design (34 correctness properties) and tasks (all 13 top-level tasks and their sub-tasks checked), run in waves 0 to 15; final checkpoint (task 13) passed. The lattice example test (11.4) caught an error in `design.md`'s 5.7 testing note, which was corrected |
-| Property-based tests / bugs they caught | 34 / 0 | All 34 properties in `design.md` have a fast-check test (27 `*.property.test.ts` files). Kiro recorded 28 as passed in `tasks.meta.json` (Properties 7 to 34); 1 to 6 ran in chat, so Kiro has no record of them. No property found an engine bug. Two properties failed on test mistakes, not engine bugs: Property 33 on a wrong import (`autoFix is not a function`) and Property 32 on a snapshot helper (`structuredClone` and null-prototype objects). A deliberately planted off-by-one in `checkFloats` was caught by Properties 18 and 23 and then undone (not counted) |
-| Engine tests (files / tests) | 35 / 148 | 27 property-test files and 8 example-test files under `packages/engine/test/`, 3 golden fixtures in `test/fixtures/`. Last run: `Test Files  35 passed (35)`, `Tests  148 passed (148)`, typecheck `EXIT_CODE=0` |
+| Specs (feature / bugfix) | 3 / 0 | weave-engine complete (6 requirements, 34 properties, 13 tasks). weave-mcp complete (14 requirements, 16 properties, 17 tasks, waves 0 to 17; tag `phase-B`); task 14.1 found a design error about SDK array arguments, corrected in `design.md`. motif-input: requirements (13), design (14 properties), tasks (8); wave 0 done |
+| Property-based tests / bugs they caught | 50 / 0 | Engine 34 (27 files). weave-mcp 16 (Properties 1 to 16, 15 `*.property.test.ts` files plus the Property 3 table test). No property found a product bug. Failures on test mistakes: engine Properties 32 and 33; weave-mcp Property 4 (`__proto__` key in its own reorder helper), Property 6 (wrong expected-outcome label on `auto_fix`), Property 15 (null-prototype snapshot, same mistake as engine Property 32). The planted `checkFloats` off-by-one is not counted |
+| Tests (files / tests) | engine 35 / 148; mcp 21 / 88; motif 1 / 4; backend 1 / 3; web 1 / 3 | Last run after motif-input wave 0, all `EXIT_CODE=0` |
 | Hooks | 3 | None ran until the workspace was trusted (`hooks.v2.executionDisabledUntrustedWorkspace`). **engine-typecheck-and-test-on-save:** 57 results in `.kiro/hook-runs.log` since markers began at 08:27Z, 8 of them non-zero: 3 type errors (09:23:22Z, 09:45:08Z, and 10:24:22Z with a test failure too), the planted bug (09:37:54Z), the lattice design error (10:19:02Z), two saves with a lattice-test mistake (10:22:13Z, 10:22:15Z) and the Property 32 snapshot helper (10:49:17Z); each was followed by a clean save. **block-engine-fixture-edits:** blocked 1 edit (the 08:27:11Z hand test), allowed every other file-tool edit, including the creation of the 3 golden fixtures. **journey-entry-on-stop:** fired at the end of task sessions and main chat turns, deferred mid-wave and wrote wave entries at the end. Edits made through the shell (tasks 11.2, 11.3 and journal writes) bypassed both file hooks |
-| Steering files | 6 | 4 always-on (product, tech, structure, journey), 2 file-matched (weaving-domain for `packages/engine/**`, design-language for `apps/web/**`) |
-| Custom agents | 1 | journey-scribe (never invoked). The `spec-task-execution` sub-agent that ran the tasks is Kiro's built-in, not ours |
-| MCP servers (third-party / our own) | 0 / 0 | |
+| Steering files | 7 | 5 always-on (product, tech, structure, journey, autopilot), 2 file-matched (weaving-domain for `packages/engine/**`, design-language for `apps/web/**`) |
+| Custom agents | 3 | journey-scribe (never invoked); weave-auditor (run once as a sub-agent at the Phase B end, 0 findings, 1 fragility note fixed); design-reviewer (created, not yet run) |
+| MCP servers (third-party / our own) | 2 / 1 | `.kiro/settings/mcp.json`: context7 and chrome-devtools (registered, not yet used by this project's sessions), jacquard-weave (ours; used by weave-auditor) |
 | Powers (used / shipped) | 0 / 0 | |
 | Workflows | 0 | |
 | CLI headless runs in CI | 0 | |
