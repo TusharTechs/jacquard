@@ -831,6 +831,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/src/handlers.ts`.
 
+### 2026-11-16 — weave-mcp wave 7 (task 7.3)
+
+- Surface: IDE
+- Goal: `build_cards` and `decode_cards` handlers.
+- Kiro features used: spec `weave-mcp` (task 7.3). No hook output observed, no property test in this wave.
+- Model / credits (start → end):
+- What worked: `buildCardsTool` returns `{ cardSet, cardRows }` with `cardRows[i] = engine.cardRows(cardSet.cards[i], profile)`; `decodeCardsTool` returns `{ plan }`. `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 43 passed).
+- What failed or surprised: nothing.
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/src/handlers.ts`.
+
 ### Template
 
 ```

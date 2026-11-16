@@ -77,7 +77,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - `resolveProfile(profileArgument, engine)`: built-in name returns the engine's profile unmodified; an object goes through `defineProfile` then `validateProfile`, and an `Err` is returned as the Tool_Error (`PROFILE_INVALID`); the tool operation does not run on error
     - _Requirements: 7.3, 8.6, 9.3, 9.4_
 
-- [ ] 7. Tool handlers
+- [x] 7. Tool handlers
   - [x] 7.1 Implement `list_profiles` and `build_lift_plan` in `src/handlers.ts`
     - `list_profiles`: three profiles in order 120, 240, 400, each field as `{ value, label }` from `LABEL_TABLE`, no arguments needed
     - `build_lift_plan`: resolve profile, call `buildLiftPlan` with `repeatAcross` defaulting to `false`, return `{ plan, idleHooks, warnings }`; pass `weaves` through unchanged; engine errors unchanged
@@ -85,7 +85,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
   - [x] 7.2 Implement `check_floats` and `auto_fix` in `src/handlers.ts`
     - `check_floats` returns `{ violations }` (empty list is a success); `auto_fix` calls `autoFix` with the engine defaults only and returns `{ plan, flips }`; `AUTOFIX_FAILED` and every other engine error returned with all fields unchanged
     - _Requirements: 4.1, 4.2, 4.3, 5.1, 5.2, 5.3, 5.4, 5.5_
-  - [ ] 7.3 Implement `build_cards` and `decode_cards` in `src/handlers.ts`
+  - [x] 7.3 Implement `build_cards` and `decode_cards` in `src/handlers.ts`
     - `build_cards` returns `{ cardSet, cardRows }` with one `cardRows(card, profile)` call per card in card order; `decode_cards` returns `{ plan }`; engine errors unchanged
     - _Requirements: 6.1, 6.2, 6.3, 6.5, 7.1, 7.2, 10.3, 10.4_
 
