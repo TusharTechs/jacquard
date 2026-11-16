@@ -8,12 +8,12 @@ Every acceptance criterion (45 in total) is covered by at least one correctness 
 
 ## Tasks
 
-- [ ] 1. Set up the pnpm workspace and engine package
-  - [ ] 1.1 Create workspace root files
+- [x] 1. Set up the pnpm workspace and engine package
+  - [x] 1.1 Create workspace root files
     - `package.json` (private, `packageManager` pnpm, scripts `test` and `typecheck` that run across packages), `pnpm-workspace.yaml` (`packages/*`, `apps/*`), `tsconfig.base.json` (strict, ES2022, module NodeNext)
     - No `package-lock.json` or `yarn.lock`
     - _Requirements: 6.2_
-  - [ ] 1.2 Create the engine package skeleton
+  - [x] 1.2 Create the engine package skeleton
     - `packages/engine/package.json`: name `@jacquard/engine`, `type: module`, `sideEffects: false`, no `dependencies` field; dev dependencies `typescript`, `vitest`, `fast-check`
     - `tsconfig.json` for `src` with `"types": []`; `tsconfig.test.json` for `src` and `test`; `vitest.config.ts`
     - Empty `src/index.ts`, `test/fixtures/`

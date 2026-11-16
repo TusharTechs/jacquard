@@ -106,6 +106,27 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: n/a.
 - Evidence: `.kiro/steering/journey.md`, `.kiro/hooks/journey-entry-on-stop.json`.
 
+### 2026-11-16 — weave-engine wave 0 (tasks 1.1 and 1.2)
+
+- Surface: IDE
+- Goal: Set up the pnpm workspace root (task 1.1) and the `@jacquard/engine` package skeleton (task 1.2).
+- Kiro features used: spec `weave-engine` (tasks 1.1 and 1.2, run through Kiro's task execution; the run history is in `.kiro/specs/weave-engine/tasks.meta.json`); steering `tech.md` (pnpm only, no lockfiles from other managers; I did not observe which steering files the task sessions actually loaded). No custom agent, no MCP tool, no property test (`pbtResults` is empty), no checkpoint. The Stop hook `journey-entry-on-stop` did not write an entry (see below).
+- Model / credits (start → end):
+- What worked: Both tasks and the parent task 1 are marked `[x]` in `tasks.md`. I checked the files on disk, not the task sessions:
+  - Root: `package.json` (private, `packageManager: pnpm@12.16.1`, scripts `test` and `typecheck` as `pnpm -r --if-present`), `pnpm-workspace.yaml` (`packages/*`, `apps/*`), `tsconfig.base.json` (strict, ES2022, NodeNext; see the deviation below). No `package-lock.json` or `yarn.lock`.
+  - Engine: `packages/engine/package.json` (`@jacquard/engine`, `type: module`, `sideEffects: false`, no `dependencies` field; dev dependencies `@types/node`, `fast-check`, `typescript`, `vitest`), `tsconfig.json` with `"types": []` and `include: ["src"]`, `tsconfig.test.json`, `vitest.config.ts`, `src/index.ts` containing only `export {};`, and `test/fixtures/.gitkeep`.
+  - `node_modules` and `pnpm-lock.yaml` exist because the user ran an install by hand as a manual check. No task ran it.
+- What failed or surprised:
+  - **The Stop hook did not write the wave entry.** After the wave finished, `KIRO_JOURNEY.md` was unchanged (last modified 12:33:34, before the first wave file at 12:38), and this entry was written by hand at the user's request. The hook had been edited earlier today to defer during a wave and to write after the wave's last task, so it should have fired at least after task 1.2. I do not know why it did not. Possible causes, all untested: the hook never fired in the task-execution sessions; it fired and the agent chose not to write; or the edited hook is not loaded until a new session. Treat the hook as unreliable for spec waves, and write wave entries by hand or by prompt until it is tested.
+  - **The two tasks did not run in parallel.** The dependency graph puts 1.1 and 1.2 in one wave, but the run history shows two separate chat sessions, one per task. Task 1.1 ran 12:37:48 to 12:38:18 and task 1.2 ran 12:38:36 to 12:39:17, so there was no overlap. The "no writes during a wave" rule was therefore never tested, because neither session wrote.
+  - **This entry is reconstructed.** I did not take part in either task session. It rests on `tasks.md`, `tasks.meta.json` and the files listed above, and on the user's report that the hook did not write. It says nothing about what the task sessions did beyond that.
+  - **Deviation from the task text, accepted by the user:** `tsconfig.base.json` has strict flags that task 1.1 did not list: `noUncheckedIndexedAccess`, `noImplicitOverride`, `esModuleInterop`, `skipLibCheck`, `forceConsistentCasingInFileNames`, `isolatedModules` and `noEmit`. The user accepted them. `noUncheckedIndexedAccess` makes every array index read possibly `undefined`, so later engine code needs explicit checks on `design[pick][end]` and similar reads.
+  - **`passWithNoTests` must be removed in the first wave that adds a test file.** `vitest.config.ts` sets `passWithNoTests: true`, so a run with no test files passes and proves nothing. That wave must delete the option, so that an empty test set fails. By the dependency graph in `tasks.md`, that is wave 4, where task 4.2 adds the first `*.test.ts` file; the helpers in `test/arbitraries.ts` (wave 2) and `test/oracle.ts` (wave 3) are not test files. No task in `tasks.md` currently says to remove the option.
+  - **Typecheck:** `pnpm typecheck` (run by me before the commit) printed both `tsc` steps with `EXIT_CODE=0`. At this point `src/index.ts` is `export {};`, so this proves only that the two tsconfigs parse and resolve `vitest/globals` and `node` types. No test has run.
+  - **Not committed:** the wave's files and the `tasks.md` and `tasks.meta.json` changes are untracked or modified in git as of this entry.
+- Spec versus vibe note: spec; the tasks were small enough that the spec added little here, but it set the exact package layout that later tasks depend on.
+- Evidence: `.kiro/specs/weave-engine/tasks.md` (1, 1.1, 1.2 checked), `.kiro/specs/weave-engine/tasks.meta.json`, `package.json`, `pnpm-workspace.yaml`, `tsconfig.base.json`, `packages/engine/`.
+
 ### Template
 
 ```
@@ -126,9 +147,9 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; no tasks run) |
+| Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; wave 0 done, tasks 1.1 and 1.2) |
 | Property-based tests / bugs they caught | 0 / 0 | |
-| Hooks | 1 | journey-entry-on-stop (not yet fired) |
+| Hooks | 1 | journey-entry-on-stop (wrote no entry after wave 0; unreliable for spec waves) |
 | Steering files | 6 | 4 always-on, 2 file-matched |
 | Custom agents | 1 | journey-scribe (not yet invoked) |
 | MCP servers (third-party / our own) | 0 / 0 | |
