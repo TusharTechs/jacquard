@@ -1,6 +1,6 @@
 # loom: a Kiro Power for Jacquard punch cards
 
-Punch cards are dead as a computing medium, but handlooms still weave from them. This Power lets Kiro design a woven pattern and write the punch-card set for it.
+Punch cards are dead as a computing medium, but handlooms still weave from them. This Power helps a designer turn a pattern into a lift plan and a punch-card set from inside Kiro.
 
 The card format is a configurable loom profile and has not been tested on a working loom. The Power assists the designer and the card puncher; it does not replace them.
 
@@ -21,9 +21,10 @@ You need Node.js 22 or later on your `PATH`.
 
 ### From a local folder (reliable)
 
-1. Clone the repository: `git clone https://github.com/TusharTechs/jacquard`.
-2. In Kiro IDE, open the Powers panel, choose **Add Custom Power**, then **Import power from a folder**, and pick the `power/` folder of the clone (the folder that holds `plugin.json`).
-3. With Kiro CLI: `kiro-cli powers install <path-to-clone>/power`.
+First clone the repository: `git clone https://github.com/TusharTechs/jacquard`. Then use either route:
+
+- **Kiro IDE:** open the Powers panel, choose **Add Custom Power**, then **Import power from a folder**, and pick the `power/` folder of the clone (the folder that holds `plugin.json`).
+- **Kiro CLI:** run `kiro-cli powers install <path-to-clone>/power`.
 
 ### From GitHub
 
@@ -31,19 +32,26 @@ In Kiro IDE, open the Powers panel, choose **Add Custom Power**, then **Import p
 
 ## Test it in a fresh empty workspace
 
-1. Create an empty folder and open it in Kiro.
-2. Install the Power by one of the routes above.
-3. Check that the `loom` MCP server shows as connected with six tools.
-4. Ask: "Design an 8 by 8 two-region pattern for a 16-hook custom loom, check floats, fix them and give me the card set".
+1. Clone the repository somewhere outside the test folder first (see "From a local folder"), so the test workspace stays empty.
+2. Create an empty folder and open it in Kiro.
+3. Install the Power by one of the routes above.
+4. In the MCP server list in the Kiro panel, check that the `loom` server shows as connected with six tools.
+5. Ask: "Design an 8 by 8 two-region pattern for a 16-hook custom loom, check floats, fix them and give me the card set".
 
 What to expect:
 
 - Kiro picks up the two skills and calls `build_lift_plan` with an 8 by 8 design, a weave for each of the two regions and a custom profile such as `{"hookCount":16}`.
 - `check_floats` returns a list of violations. With the default max float of 8 [decision] and short weaves such as plain and twill 1/3, the list is usually empty and `auto_fix` is not needed. With a tighter limit or a long-float weave, `auto_fix` reports the flipped cells and a second `check_floats` returns an empty list.
-- `build_cards` returns 8 cards numbered 1 to 8 in lacing order, each with 16 positions in 2 rows of 8, and `decode_cards` gives back the same lift plan.
+- `build_cards` returns 8 cards numbered 1 to 8 in lacing order, each with 16 positions in 2 rows of 8, and `decode_cards` gives back the same lift plan. Rows of 8 (`hooksPerCardRow` 8) are [to verify] on custom profiles and on the 120 and 240 profiles; they are sourced only for the 400 profile.
 - Kiro's answer says that the card format has not been tested on a working loom.
 
 The two skills contain a worked example of exactly this request, run through the bundled server.
+
+### If the server does not connect
+
+- Run `node --version`. It must report version 22 or later.
+- Check that `power/dist/server.js` exists in the folder you installed from.
+- Open the MCP server log in Kiro and read the error for the `loom` server.
 
 ## Rebuilding the server
 

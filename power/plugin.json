@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "loom",
   "version": "0.1.0",
-  "description": "Design woven patterns for a Jacquard handloom and turn them into a punch-card set: build a lift plan from a design grid, check float lengths, auto-fix long floats, and encode and decode the cards. The card format is a configurable loom profile and has not been tested on a working loom.",
+  "description": "Punch cards are dead as a computing medium; handlooms still weave from them. Design woven patterns for a Jacquard handloom and turn them into a punch-card set: build a lift plan from a design grid, check float lengths, auto-fix long floats, and encode and decode the cards. The card format is a configurable loom profile and has not been tested on a working loom.",
   "author": { "name": "Tushar" },
   "keywords": ["jacquard", "handloom", "punch card", "weave", "float", "lift plan", "card set"],
   "repository": "https://github.com/TusharTechs/jacquard",

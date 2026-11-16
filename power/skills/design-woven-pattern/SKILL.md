@@ -18,12 +18,12 @@ These tools assist the designer and the card puncher. They do not replace either
 
 ## Tool flow
 
-1. `list_profiles`: read the built-in profiles. Every field comes with a label. Keep the label when you repeat a value to the user (for example "max float 8 [decision]"). A custom profile is an object with at least `hookCount`; its other fields take the same defaults and labels.
+1. `list_profiles`: read the built-in profiles. Every field comes with a label. Keep the label when you repeat a value to the user (for example "max float 8 [decision]"). A custom profile is an object with at least `hookCount`. If its `hookCount` is 120, 240 or 400, it starts from that built-in profile. Any other `hookCount` starts from fallback defaults: 8 hooks per card row [to verify], 0 spare hooks [to verify], max float 8 [decision], region limit 4 [decision], holes mean lift [convention]. Read the values with `list_profiles` and from any `PROFILE_INVALID` errors.
 2. Make the design grid: `design[pick][end]`, one row per pick with pick 0 first, one integer region per end with end 0 first. Use at most `regionLimit` regions (4 by default).
 3. Choose one weave per region, keyed by the region number as a string:
    - `{"kind":"plain"}`
    - `{"kind":"twill","up":1,"down":3,"direction":"Z"}` (direction `S` or `Z`)
-   - `{"kind":"satin","size":5,"move":2,"facing":"weft"}` (size 5 with move 2 or 3, size 8 with move 3 or 5; facing `warp` or `weft`)
+   - `{"kind":"satin","size":5,"move":2,"facing":"weft"}` (size 5 with move 2 or 3, size 8 with move 3 or 5 [convention]; facing `warp` or `weft`)
 4. `build_lift_plan` with `design`, `weaves`, `profile` and, to fill every hook with the repeat, `"repeatAcross": true`. Read `idleHooks` and `warnings` in the result. A `WEAVE_PERIOD_SEAM` warning means the weave does not tile evenly across the repeat.
 5. Hand the plan to the `check-floats-and-cards` skill: `check_floats`, `auto_fix` if needed, `build_cards`, `decode_cards`.
 
@@ -73,6 +73,7 @@ Hooks 8 to 15 repeat hooks 0 to 7. With the default limits (max float 8 [decisio
 
 - The card format has not been tested on a working loom. The profile is configuration, not a promise of loom compatibility.
 - The tools assist the designer and the card puncher; never say they replace them.
+- Present the design grid and the weave choices as a suggestion; ask the designer to confirm or change them before building cards.
 - Every loom fact carries its label: [sourced] (stated in a 1909 source, not checked on a loom), [convention], [decision] or [to verify]. Do not fill in a [to verify] value from memory.
 - A motif is a clean vector drawing with a few colours, reduced to regions; the engine does the weaving work. Do not present a pixelated picture as a design.
 - Do not quote statistics about time or cost per design. None are sourced.

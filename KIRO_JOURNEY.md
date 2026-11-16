@@ -1336,6 +1336,27 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `.kiro/agents/release-runner.json`, `.kiro/agents/spec-checker.json`, `.kiro/workflows/release-check.workflow.json`, `.github/workflows/kiro-spec-check.yml`, `.kiro/automations/gallery-daily.md`, `packages/mcp/test/config.test.ts`, `media/journey/2026-11-16-kiro-cli-spec-check-local.txt`.
 
+### 2026-11-16 — Phase F end: design-reviewer and weave-auditor review of kiro-product
+
+- Surface: IDE
+- Goal: Review the Power copy and the gallery, fix findings, tag `phase-F`.
+- Kiro features used: custom agents `design-reviewer` (third run, on the Power README, skills, `plugin.json` and the automation prompt) and `weave-auditor` (fourth run, on the gallery and the skills' worked examples), in parallel; MCP server `jacquard-weave`; a `general-task-execution` sub-agent applied the fixes.
+- Model / credits (start → end):
+- What worked:
+  - **design-reviewer:** 12 findings, no high and no framing violations.
+    - Mediums: the skills never told Kiro to present its own design as a suggestion; the README's empty-workspace test did not say to clone elsewhere first; there was no help when the server does not connect; `gallery-daily.md` said the task "was created" when it has not been.
+    - It also flagged the known gap: `apps/web/src` does not show the gallery yet. That is planned for Phase G.
+    - All copy findings were fixed.
+  - **weave-auditor:** 0 float violations, 0 round-trip errors and 0 tool errors. It checked all four gallery examples against their recorded `check` fields, including `peacock-butta`'s single violation (weft, face, pick 26, end 13, length 9) and its one flip. It reproduced both skill worked examples exactly, including the 9 flips in order.
+    - 2 unlabelled loom facts, both fixed: the satin move list is now `[convention]`, and "2 rows of 8" now says `hooksPerCardRow` 8 is `[to verify]` off the 400 profile.
+    - It also found that a skill claimed custom profiles "take the same defaults and labels". That was not accurate; the text now names the fallback defaults.
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 110, export 52, motif 75, backend 45, web 127).
+- What failed or surprised:
+  - The auditor could not pass 240- and 400-hook plans between tools by hand (too large), so three gallery designs were checked on width-sized custom profiles. It explained from `floats.ts` why the float results carry over. Their card checks on the named profiles were not done.
+  - Two gallery examples carry `WEAVE_PERIOD_SEAM` warnings that their files do not record. `star-lattice` defines a 4th region and colour that its design does not use. Neither was changed.
+- Spec versus vibe note: agent review, then fixes.
+- Evidence: `power/README.md`, `power/plugin.json`, `power/skills/*/SKILL.md`, `.kiro/automations/gallery-daily.md`; tag `phase-F`.
+
 ### Template
 
 ```
