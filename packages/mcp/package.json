@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
+    "build:power": "node build.mjs --power",
     "pretest": "pnpm run build",
     "test": "vitest --run",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json"

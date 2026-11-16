@@ -5,6 +5,8 @@ node_modules/
 
 # Build output
 dist/
+!power/dist/
+!power/dist/**
 build/
 out/
 coverage/

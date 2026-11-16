@@ -1,0 +1,30 @@
+[
+  {
+    "ends": 48,
+    "id": "lotus-border",
+    "picks": 48,
+    "profile": "240",
+    "title": "Lotus border"
+  },
+  {
+    "ends": 40,
+    "id": "peacock-butta",
+    "picks": 40,
+    "profile": "240",
+    "title": "Peacock butta"
+  },
+  {
+    "ends": 24,
+    "id": "temple-stripe",
+    "picks": 32,
+    "profile": "120",
+    "title": "Temple stripe"
+  },
+  {
+    "ends": 50,
+    "id": "star-lattice",
+    "picks": 50,
+    "profile": "400",
+    "title": "Star lattice"
+  }
+]

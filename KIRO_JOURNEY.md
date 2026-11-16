@@ -1296,6 +1296,26 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: agent review, then fixes.
 - Evidence: `apps/web/src/components/export-panel.tsx`, `simulator-panel.tsx`, `ui/dialog.tsx`, `apps/web/src/lib/draw-cloth.ts`, `packages/export/src/card-sheet.ts`, `apps/web/test/dialog.test.tsx`; tag `phase-D`.
 
+### 2026-11-16 — kiro-product spec and wave 0 (tasks 1.1 to 1.3, 2.1, 2.2)
+
+- Surface: IDE
+- Goal: Phase F spec, then the `loom` Power and the gallery.
+- Kiro features used: spec `kiro-product` (new; requirements, design, tasks written in this session). Custom agent `introspect` (Kiro's built-in docs agent) was asked for the Agent Plugins, workflow, headless CLI and Kiro Web automation formats; it cited kiro.dev pages and agent-plugins.org. A `general-task-execution` sub-agent ran the tasks; I reran the checks. Hook `block-engine-fixture-edits`.
+- Model / credits (start → end):
+- What worked:
+  - `power/`: `plugin.json`, `mcp.json` (`node ${PLUGIN_ROOT}/dist/server.js`), two skills (`design-woven-pattern`, `check-floats-and-cards`), `README.md` with install steps and a test-in-an-empty-workspace script, and `dist/server.js` (663,536 bytes, SDK and engine inlined, committed through a `.gitignore` exception).
+  - `packages/mcp/test/power.test.ts` (16 tests). It rebuilds the bundle and compares bytes. It copies `server.js` to a temp folder with no `node_modules`, spawns it, and gets the six tools in order. It also checks the skills' frontmatter and framing sentences.
+  - The skill's worked example was run through the built server: an 8 by 8 plain/twill design on `{hookCount:16, maxFloat:2}` gave 16 violations, 9 flips, then 0, and `decode_cards` returned the identical plan.
+  - Gallery: 4 stand-in examples in `apps/web/public/gallery/` from `scripts/gallery/generate.ts` (`pnpm gallery`, `--check`). Families: lozenge, star, check, check. Only `peacock-butta` needed auto-fix (1 violation, 1 flip). All have 0 violations after. A byte-for-byte test is in `apps/web/test/gallery.test.ts`.
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 104, export 52, motif 75, backend 45, web 127); `pnpm gallery --check` `EXIT_CODE=0`.
+- What failed or surprised:
+  - **Spec finding:** the requirements Decision log said the four examples were "chosen so the stand-in families differ", but the stand-in hash gives two of them the same family. The row is corrected; the inputs are unchanged.
+  - The Power's server still calls itself `jacquard-weave` in the MCP handshake while `mcp.json` names it `loom`. Harmless, but visible to a client.
+  - The docs do not say which GitHub URL form installs a Power from a subfolder (`power/`). The README says so and gives the local-folder install as the reliable route. Installing the Power in an empty workspace is still the user's manual step (playbook Phase F).
+  - `introspect` found two places where the kiro.dev pages and the Agent Plugins spec disagree: which `plugin.json` fields are required, and `${VAR}` expansion in `env`. I followed the stricter reading.
+- Spec versus vibe note: spec.
+- Evidence: `power/**`, `packages/mcp/build.mjs`, `packages/mcp/test/power.test.ts`, `scripts/gallery/*`, `apps/web/public/gallery/*.json`, `apps/web/test/gallery.test.ts`, `.kiro/specs/kiro-product/*.md`.
+
 ### Template
 
 ```

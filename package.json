@@ -4,6 +4,12 @@
   "packageManager": "pnpm@12.16.1",
   "scripts": {
     "test": "pnpm -r --if-present test",
-    "typecheck": "pnpm -r --if-present typecheck"
+    "typecheck": "pnpm -r --if-present typecheck",
+    "gallery": "node scripts/gallery/run.mjs"
+  },
+  "devDependencies": {
+    "@jacquard/engine": "workspace:*",
+    "@jacquard/motif": "workspace:*",
+    "esbuild": "0.28.2"
   }
 }

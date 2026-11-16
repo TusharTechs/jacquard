@@ -164,7 +164,17 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      '@jacquard/engine':
+        specifier: workspace:*
+        version: link:packages/engine
+      '@jacquard/motif':
+        specifier: workspace:*
+        version: link:packages/motif
+      esbuild:
+        specifier: 0.28.2
+        version: 0.28.2
 
   apps/web:
     dependencies:
