@@ -18,6 +18,42 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 ---
 
+## Status for Tushar
+
+Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md`). Phases B, C, D, F, G and H are done as far as the agent can take them. Tags `phase-B`, `phase-C`, `phase-D`, `phase-F`, `phase-G` and `phase-H` are pushed. E was skipped as you asked. The last run had every package passing: 574 tests, `pnpm typecheck` and `pnpm test` both `EXIT_CODE=0`.
+
+**What was built**
+- `packages/mcp`: the MCP server with six tools over the engine, 16 properties. It is registered in `.kiro/settings/mcp.json` with Context7 and Chrome DevTools. Agents `weave-auditor` and `design-reviewer`.
+- `packages/motif`: SVG motif validation, rasterizing, speck removal, symmetry, and a deterministic stand-in generator, 14 properties.
+- `backend`: Lambda model proxy (Bedrock Converse) with a local dev server. Not deployed.
+- `packages/export`: cloth model, WIF writer and reader, card sheets (SVG, PDF), point-paper sheet, 11 properties.
+- `apps/web`: loom setup, motif input, point-paper editor, float check and auto-fix, simulator, export panel with a violation gate, and a first-run gallery. Reviewed five times by `design-reviewer`.
+- `power/` (the `loom` Power), `scripts/gallery` with 4 examples, `.kiro/workflows/release-check.workflow.json`, agents `release-runner` and `spec-checker`, `.github/workflows/kiro-spec-check.yml` (off until enabled), `.kiro/automations/gallery-daily.md`.
+- `docs/kiro-writeup-draft.md`: Phase H draft, 1,409 words, from this journal and git history only. Rewrite it in your own voice.
+
+**Stop questions (need your answer)**
+1. **Deploy (Phase G):** may I create AWS resources in your AWS account, `us-west-2`? That means Amplify Hosting (or S3 plus CloudFront) for `apps/web`, and API Gateway plus Lambda for `backend`, with a Lambda role allowed `bedrock:InvokeModel`. These cost money.
+2. **Bedrock:** `list-foundation-models` shows `anthropic.claude-sonnet-5-5`, and the inference profile `us.anthropic.claude-sonnet-5-5` exists. Listing does not prove invoke access, and I did not call it because that costs money. To enable it: Bedrock console → Model access → request access to Claude Sonnet 5.5 in `us-west-2`. Then set Lambda `MOTIF_GENERATOR=bedrock` (`MOTIF_MODEL_ID` defaults to that profile). Until then the app uses the stand-in and labels it.
+3. **Public repo:** the repository is still PRIVATE. The submission needs it public. Shall I make it public, or will you?
+
+**Left for you**
+- Fill in "Model / credits" in every entry, and update the credits row in the tally.
+- Phase D manual step: open an exported WIF (from the app's Export panel) in a weaving program you did not write, and record it. The WIF mapping is `[to verify]` until then, and a failure is the material for a bugfix spec.
+- Phase E: print, punch and weave the swatch.
+- Phase F:
+  - Install the Power in an empty workspace (steps in `power/README.md`) and record it.
+  - Add the `KIRO_API_KEY` secret and set the repo variable `KIRO_CI_ENABLED=true` to turn on the CI job.
+  - Create the Kiro Web scheduled task from `.kiro/automations/gallery-daily.md` and screenshot its first PR.
+  - Enable workflows (`kiroAgent.workflows.enabled`) and run `release-check` once.
+- Manual checks 14.4 and 14.6 of the weave-mcp spec: run `weave-auditor` and `design-reviewer` yourself.
+- Look at the app on a real phone. My mobile checks were in Chrome DevTools emulation and jsdom only.
+
+**Known gaps**
+- No property test has found a product bug; every property failure was a test mistake.
+- The `journey-entry-on-stop` hook also fires in headless CLI runs and adds a line to the CI output.
+- The Power's server still names itself `jacquard-weave` in the MCP handshake.
+- Card PDFs are large: about 1 MB for 12 cards.
+
 ## Entries
 
 ### 2026-11-15 — Research and idea selection (before any Kiro use)
@@ -1382,6 +1418,19 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: vibe for the polish. The design-reviewer agent did what a spec would have done for UI states: it named the gaps, and the fixes were then made and tested. Vibe alone did not find the stale-label or undo problems. The second review did.
 - Evidence: `apps/web/src/components/gallery-panel.tsx`, `apps/web/src/lib/gallery.ts`, `apps/web/src/app.tsx`, `apps/web/test/gallery-panel.test.tsx`; tag `phase-G`.
 
+### 2026-11-16 — Phase H: write-up draft; end of the autopilot run
+
+- Surface: IDE
+- Goal: Draft the "how Kiro was used" write-up from this journal and git history only, update the tally, and write the status summary at the top.
+- Kiro features used: a `general-task-execution` sub-agent wrote `docs/kiro-writeup-draft.md`, told to use only `KIRO_JOURNEY.md` and git history; steering `autopilot.md` (end-of-run step).
+- Model / credits (start → end):
+- What worked: `docs/kiro-writeup-draft.md` (1,409 words) answers the eight questions in order, with commit hashes and tags. It lists the things not yet done. The running tally is updated (5 specs, 75 properties, 574 tests, 5 custom agents, 1 Power, 1 workflow).
+- What failed or surprised:
+  - The write-up sub-agent found two errors in my tally. It said journey-scribe was "never invoked", but three weave-mcp entries name it as their writer. It also counted 6 weave-auditor findings where the phase entries add up to 5. Both are corrected.
+  - The end-of-phase reviewer agents were not run for Phase H. The deliverable is a text draft for the user to rewrite, with no code or UI.
+- Spec versus vibe note: n/a.
+- Evidence: `docs/kiro-writeup-draft.md`; "Status for Tushar" at the top of this file; tag `phase-H`.
+
 ### Template
 
 ```
@@ -1402,15 +1451,15 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 3 / 0 | weave-engine complete (6 requirements, 34 properties, 13 tasks). weave-mcp complete (14 requirements, 16 properties, 17 tasks, waves 0 to 17; tag `phase-B`); task 14.1 found a design error about SDK array arguments, corrected in `design.md`. motif-input: requirements (13), design (14 properties), tasks (8); wave 0 done |
-| Property-based tests / bugs they caught | 50 / 0 | Engine 34 (27 files). weave-mcp 16 (Properties 1 to 16, 15 `*.property.test.ts` files plus the Property 3 table test). No property found a product bug. Failures on test mistakes: engine Properties 32 and 33; weave-mcp Property 4 (`__proto__` key in its own reorder helper), Property 6 (wrong expected-outcome label on `auto_fix`), Property 15 (null-prototype snapshot, same mistake as engine Property 32). The planted `checkFloats` off-by-one is not counted |
-| Tests (files / tests) | engine 35 / 148; mcp 21 / 88; motif 1 / 4; backend 1 / 3; web 1 / 3 | Last run after motif-input wave 0, all `EXIT_CODE=0` |
-| Hooks | 3 | None ran until the workspace was trusted (`hooks.v2.executionDisabledUntrustedWorkspace`). **engine-typecheck-and-test-on-save:** 57 results in `.kiro/hook-runs.log` since markers began at 08:27Z, 8 of them non-zero: 3 type errors (09:23:22Z, 09:45:08Z, and 10:24:22Z with a test failure too), the planted bug (09:37:54Z), the lattice design error (10:19:02Z), two saves with a lattice-test mistake (10:22:13Z, 10:22:15Z) and the Property 32 snapshot helper (10:49:17Z); each was followed by a clean save. **block-engine-fixture-edits:** blocked 1 edit (the 08:27:11Z hand test), allowed every other file-tool edit, including the creation of the 3 golden fixtures. **journey-entry-on-stop:** fired at the end of task sessions and main chat turns, deferred mid-wave and wrote wave entries at the end. Edits made through the shell (tasks 11.2, 11.3 and journal writes) bypassed both file hooks |
+| Specs (feature / bugfix) | 5 / 0 | weave-engine (34 properties), weave-mcp (16), motif-input (14), simulate-and-export (11), kiro-product (no properties; snapshot and config tests). All tasks checked. Spec findings fixed during tasks: weave-mcp design on SDK array arguments; motif-input speck performance, 1.3 and 4.6 wording, dev-script note; simulate-and-export profile-check order (Property 11), file table, WIF layout block; kiro-product gallery Decision log row. No bugfix spec yet (needs the user's WIF or swatch result) |
+| Property-based tests / bugs they caught | 75 / 0 | Engine 34, mcp 16, motif 14, export 11 (68 `*.property.test.ts` files). No property found a product bug. Failures on test mistakes: engine P32, P33; mcp P4 (`__proto__`), P6 (outcome label), P15 (null-prototype snapshot); motif P12 (over-long prompt generator was not over-long). Planted-bug checks (not counted): engine checkFloats off-by-one; mcp none; motif speck tie and orientation; backend secret leak (P13); web redo clearing (P14); export seven planted bugs, all caught |
+| Tests (files / tests) | engine 35 / 148; mcp 22 / 110; export 15 / 52; motif 16 / 75; backend 4 / 45; web 16 / 144 | 574 tests; last run after Phase G, all `EXIT_CODE=0` |
+| Hooks | 3 | Earlier counts as before. Since 13:00Z on Nov 16 (autopilot), block-engine-fixture-edits checked 286 file-tool calls (149 `fs_write`, 136 `str_replace`, 1 `fs_append`) and blocked none; no engine file was edited in that time, so the save hook had nothing to run on. journey-entry-on-stop also fired inside a Kiro CLI headless run |
 | Steering files | 7 | 5 always-on (product, tech, structure, journey, autopilot), 2 file-matched (weaving-domain for `packages/engine/**`, design-language for `apps/web/**`) |
-| Custom agents | 3 | journey-scribe (never invoked); weave-auditor (run once as a sub-agent at the Phase B end, 0 findings, 1 fragility note fixed); design-reviewer (created, not yet run) |
-| MCP servers (third-party / our own) | 2 / 1 | `.kiro/settings/mcp.json`: context7 and chrome-devtools (registered, not yet used by this project's sessions), jacquard-weave (ours; used by weave-auditor) |
-| Powers (used / shipped) | 0 / 0 | |
-| Workflows | 0 | |
-| CLI headless runs in CI | 0 | |
-| Web automations | 0 | |
+| Custom agents | 5 | journey-scribe (named as the writer of the weave-mcp spec-phase entries; not invoked during the autopilot run); weave-auditor (5 runs, Phases B, C, D, F, G: 5 unlabelled-loom-fact findings in total (C 2, D 1, F 2), 0 float or round-trip errors); design-reviewer (5 runs, Phases C, D, F, G twice: 15 + 11 + 12 + 15 + 3 findings, all fixed); release-runner (created, used only by the release-check workflow, not yet run); spec-checker (1 local headless run, VERDICT: PASS) |
+| MCP servers (third-party / our own) | 2 / 1 | jacquard-weave (ours; used by weave-auditor in every review), chrome-devtools (used for 360 px checks in Phases C, D, G), context7 (registered, not used) |
+| Powers (used / shipped) | 0 / 1 | `power/` (loom): plugin.json, mcp.json, 2 skills, bundled server; tested by `power.test.ts` from a folder outside the repo. Not yet installed in a fresh workspace (user's step) |
+| Workflows | 1 | `.kiro/workflows/release-check.workflow.json`; not yet run (workflows are off by default) |
+| CLI headless runs in CI | 0 (1 local) | `.github/workflows/kiro-spec-check.yml` is guarded by `KIRO_CI_ENABLED`; one local run of the same command, VERDICT: PASS |
+| Web automations | 0 | Prompt in `.kiro/automations/gallery-daily.md`; the task is the user's to create |
 | Credits used of 4,000 | 0 | |
