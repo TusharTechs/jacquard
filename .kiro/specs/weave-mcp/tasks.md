@@ -35,30 +35,30 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - Create `test/package.test.ts` checking: `@jacquard/engine` is `workspace:*`; every other `dependencies` entry is an exact version (digits and dots only) and the SDK is `1.32.2`; `zod` is not under `dependencies`; no file in `src` or `test` imports `zod`; the lockfile records `1.32.2`; `typecheck`, `test` and `pretest` scripts exist; `packages/engine/package.json` has no `dependencies` and no `@jacquard/mcp` entry; `git diff --stat` is not used here (13.6 is checked by the final task report)
     - _Requirements: 13.1, 13.2, 13.4, 13.5, 13.8, 14.9_
 
-- [ ] 2. Canonical JSON
+- [x] 2. Canonical JSON
   - [x] 2.1 Implement `src/canonical-json.ts`
     - `canonicalJson(value: unknown): string` as in design Canonical_JSON: keys sorted by UTF-16 code unit from `Object.keys`, `undefined` members skipped, no whitespace, numbers and strings through `JSON.stringify`
     - _Requirements: 11.4, 11.5, 11.7_
-  - [ ] 2.2 Write property test for key order
+  - [x] 2.2 Write property test for key order
     - File `test/canonical-json-order.property.test.ts`; plain-function test
     - **Property 4: Canonical_JSON is ordered and independent of key order**
     - **Validates: Requirements 11.4, 11.5, 11.7**
-  - [ ] 2.3 Write property test for round trip and idempotence
+  - [x] 2.3 Write property test for round trip and idempotence
     - File `test/canonical-json-round-trip.property.test.ts`; plain-function test
     - **Property 5: Canonical_JSON round trip and idempotence**
     - **Validates: Requirements 11.4**
 
-- [ ] 3. Label_Table
+- [x] 3. Label_Table
   - [x] 3.1 Implement `src/labels.ts`
     - Types `FieldLabel` and `ProfileLabels` (a missing field is a compile error) and `LABEL_TABLE` for `"120"`, `"240"`, `"400"`; data only; where a comment has more than one token, store the least certain (`[to verify]` < `[decision]` < `[convention]` < `[sourced]`), so `PROFILE_400.cardFillOrder` is `[to verify]`
     - _Requirements: 2.2, 2.3, 2.4_
-  - [ ] 3.2 Write property test for Label_Table against profiles.ts
+  - [x] 3.2 Write property test for Label_Table against profiles.ts
     - File `test/label-table.property.test.ts`; plain-data test that reads `packages/engine/src/profiles.ts` as text by a path built from the test file location (read only, no import), runs once per profile field
     - **Property 3: Label_Table agrees with profiles.ts**
     - **Validates: Requirements 2.3**
 
-- [ ] 4. Result envelope
-  - [ ] 4.1 Implement `src/results.ts`
+- [x] 4. Result envelope
+  - [x] 4.1 Implement `src/results.ts`
     - `toolResult(value)`, `toolError(error)`, `argumentError(argument, message)` with exactly the fields `code`, `argument`, `message`, and `internalError()` returning `{ code: "INTERNAL_ERROR", message: "Internal error." }`
     - `content` is one text item with `canonicalJson`; `structuredContent` is the parse of that text; `isError: true` only for errors
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 9.6, 11.4_

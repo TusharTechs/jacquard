@@ -779,6 +779,25 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/src/*.ts`, `packages/mcp/test/arbitraries.ts`.
 
+### 2026-11-16 — weave-mcp wave 3 (tasks 2.2, 2.3, 3.2, 4.1)
+
+- Surface: IDE
+- Goal: Property tests for Canonical_JSON and the Label_Table; the result envelope.
+- Kiro features used: spec `weave-mcp` (tasks 2.2, 2.3, 3.2, 4.1); property tests (Properties 3, 4, 5). No hook output observed, no MCP tool, no custom agent.
+- Model / credits (start → end):
+- What failed or surprised:
+  - **Property 4 failed on the first run** (recorded before any fix).
+    - Property: 4, "Canonical_JSON is ordered and independent of key order".
+    - Requirements: 11.4, 11.5, 11.7.
+    - Seed: `4004`, path `"55:85:85"`, failed after 56 tests, shrunk 2 times.
+    - Shrunk counterexample, verbatim: `[{["__proto__"]:{}},false]`
+    - Assertion: `expected '{}' to be '{"__proto__":{}}'`.
+    - Encountered failures, verbatim: `[{["__proto__"]:{"7;H":false,"&WA":{"Yg":-2.8087054821547165e-234,"v+qqo%":7.079176473887977e-288,"7}-$v":null,"'A?<75|x":null,"=O?L":"HS.","g":null,"u/,#z-b":true},"Q@qH!9`@Q":"\"PTMH"}},true]`, `[{["__proto__"]:{}},true]`, `[{["__proto__"]:{}},false]`.
+    - Cause: the test's own `reorder` helper, not `canonicalJson`. `reorder` rebuilt objects with `out[key] = value`; for the key `__proto__` that assignment sets the prototype instead of creating an own property, so the "shuffled" copy had no keys and serialised as `{}`. `canonicalJson` of the original value was right (`{"__proto__":{}}`). Fix: `reorder` uses `Object.defineProperty`. The assertion is unchanged. This is a test bug, so it is not counted as a bug caught by a property.
+- What worked: `src/results.ts` (`toolResult`, `toolError`, `internalError`; `structuredContent` is the parse of the canonical text). Property 3 runs once per field of the three built-in profiles (33 cases plus a field-set check) against the text of `packages/engine/src/profiles.ts`; Properties 4 and 5 run 100 cases each. After the fix: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine `148 passed`, mcp `4 passed` files / `43 passed` tests).
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/test/canonical-json-order.property.test.ts`, `canonical-json-round-trip.property.test.ts`, `label-table.property.test.ts`, `packages/mcp/src/results.ts`.
+
 ### Template
 
 ```
