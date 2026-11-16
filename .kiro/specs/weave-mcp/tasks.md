@@ -90,7 +90,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - _Requirements: 6.1, 6.2, 6.3, 6.5, 7.1, 7.2, 10.3, 10.4_
 
 - [ ] 8. Tool definitions, server and test support
-  - [ ] 8.1 Implement `src/tools.ts`
+  - [x] 8.1 Implement `src/tools.ts`
     - `TOOL_DEFS` in the order of the design table: name, description (non-empty, at most 1000 characters; `build_cards` and `decode_cards` say "The card format has not been tested on a working loom."), hand-written JSON Schema `inputSchema`, `annotations: { readOnlyHint: true }`, and the ordered `ArgSpec` list from which the schema is derived, plus the handler
     - _Requirements: 1.1, 1.3, 1.4, 12.5_
   - [ ] 8.2 Implement `src/server.ts`

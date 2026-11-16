@@ -842,6 +842,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/src/handlers.ts`.
 
+### 2026-11-16 — weave-mcp wave 8 (task 8.1)
+
+- Surface: IDE
+- Goal: Tool definitions.
+- Kiro features used: spec `weave-mcp` (task 8.1). No hook output observed, no property test in this wave.
+- Model / credits (start → end):
+- What worked: `src/tools.ts` declares the six tools in the required order. Each `inputSchema` is built from the same ordered `ArgSpec` list that `checkArguments` uses. `annotations.readOnlyHint` is `true` on all six, and `build_cards` and `decode_cards` both carry "The card format has not been tested on a working loom." Only `auto_fix` sets `rejectExtra`. `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 43 passed).
+- What failed or surprised: nothing. The schemas include value ranges (for example `regionLimit` 1 to 8) as hints for clients. The server does not enforce them; the engine does (9.8).
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/src/tools.ts`.
+
 ### Template
 
 ```
