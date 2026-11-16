@@ -34,3 +34,7 @@ Thumbs.db
 
 
 # NOTE: .kiro/ is intentionally NOT ignored.
+
+# Screen recordings of the build journey (large; the edited video goes to YouTube)
+media/**/*.mov
+media/**/*.mp4
