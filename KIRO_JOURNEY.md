@@ -233,6 +233,18 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec; running each task from the task list gave a recorded property-test status that the chat-run tasks in waves 0 to 4 lack.
 - Evidence: `.kiro/specs/weave-engine/tasks.meta.json` (`pbtResults`, `executionHistory`), `packages/engine/test/validate-order.property.test.ts`, `packages/engine/test/validate-fields.property.test.ts`, `packages/engine/src/lift-plan.ts`. Files in `media/journey/`: `2026-11-16-task-6.2-update-pbt-status.png` (the user's screenshot of task 6.2 running, with its Run Command steps and the "Update PBT Status" step; committed); `2026-11-16-clip-kiro-runs-task-6.2-pbt.mp4` (55 MB; 110 s according to the user, task 6.2 running with Update PBT Status; kept out of git by `.gitignore`); and `2026-11-16-wave5-validation-properties.mp4` (192 MB), the user's full 6-minute screen recording of wave 5, also kept out of git. I have not watched either clip, and my file reader returned only the PNG's metadata, so I cannot confirm the PNG file's contents myself.
 
+### 2026-11-16 — Fixture guard changed to allow creating files; push after each wave
+
+- Surface: IDE
+- Goal: Resolve the conflict flagged in the wave 5 entry, where the fixture guard would have blocked task 11.5 from creating golden fixtures.
+- Kiro features used: hook `block-engine-fixture-edits` (edited, not fired in this session as far as I can see); steering `tech.md` (new "Golden fixtures" section). No spec task, agent, MCP tool, property test or checkpoint.
+- Model / credits (start → end):
+- What worked: The guard script now blocks a tool call only when a path argument points at something that already exists under `packages/engine/test/fixtures`: an overwrite or edit (`fs_write`, `fs_append`, `str_replace`, `semantic_rename`), a delete (`delete_file`), or a move away or onto an existing file (`smart_relocate`). A path that does not exist yet is a create and is allowed. I tested it by hand with 14 sample inputs, using the real file `fixtures/.gitkeep` as the existing file: creates with absolute and relative paths (allowed), overwrite, edit, append, delete, move away, move onto it and a `..` path to it (all blocked, exit 2), delete of a missing file, move to a new path, text that only mentions the folder, a path outside the folder and unreadable input (all allowed, exit 0). The fixtures folder was unchanged afterwards.
+- What failed or surprised: The hook still cannot see shell commands, so `tech.md` now says never to modify files under `packages/engine/test/fixtures` with shell commands; that rule has no mechanical check. As with the first version, whether Kiro passes the fields the script reads is unverified until the hook fires for real. I also told the user the branch was 13 commits ahead of `origin/main`; it was 12.
+- Process rule from the user: push `main` to `origin` after every wave's commit.
+- Spec versus vibe note: vibe; a small tooling change.
+- Evidence: `.kiro/hooks/block-engine-fixture-edits.py`, `.kiro/hooks/block-engine-fixture-edits.json`, `.kiro/steering/tech.md`.
+
 ### Template
 
 ```
@@ -255,7 +267,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 |---|---|---|
 | Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 5 done) |
 | Property-based tests / bugs they caught | 8 / 0 | Properties 1 to 6 (weaves) and 16, 17 (validation), all passed first run; Kiro recorded 16 and 17 |
-| Hooks | 3 | journey-entry-on-stop (wrote no entry after wave 0 or wave 5; unreliable for spec waves); engine-typecheck-and-test-on-save and block-engine-fixture-edits (created after wave 5, not yet fired) |
+| Hooks | 3 | journey-entry-on-stop (wrote no entry after wave 0 or wave 5; unreliable for spec waves); engine-typecheck-and-test-on-save and block-engine-fixture-edits (created after wave 5, not yet fired; the second blocks changes to existing fixtures and allows creating new ones) |
 | Steering files | 6 | 4 always-on, 2 file-matched |
 | Custom agents | 1 | journey-scribe (not yet invoked) |
 | MCP servers (third-party / our own) | 0 / 0 | |

@@ -4,7 +4,7 @@
     {
       "name": "Block edits to engine test fixtures",
       "trigger": "PreToolUse",
-      "description": "Block any file-editing tool call whose path is under packages/engine/test/fixtures. Exit 2 blocks the call.",
+      "description": "Block file-editing tool calls that edit, move or delete a file that already exists under packages/engine/test/fixtures. Creating a new file there is allowed. Exit 2 blocks the call.",
       "matcher": "fs_write|fs_append|str_replace|delete_file|smart_relocate|semantic_rename",
       "action": {
         "type": "command",

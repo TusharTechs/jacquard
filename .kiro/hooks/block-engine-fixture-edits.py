@@ -1,12 +1,20 @@
 #!/usr/bin/env python3
-"""PreToolUse guard: block tool calls that edit files under packages/engine/test/fixtures.
+"""PreToolUse guard: block edits, moves and deletes of files that already exist under
+packages/engine/test/fixtures. Creating a new file there is allowed.
 
 Kiro passes the hook context as JSON on stdin (hook_event_name, cwd, session_id, tool_name,
-tool_input). Only path arguments of the tool are inspected, so text that merely mentions the
+tool_input). Only the path arguments of the tool are inspected, so text that merely mentions the
 fixtures folder (for example in a spec file) does not trigger the block.
 
-Exit 2 blocks the tool call and shows stderr. Exit 0 allows it. Golden fixtures are read-only
-once committed (.kiro/steering/weaving-domain.md, .kiro/steering/tech.md).
+A path argument is blocked when it points at something that already exists at or under the
+fixtures folder. That covers overwriting or editing an existing file (fs_write, fs_append,
+str_replace, semantic_rename), deleting one (delete_file), and moving one away or onto one
+(smart_relocate, through sourcePath and destinationPath). A path that does not exist yet is a
+create, and is allowed.
+
+Exit 2 blocks the tool call and shows stderr. Exit 0 allows it. This guard covers the
+file-editing tools only; shell commands are covered by a rule in .kiro/steering/tech.md.
+Golden fixtures are read-only once committed (.kiro/steering/weaving-domain.md).
 """
 
 import json
@@ -33,10 +41,12 @@ def main() -> int:
         if not isinstance(value, str):
             continue
         target = os.path.normpath(os.path.join(cwd, value))
-        if target == fixtures or target.startswith(fixtures + os.sep):
+        under_fixtures = target == fixtures or target.startswith(fixtures + os.sep)
+        if under_fixtures and os.path.lexists(target):
             print(
-                f"Blocked: {data.get('tool_name', 'this tool')} would edit {value}. "
-                "Files under packages/engine/test/fixtures are read-only golden fixtures.",
+                f"Blocked: {data.get('tool_name', 'this tool')} would change {value}, which already "
+                "exists under packages/engine/test/fixtures. Existing golden fixtures are read-only. "
+                "Creating a new file there is allowed.",
                 file=sys.stderr,
             )
             return 2

@@ -30,6 +30,11 @@ inclusion: always
 - For test runs, also read the test runner's summary line (passed and failed counts).
 - Never report tests as passing unless both `EXIT_CODE=0` and the summary line show success.
 
+## Golden fixtures
+
+- Files under `packages/engine/test/fixtures` are read-only once they exist. The `block-engine-fixture-edits` hook blocks edits, moves and deletes of existing files there; creating a new file is allowed.
+- Never modify files under `packages/engine/test/fixtures` with shell commands (`sed -i`, redirects, `mv`, `rm`, `git checkout`, editors, scripts). The hook cannot see shell commands, so this rule is the only guard for them.
+
 ## Finishing a spec task
 
 - Every spec task must finish by running both `pnpm typecheck` and `pnpm test`, each with `; echo "EXIT_CODE=$?"`.
