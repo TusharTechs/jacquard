@@ -256,6 +256,27 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: vibe.
 - Evidence: `.kiro/steering/tech.md`.
 
+### 2026-11-16 — Live hook tests: neither new hook ran
+
+- Surface: IDE
+- Goal: Test the two new hooks live, after the user's own test showed nothing, and fix them to match Kiro's hook documentation.
+- Kiro features used: hooks `engine-typecheck-and-test-on-save` and `block-engine-fixture-edits` (tested; neither ran); Kiro's hook documentation (kiro.dev/docs/hooks, /hooks/types, /hooks/actions, /hooks/troubleshooting, pages updated Aug to Nov 2026). No spec task, agent, MCP tool, property test or checkpoint.
+- Model / credits (start → end):
+- What worked:
+  - **Documentation findings.** (a) File Save "triggers when the agent saves or modifies files"; the docs list no IDE trigger for saves the user makes in the editor. (b) For file events the matcher is "a regex against the file path". The save hook's matcher `packages/engine/` is a valid unanchored regex for that, so I left `engine-typecheck-and-test-on-save.json` unchanged. (c) For Pre Tool Use, the matcher is a regex against tool IDs, or a category such as `write` ("all built-in file write tools"). Hooks "activate automatically when a session starts".
+  - **Tool names.** In Kiro's session records under `~/.kiro/sessions`, the permission prompts give each tool's ID. The file tools' IDs `fs_write` and `str_replace` match the guard's matcher. The shell tool's ID is `run_command`, not `execute_bash`, which is only its display name. No ID was recorded for `fs_append`, `delete_file`, `smart_relocate` or `semantic_rename`, because those calls ran without a permission prompt. My `fs_append` call was logged with `toolOrigin: "acp"`, so it may not count as a built-in tool. I added the `write` category to the guard's matcher, as a fallback next to the explicit names; the script filters by path, so a broad matcher does no harm.
+  - Both test edits were reverted, and `git status` shows neither file changed.
+- What failed or surprised:
+  - **The user's first live test showed nothing.** Kiro's log has `hooks.reload.loaded {"read":3,"registered":3}` at 13:30:27, but neither new hook visibly ran, and saving `packages/engine/src/weaves.ts` by hand ran nothing. Per the documentation, a manual save is not supposed to fire File Save, so that part of the test could not have worked with any matcher.
+  - **The guard did not block my live test.** Using my file tool (`fs_append`), I appended `guard test` to `packages/engine/test/fixtures/.gitkeep` at 13:37:35. The append succeeded, the file became 10 bytes, and no hook message came back. I reverted it with `fs_write` to an empty file (0 bytes, `git status` clean).
+  - **The save hook did not run on my edit either.** I added a comment line to `packages/engine/src/weaves.ts` with `str_replace` at 13:41:02. Nothing came back, and Kiro's log has no typecheck or vitest run after that time. I removed the comment.
+  - **Likely cause, not confirmed:** this chat session started at 00:09:24, when the log shows `hooks.reload.loaded {"read":0,"registered":0}`. The documentation says hooks activate at session start. The reload with 3 hooks at 13:30:27 matches the start of another session ("Add Line To Engine Test Fixtures", 13:30:27), and that session's agent never called a file tool, so the guard was not exercised there either. So these tests may have run in a session that has no hooks at all. Editing a hook file at 13:40:55 produced no reload in the log.
+  - **No hook has ever been seen to run in this project.** The log has no line for any hook execution, including the journey Stop hook, which has been registered since 12:37 while several task sessions ended. Either hook runs are not logged, or no hook has run. I cannot tell which from the log.
+  - The hook tests therefore prove nothing about the hooks themselves yet.
+- Next step: repeat both tests in a new chat session started after the hook files were last changed, or inside a spec task session, and watch the Agent Hooks panel and the Kiro output panel, which the troubleshooting page names as the place for hook execution logs.
+- Spec versus vibe note: vibe.
+- Evidence: `~/Library/Application Support/Kiro/logs/20261116T000922/window1/exthost/kiro.kiroAgent/Kiro Logs.log` (reload lines at 00:09:24 and 13:30:27; no hook runs); `~/.kiro/sessions/0d5bca4c31eb7e9a/sess_1f4b5928-.../messages.jsonl` (the `fs_append` call at 08:07:35Z with no hook result); `.kiro/hooks/block-engine-fixture-edits.json` (matcher now starts with `write|`).
+
 ### Template
 
 ```
@@ -278,7 +299,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 |---|---|---|
 | Specs (feature / bugfix) | 1 / 0 | weave-engine (requirements, design, tasks written; waves 0 to 5 done) |
 | Property-based tests / bugs they caught | 8 / 0 | Properties 1 to 6 (weaves) and 16, 17 (validation), all passed first run; Kiro recorded 16 and 17 |
-| Hooks | 3 | journey-entry-on-stop (wrote no entry after wave 0 or wave 5; unreliable for spec waves); engine-typecheck-and-test-on-save and block-engine-fixture-edits (created after wave 5, not yet fired; the second blocks changes to existing fixtures and allows creating new ones) |
+| Hooks | 3 | journey-entry-on-stop (wrote no entry after wave 0 or wave 5; unreliable for spec waves); engine-typecheck-and-test-on-save and block-engine-fixture-edits (both failed to run in live tests on Nov 16, probably because the test session predates them; not yet seen to fire) |
 | Steering files | 6 | 4 always-on, 2 file-matched |
 | Custom agents | 1 | journey-scribe (not yet invoked) |
 | MCP servers (third-party / our own) | 0 / 0 | |
