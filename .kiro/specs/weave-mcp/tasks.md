@@ -78,7 +78,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - _Requirements: 7.3, 8.6, 9.3, 9.4_
 
 - [ ] 7. Tool handlers
-  - [ ] 7.1 Implement `list_profiles` and `build_lift_plan` in `src/handlers.ts`
+  - [x] 7.1 Implement `list_profiles` and `build_lift_plan` in `src/handlers.ts`
     - `list_profiles`: three profiles in order 120, 240, 400, each field as `{ value, label }` from `LABEL_TABLE`, no arguments needed
     - `build_lift_plan`: resolve profile, call `buildLiftPlan` with `repeatAcross` defaulting to `false`, return `{ plan, idleHooks, warnings }`; pass `weaves` through unchanged; engine errors unchanged
     - _Requirements: 2.1, 2.2, 2.4, 2.5, 2.6, 3.1, 3.2, 3.3, 3.6_

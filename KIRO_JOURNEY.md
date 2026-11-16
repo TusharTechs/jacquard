@@ -809,6 +809,17 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/src/profile.ts`.
 
+### 2026-11-16 — weave-mcp wave 5 (task 7.1)
+
+- Surface: IDE
+- Goal: `list_profiles` and `build_lift_plan` handlers.
+- Kiro features used: spec `weave-mcp` (task 7.1). No hook output observed, no property test in this wave.
+- Model / credits (start → end):
+- What worked: `src/handlers.ts` with `listProfiles` (three profiles, each field `{ value, label }` from `LABEL_TABLE`) and `buildLiftPlanTool` (`repeatAcross` defaults to `false`; the engine's `BuildOutput` is returned as it is). `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 43 passed).
+- What failed or surprised: my first draft destructured `{ plan, idleHooks, warnings }` from the engine output and rebuilt the object, which would silently drop any field the engine adds later (10.4). Changed before running to return the engine value directly.
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/src/handlers.ts`.
+
 ### Template
 
 ```
