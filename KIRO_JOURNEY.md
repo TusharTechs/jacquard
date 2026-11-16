@@ -1357,6 +1357,31 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: agent review, then fixes.
 - Evidence: `power/README.md`, `power/plugin.json`, `power/skills/*/SKILL.md`, `.kiro/automations/gallery-daily.md`; tag `phase-F`.
 
+### 2026-11-16 — Phase G: polish (vibe mode), first-run gallery, reviews; deploy not done
+
+- Surface: IDE
+- Goal: Phase G of the playbook. Run the design-reviewer over `apps/web` and fix every finding: first-run gallery, empty and error states, mobile, keyboard. Deploying waits for the user (standing orders).
+- Kiro features used: vibe mode (no spec for the polish, as the playbook says); custom agents `design-reviewer` (two runs: before and after the polish) and `weave-auditor` (fifth run); MCP servers `chrome-devtools` (360 px check) and `jacquard-weave` (the auditor ran `build_lift_plan` and `check_floats` on temple-stripe); `general-task-execution` sub-agents for the fixes.
+- Model / credits (start → end):
+- What worked:
+  - The first review found 15 problems, 4 of them high: no gallery anywhere in the app, empty states with no "open an example" action, a page order that asked for loom settings before showing any result, and gallery examples that would read as model output. All 15 were fixed.
+    - `components/gallery-panel.tsx` and `lib/gallery.ts` validate the gallery JSON shape at the boundary. Opening an example is one undoable edit, and it shows "Gallery example made by the stand-in generator, not a model."
+    - The page order is now gallery → motif → setup.
+    - Digit keys work only in the editor area and never while a dialog is open (WCAG 2.1.4). The point paper has a hidden text summary for screen readers.
+  - Browser check at 360 px (`chrome-devtools`): `scrollWidth` 360. Headings in order: Gallery, Motif, Loom setup, Point paper, Float check, Cloth simulation, Weave per region, Export. Opening Peacock butta showed the stand-in badge, and the engine itself found the example's 1 violation.
+  - The re-review found 3 mediums, all fixed:
+    - After an earlier motif, the "Suggestion from the model" label stayed on screen next to a gallery example.
+    - The panel said "Finished examples" while Peacock butta needs auto-fix. Each card now shows its own engine float check.
+    - Undo brought back only the grid, not the setup, palette and weaves. Now all four come back, and Redo re-applies them.
+  - weave-auditor: 0 findings. No weaving logic in `apps/web`, no unlabelled loom facts. temple-stripe on profile "120" gave 0 violations.
+  - Final run: `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148, mcp 110, export 52, motif 75, backend 45, web `16 passed` files / `144 passed` tests); web build `EXIT_CODE=0`. Dev servers stopped; `lsof` empty (exit 1).
+- What failed or surprised:
+  - The second review's fixes (motif reset, card checks, full undo) were checked in jsdom only, not in the browser.
+  - A sub-agent noted that Vite started in the background is stopped by the shell when it tries to read the terminal, and then ignores SIGTERM. Starting it with `< /dev/null` avoided that later.
+  - **Not done: deployment.** It needs the user's approval: AWS Amplify or S3 plus CloudFront for the web app, and API Gateway plus Lambda for the backend. All of these create AWS resources that cost money.
+- Spec versus vibe note: vibe for the polish. The design-reviewer agent did what a spec would have done for UI states: it named the gaps, and the fixes were then made and tested. Vibe alone did not find the stale-label or undo problems. The second review did.
+- Evidence: `apps/web/src/components/gallery-panel.tsx`, `apps/web/src/lib/gallery.ts`, `apps/web/src/app.tsx`, `apps/web/test/gallery-panel.test.tsx`; tag `phase-G`.
+
 ### Template
 
 ```

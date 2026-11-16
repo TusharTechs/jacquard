@@ -56,6 +56,13 @@ export interface PointPaperProps {
   readonly dispatch: (action: EditorAction) => void;
   readonly viewportRef: RefObject<HTMLDivElement | null>;
   readonly canvasRef: RefObject<HTMLCanvasElement | null>;
+  /** Id of a text summary of the grid, linked with aria-describedby. */
+  readonly describedBy?: string;
+  /**
+   * Increases each time another panel asks for the next float violation: the canvas takes focus and
+   * the cursor moves as N does.
+   */
+  readonly nextViolationRequest?: number;
 }
 
 function sameCell(a: GridCell | null, b: GridCell | null): boolean {
@@ -77,6 +84,8 @@ export function PointPaper({
   dispatch,
   viewportRef,
   canvasRef,
+  describedBy,
+  nextViolationRequest = 0,
 }: PointPaperProps) {
   const picks = design.length;
   const ends = design[0]?.length ?? 0;
@@ -356,6 +365,29 @@ export function PointPaper({
     else if (top + cellSize > viewport.scrollTop + viewport.clientHeight - margin) viewport.scrollTop = top + cellSize - viewport.clientHeight + margin;
   };
 
+  /** The next violation's first cell after `from`, in pick-major order, wrapping; null when there is none. */
+  const nextViolation = (from: GridCell): GridCell | null => {
+    const starts = violationStarts(marks);
+    if (starts.length === 0) return null;
+    return starts.find((cell) => cell.pick > from.pick || (cell.pick === from.pick && cell.end > from.end)) ?? starts[0] ?? null;
+  };
+
+  // Another panel asked for the next violation ("Go to next violation"): focus and move as N does.
+  const handledRequest = useRef(nextViolationRequest);
+  useEffect(() => {
+    if (nextViolationRequest === handledRequest.current) return;
+    handledRequest.current = nextViolationRequest;
+    const canvas = canvasRef.current;
+    if (canvas === null) return;
+    canvas.focus({ preventScroll: true });
+    canvas.scrollIntoView?.({ block: "nearest" });
+    const next = nextViolation(cursorRef.current);
+    if (next === null) return;
+    setKeyboard(true);
+    setCursor(next);
+    scrollIntoView(next);
+  });
+
   const onKeyDown = (event: KeyboardEvent<HTMLCanvasElement>): void => {
     if (event.ctrlKey || event.metaKey || event.altKey) return; // undo, redo and browser keys
     const step = event.shiftKey ? 8 : 1;
@@ -398,11 +430,7 @@ export function PointPaper({
         return;
       case "n":
       case "N": {
-        // The next violation's first cell after the cursor, in pick-major order, wrapping.
-        const starts = violationStarts(marks);
-        if (starts.length === 0) return;
-        next =
-          starts.find((cell) => cell.pick > cursor.pick || (cell.pick === cursor.pick && cell.end > cursor.end)) ?? starts[0] ?? null;
+        next = nextViolation(cursor);
         if (next === null) return;
         break;
       }
@@ -427,7 +455,7 @@ export function PointPaper({
 
   return (
     <div>
-      <div className="paper-viewport" ref={viewportRef}>
+      <div className="paper-viewport" ref={viewportRef} data-region-keys="">
         <canvas
           ref={canvasRef}
           className="paper-canvas"
@@ -436,6 +464,7 @@ export function PointPaper({
           aria-roledescription="point paper"
           aria-label={`Point paper, ${ends} ends by ${picks} picks. Pick 0 is the bottom row and end 0 the left column. Arrow keys move the cursor, Space or Enter paints it, keys 1 to ${keys} choose the region, N goes to the next float violation.`}
           aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Space Enter N"
+          aria-describedby={describedBy}
           data-touch-mode={touchMode}
           style={{ touchAction: touchMode === "scroll" ? "pan-x pan-y pinch-zoom" : "none" }}
           onPointerDown={onPointerDown}

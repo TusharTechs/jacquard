@@ -34,7 +34,7 @@ function planFor(design: Design, profile: LoomProfile): LiftPlan {
 const PLAN = planFor(grid(16, 16, (end) => Math.floor(end / 4) % 3), PROFILE_120);
 
 function renderPanel(props: Partial<SimulatorPanelProps> = {}) {
-  const handlers = { onYarnsChange: vi.fn(), onResetYarns: vi.fn(), onStartBlank: vi.fn() };
+  const handlers = { onYarnsChange: vi.fn(), onResetYarns: vi.fn() };
   const view = render(
     <SimulatorPanel
       plan={PLAN}
@@ -63,12 +63,14 @@ beforeEach(() => {
 });
 
 describe("simulator panel", () => {
-  it("empty state without a plan says why and offers the next action", () => {
-    const { onStartBlank } = renderPanel({ plan: null, emptyReason: "blank" });
-    expect(textOf(panel())).toContain("No cloth to show yet");
+  it("empty state without a plan is a one-line note that says why, with no button", () => {
+    renderPanel({ plan: null, emptyReason: "blank" });
+    const empty = panel().querySelector(".panel-empty");
+    expect(empty).not.toBeNull();
+    expect(textOf(empty!)).toContain("No cloth to show yet");
+    expect(empty!.querySelectorAll("p")).toHaveLength(1);
+    expect(within(panel()).queryAllByRole("button")).toHaveLength(0);
     expect(panel().querySelector("canvas")).toBeNull();
-    fireEvent.click(within(panel()).getByRole("button", { name: "Start from a blank grid" }));
-    expect(onStartBlank).toHaveBeenCalledTimes(1);
     expect(spy).not.toHaveBeenCalled();
   });
 
@@ -115,7 +117,6 @@ describe("simulator panel", () => {
         emptyReason="blank"
         onYarnsChange={vi.fn()}
         onResetYarns={vi.fn()}
-        onStartBlank={vi.fn()}
       />,
     );
     expect(textOf(panel())).toContain("Showing the fixed lift plan from auto-fix");
@@ -200,7 +201,6 @@ describe("simulator panel", () => {
         emptyReason="blank"
         onYarnsChange={vi.fn()}
         onResetYarns={onResetYarns}
-        onStartBlank={vi.fn()}
       />,
     );
     expect(spy.mock.calls.length).toBe(calls + 1);

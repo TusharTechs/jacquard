@@ -2,13 +2,46 @@
 // violations left, another engine error, or a note that the fixed plan was discarded.
 import type { FixState } from "../lib/fix-state";
 import { engineNextStep } from "../lib/engine-messages";
+import { Button } from "./ui/button";
 import { ViolationList } from "./violation-list";
 
 function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`;
 }
 
-export function FixReport({ fix }: { readonly fix: FixState }) {
+export interface FixReportProps {
+  readonly fix: FixState;
+  /** Undo the last edit of the design. */
+  readonly onUndo?: () => void;
+  readonly canUndo?: boolean;
+  /** Focus the point paper and move its cursor to the next violation, as N does. */
+  readonly onNextViolation?: () => void;
+  readonly hasViolations?: boolean;
+  /** Run auto-fix again (for the `error` state). */
+  readonly onRetry?: () => void;
+}
+
+export function FixReport({ fix, onUndo, canUndo = false, onNextViolation, hasViolations = false, onRetry }: FixReportProps) {
+  const actions = (retry: boolean) =>
+    onUndo === undefined && onNextViolation === undefined && (!retry || onRetry === undefined) ? null : (
+      <div className="state-actions">
+        {retry && onRetry !== undefined ? (
+          <Button small variant="primary" onClick={onRetry}>
+            Retry
+          </Button>
+        ) : null}
+        {onUndo === undefined ? null : (
+          <Button small onClick={onUndo} disabled={!canUndo}>
+            Undo last change
+          </Button>
+        )}
+        {onNextViolation === undefined ? null : (
+          <Button small onClick={onNextViolation} disabled={!hasViolations}>
+            Go to next violation
+          </Button>
+        )}
+      </div>
+    );
   switch (fix.status) {
     case "none":
       return null;
@@ -37,6 +70,7 @@ export function FixReport({ fix }: { readonly fix: FixState }) {
           <p className="small">{fix.error.message}</p>
           <p className="small">{engineNextStep(fix.error)}</p>
           <ViolationList violations={fix.error.remaining} label="Violations left after auto-fix" />
+          {actions(false)}
         </div>
       );
     case "error":
@@ -45,6 +79,7 @@ export function FixReport({ fix }: { readonly fix: FixState }) {
           <p className="state-title">Auto-fix stopped with an error</p>
           <p className="small">{fix.error.message}</p>
           <p className="small">{engineNextStep(fix.error)}</p>
+          {actions(true)}
         </div>
       );
   }

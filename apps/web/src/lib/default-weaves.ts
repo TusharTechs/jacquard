@@ -12,6 +12,9 @@ const CYCLE: readonly Weave[] = [
 
 const PLAIN: Weave = { kind: "plain" };
 
+/** Weaves for every region a profile can have (the engine's maximum region limit is 8). */
+export const WEAVE_SLOTS = 8;
+
 /** Region 0 plain; regions 1 and up cycle through CYCLE. */
 export function defaultWeaves(regionCount: number): WeaveAssignment {
   const count = Number.isFinite(regionCount) ? Math.max(0, Math.floor(regionCount)) : 0;

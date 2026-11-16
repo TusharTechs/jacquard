@@ -34,7 +34,6 @@ export interface SimulatorPanelProps {
   readonly onResetYarns: () => void;
   /** Why there is no plan: nothing painted yet, or the engine could not build one. */
   readonly emptyReason: "blank" | "engineError";
-  readonly onStartBlank: () => void;
   /** Moves focus to the float check, for the engine-error empty state. */
   readonly onGoToFloatCheck?: () => void;
 }
@@ -72,7 +71,6 @@ export function SimulatorPanel({
   onYarnsChange,
   onResetYarns,
   emptyReason,
-  onStartBlank,
   onGoToFloatCheck,
 }: SimulatorPanelProps) {
   const zoomId = useId();
@@ -150,18 +148,7 @@ export function SimulatorPanel({
       status={status}
       empty={
         emptyReason === "blank" ? (
-          <>
-            <p className="state-title">No cloth to show yet</p>
-            <p className="small">
-              The simulated cloth appears here once there is a design. Paint the grid or generate a motif, and the cloth is
-              drawn from its lift plan.
-            </p>
-            <div className="state-actions">
-              <Button small onClick={onStartBlank}>
-                Start from a blank grid
-              </Button>
-            </div>
-          </>
+          <p className="small">No cloth to show yet. The simulated cloth is drawn here from the lift plan once there is a design.</p>
         ) : (
           <>
             <p className="state-title">No lift plan to simulate</p>
@@ -273,7 +260,7 @@ export function SimulatorPanel({
                     data-side={side}
                     style={{ width: `${size.cssWidth}px`, height: `${size.cssHeight}px` }}
                     role="img"
-                    aria-label={`Simulated cloth, ${side} side, ${hookCount} ends by ${pickCount} picks`}
+                    aria-label={`Simulated cloth, ${side} side, ${hookCount} ends by ${pickCount} picks, drawn from ${planSource === "fixed" ? "the fixed lift plan from auto-fix" : "the lift plan of the current design"}, warp yarn ${yarns.warp}, weft yarn ${yarns.weft}`}
                   />
                 </div>
                 <p className="small muted">

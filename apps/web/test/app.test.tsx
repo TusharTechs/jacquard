@@ -3,7 +3,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "../src/app";
-import { accessibleName, installDom, textOf } from "./dom-setup";
+import { accessibleName, installDom, stubGalleryFetch, textOf } from "./dom-setup";
 
 function readout(): string {
   const node = document.querySelector(".readout");
@@ -25,12 +25,23 @@ function allCopy(): string {
 
 beforeEach(() => {
   installDom();
+  stubGalleryFetch();
 });
+
+function section(name: string): HTMLElement {
+  const node = screen.getByRole("heading", { name }).closest("section");
+  if (node === null) throw new Error(`${name} panel not found`);
+  return node;
+}
+
+function regionText(): string {
+  return textOf(document.querySelector(".toolbar-region")!);
+}
 
 describe("app", () => {
   it("renders every panel", () => {
     render(<App />);
-    for (const name of ["Loom setup", "Motif", "Point paper", "Float check", "Weave per region"]) {
+    for (const name of ["Gallery", "Loom setup", "Motif", "Point paper", "Float check", "Weave per region"]) {
       expect(screen.getByRole("heading", { name })).toBeTruthy();
     }
     expect(screen.getByRole("application")).toBeTruthy();
@@ -153,7 +164,7 @@ describe("app", () => {
       fireEvent.pointerUp(canvas, { pointerId, pointerType: "touch", isPrimary: true, clientX: 60, clientY: 380 });
     };
     // Region 1, so a painted cell differs from the blank grid and makes an undoable edit.
-    fireEvent.keyDown(window, { key: "2" });
+    fireEvent.keyDown(canvas, { key: "2" });
     fireEvent.click(button("Scroll"));
     expect(button("Scroll").getAttribute("aria-pressed")).toBe("true");
     expect(canvas.style.touchAction).toBe("pan-x pan-y pinch-zoom");
@@ -170,7 +181,10 @@ describe("app", () => {
     const exports = screen.getByRole("heading", { name: "Export" }).closest("section")!;
     expect(textOf(simulator)).toContain("No cloth to show yet");
     expect(textOf(exports)).toContain("Nothing to export yet");
-    fireEvent.click(within(exports).getByRole("button", { name: "Start from a blank grid" }));
+    // On first run only the motif and point-paper area offers a blank grid; the others are notes.
+    expect(within(simulator).queryAllByRole("button")).toHaveLength(0);
+    expect(within(exports).queryAllByRole("button")).toHaveLength(0);
+    fireEvent.click(within(section("Motif")).getByRole("button", { name: "Start from a blank grid" }));
     expect(textOf(simulator)).toContain("Showing the lift plan of the current design");
     expect(simulator.querySelector("canvas")).not.toBeNull();
     expect(within(exports).getByRole("button", { name: "Cards (PDF)" })).toBeTruthy();
@@ -185,7 +199,7 @@ describe("app", () => {
     const weaves = screen.getByRole("heading", { name: "Weave per region" }).closest("section")!;
     fireEvent.change(within(weaves).getByLabelText("Region 0"), { target: { value: "satin-8-3-warp" } });
     const canvas = screen.getByRole("application");
-    fireEvent.keyDown(window, { key: "2" });
+    fireEvent.keyDown(canvas, { key: "2" });
     fireEvent.pointerDown(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, button: 0, buttons: 1, clientX: 164, clientY: 4 });
     fireEvent.pointerMove(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, buttons: 1, clientX: 164, clientY: 380 });
     fireEvent.pointerUp(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, clientX: 164, clientY: 380 });
@@ -212,7 +226,7 @@ describe("app", () => {
     const weaves = screen.getByRole("heading", { name: "Weave per region" }).closest("section")!;
     fireEvent.change(within(weaves).getByLabelText("Region 0"), { target: { value: "satin-8-3-warp" } });
     const canvas = screen.getByRole("application");
-    fireEvent.keyDown(window, { key: "2" });
+    fireEvent.keyDown(canvas, { key: "2" });
     fireEvent.pointerDown(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, button: 0, buttons: 1, clientX: 164, clientY: 4 });
     fireEvent.pointerMove(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, buttons: 1, clientX: 164, clientY: 380 });
     fireEvent.pointerUp(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, clientX: 164, clientY: 380 });
@@ -225,5 +239,75 @@ describe("app", () => {
     fireEvent.click(autoFix);
     await waitFor(() => expect(textOf(simulator)).toContain("Showing the fixed lift plan from auto-fix"));
     expect(textOf(exports)).toContain("Exports use the fixed lift plan from auto-fix");
+  });
+
+  it("orders the page for a first visit: lede, gallery, motif, loom setup, then the point paper and checks", () => {
+    render(<App />);
+    const order = ["Gallery", "Motif", "Loom setup", "Point paper", "Float check", "Cloth simulation", "Export"].map((name) =>
+      screen.getByRole("heading", { name }),
+    );
+    const lede = document.querySelector(".app-lede")!;
+    expect(lede.compareDocumentPosition(order[0]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    for (let index = 1; index < order.length; index += 1) {
+      expect(order[index - 1]!.compareDocumentPosition(order[index]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    }
+  });
+
+  it("the point-paper empty state offers a gallery example first, which focuses the gallery heading", () => {
+    render(<App />);
+    const empty = section("Point paper").querySelector(".panel-empty")!;
+    const actions = [...empty.querySelectorAll(".state-actions button")];
+    expect(actions.map(textOf)).toEqual(["Open a gallery example", "Describe a motif", "Upload a sketch"]);
+    fireEvent.click(actions[0]!);
+    expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Gallery" }));
+  });
+
+  it("number keys change the region only on the point paper, its toolbar or the legend", () => {
+    render(<App />);
+    const canvas = screen.getByRole("application");
+    fireEvent.keyDown(document.body, { key: "2" });
+    expect(regionText()).toContain("Painting region 0");
+    fireEvent.keyDown(screen.getByRole("heading", { name: "Float check" }), { key: "2" });
+    expect(regionText()).toContain("Painting region 0");
+    fireEvent.keyDown(button("Shortcuts"), { key: "2" });
+    expect(regionText()).toContain("Painting region 1");
+    fireEvent.keyDown(canvas, { key: "3" });
+    expect(regionText()).toContain("Painting region 2");
+  });
+
+  it("pressing 2 while the shortcuts dialog is open does not change the region", () => {
+    render(<App />);
+    const canvas = screen.getByRole("application");
+    act(() => canvas.focus());
+    fireEvent.click(button("Shortcuts"));
+    const dialog = [...document.querySelectorAll("dialog")].find((node) => node.hasAttribute("open"));
+    expect(dialog).toBeDefined();
+    expect(textOf(dialog!)).toContain("Point paper shortcuts");
+    fireEvent.keyDown(canvas, { key: "2" });
+    fireEvent.keyDown(dialog!, { key: "2" });
+    expect(regionText()).toContain("Painting region 0");
+  });
+
+  it("links a text summary of the grid to the point paper and names the Point paper (SVG) export", () => {
+    render(<App />);
+    const canvas = screen.getByRole("application");
+    const id = canvas.getAttribute("aria-describedby");
+    expect(id).toBeTruthy();
+    const summary = textOf(document.getElementById(id!)!);
+    expect(summary).toContain("48 ends by 48 picks");
+    expect(summary).toContain("region 0: 2304 cells");
+    expect(summary).toContain("No float violations.");
+    expect(summary).toContain("Point paper (SVG)");
+  });
+
+  it("the point-paper error state offers Go to the float check, which focuses the float check heading", async () => {
+    render(<App />);
+    const setup = section("Loom setup");
+    fireEvent.change(within(setup).getByLabelText("Loom profile"), { target: { value: "120" } });
+    fireEvent.click(within(setup).getByRole("switch"));
+    const paper = section("Point paper");
+    const alert = await waitFor(() => within(paper).getByRole("alert"));
+    fireEvent.click(within(alert).getByRole("button", { name: "Go to the float check" }));
+    expect(document.activeElement).toBe(screen.getByRole("heading", { name: "Float check" }));
   });
 });

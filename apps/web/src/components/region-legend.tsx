@@ -1,5 +1,5 @@
 // The paint region chooser: one radio per region with its swatch. Arrow keys move within the
-// group (native radios); the number keys 1 to 8 choose region 0 to 7 from anywhere in the editor.
+// group (native radios); the number keys 1 to 8 choose region 0 to 7 while focus is on the point paper, its toolbar or this legend.
 import { contrastText } from "../lib/palette";
 
 export interface RegionLegendProps {
@@ -10,7 +10,7 @@ export interface RegionLegendProps {
 
 export function RegionLegend({ colours, region, onChange }: RegionLegendProps) {
   return (
-    <fieldset className="legend">
+    <fieldset className="legend" data-region-keys="">
       <legend>Paint region</legend>
       <div className="legend-options">
       {colours.map((colour, index) => (

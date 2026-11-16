@@ -24,7 +24,7 @@ function checked(design: Design, profile: LoomProfile): Extract<CheckResult, { o
 }
 
 function renderPanel(props: Partial<FloatPanelProps> & Pick<FloatPanelProps, "check" | "profile">) {
-  const handlers = { onAutoFix: vi.fn(), onUndo: vi.fn(), onStartBlank: vi.fn(), onTurnOffRepeatAcross: vi.fn(), onChooseProfile: vi.fn() };
+  const handlers = { onAutoFix: vi.fn(), onUndo: vi.fn(), onNextViolation: vi.fn(), onTurnOffRepeatAcross: vi.fn(), onChooseProfile: vi.fn() };
   const view = render(<FloatPanel checking={false} fix={{ status: "none" }} canUndo={false} {...handlers} {...props} />);
   return { ...view, ...handlers };
 }
@@ -44,12 +44,14 @@ beforeEach(() => {
 });
 
 describe("float panel", () => {
-  it("empty state says what goes here and offers a blank grid", () => {
-    const { onStartBlank } = renderPanel({ check: null, profile: PROFILE_120 });
+  it("empty state is a one-line note that says what goes here, with no button", () => {
+    renderPanel({ check: null, profile: PROFILE_120 });
     const panel = floatPanel();
-    expect(textOf(panel)).toContain("Nothing to check yet");
-    fireEvent.click(within(panel).getByRole("button", { name: "Start from a blank grid" }));
-    expect(onStartBlank).toHaveBeenCalledTimes(1);
+    const empty = panel.querySelector(".panel-empty");
+    expect(empty).not.toBeNull();
+    expect(textOf(empty!)).toContain("Nothing to check yet");
+    expect(empty!.querySelectorAll("p")).toHaveLength(1);
+    expect(within(panel).queryAllByRole("button")).toHaveLength(0);
   });
 
   it("clean state says no float is over the limit and offers no auto-fix", () => {
@@ -102,7 +104,6 @@ describe("float panel", () => {
         canUndo={false}
         onAutoFix={onAutoFix}
         onUndo={vi.fn()}
-        onStartBlank={vi.fn()}
         onTurnOffRepeatAcross={vi.fn()}
         onChooseProfile={vi.fn()}
       />,
@@ -176,12 +177,38 @@ describe("float panel", () => {
       error: result.error,
       source: { design, weaves: defaultWeaves(4), profile: PROFILE_120, repeatAcross: false },
     };
-    renderPanel({ check, profile: PROFILE_120, fix });
+    const { onUndo, onNextViolation } = renderPanel({ check, profile: PROFILE_120, fix, canUndo: true });
     const alert = within(floatPanel()).getByRole("alert");
     expect(textOf(alert)).toContain("Auto-fix could not remove every violation");
+    fireEvent.click(within(alert).getByRole("button", { name: "Undo last change" }));
+    expect(onUndo).toHaveBeenCalledTimes(1);
+    fireEvent.click(within(alert).getByRole("button", { name: "Go to next violation" }));
+    expect(onNextViolation).toHaveBeenCalledTimes(1);
+    expect(within(alert).queryByRole("button", { name: "Retry" })).toBeNull();
+    // The scrollable list is a named, focusable region.
+    const scroll = within(alert).getByRole("region", { name: "Violations left after auto-fix, scrollable" });
+    expect(scroll.tabIndex).toBe(0);
     const left = within(within(alert).getByRole("list", { name: "Violations left after auto-fix" })).getAllByRole("listitem");
     expect(left).toHaveLength(Math.min(result.error.remaining.length, 200));
     expect(textOf(left[0]!)).toMatch(/unbound · length \d+$/);
+  });
+
+  it("an auto-fix error offers Retry, Undo last change and Go to next violation", () => {
+    const failing = checkDesign({ design: grid(8, 8, () => 9), weaves: defaultWeaves(4), profile: PROFILE_120, repeatAcross: false });
+    if (failing.ok) throw new Error("expected an engine error");
+    const design = grid(16, 16, (end) => Math.floor(end / 4) % 3);
+    const check = checked(design, STRICT);
+    expect(check.violations.length).toBeGreaterThan(0);
+    const fix: FixState = { status: "error", error: failing.error, source: { design, weaves: defaultWeaves(4), profile: STRICT, repeatAcross: false } };
+    const { onAutoFix, onUndo, onNextViolation } = renderPanel({ check, profile: STRICT, fix, canUndo: true });
+    const alert = within(floatPanel()).getByRole("alert");
+    expect(textOf(alert)).toContain("Auto-fix stopped with an error");
+    fireEvent.click(within(alert).getByRole("button", { name: "Retry" }));
+    expect(onAutoFix).toHaveBeenCalledTimes(1);
+    fireEvent.click(within(alert).getByRole("button", { name: "Undo last change" }));
+    expect(onUndo).toHaveBeenCalledTimes(1);
+    fireEvent.click(within(alert).getByRole("button", { name: "Go to next violation" }));
+    expect(onNextViolation).toHaveBeenCalledTimes(1);
   });
 
   it("an engine error shows its message in plain words, not as an empty list (10.4)", () => {

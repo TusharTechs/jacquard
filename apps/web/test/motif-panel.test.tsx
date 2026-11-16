@@ -14,9 +14,15 @@ function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 }
 
+/**
+ * Replaces fetch. The gallery panel loads its files on mount; those requests get an empty index
+ * and are not recorded, so `fake` sees only the motif requests these tests are about.
+ */
 function stubFetch(answer: (url: string, init?: RequestInit) => Promise<Response>): FakeFetch {
   const fake = vi.fn(answer);
-  vi.stubGlobal("fetch", fake);
+  vi.stubGlobal("fetch", (url: string, init?: RequestInit) =>
+    String(url).includes("/gallery/") ? Promise.resolve(jsonResponse(200, [])) : fake(url, init),
+  );
   return fake;
 }
 
@@ -72,11 +78,13 @@ beforeEach(() => {
 });
 
 describe("motif panel: empty state (12.1)", () => {
-  it("offers describe, upload and a blank grid", () => {
+  it("offers a gallery example first, then describe, upload and a blank grid", () => {
     stubFetch(() => Promise.reject(new Error("no request expected")));
     render(<App />);
     const panel = motifPanel();
     expect(within(panel).getByText("No motif yet")).toBeTruthy();
+    const actions = [...panel.querySelector(".panel-empty .state-actions")!.querySelectorAll("button")].map(textOf);
+    expect(actions[0]).toBe("Open a gallery example");
     expect(within(panel).getByRole("button", { name: "Describe a motif" })).toBeTruthy();
     expect(within(panel).getByRole("button", { name: "Upload a sketch" })).toBeTruthy();
     expect(within(panel).getByRole("button", { name: "Start from a blank grid" })).toBeTruthy();

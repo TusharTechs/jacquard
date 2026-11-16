@@ -63,7 +63,11 @@ export interface MotifPanelProps {
   readonly request: MotifRequestControls;
   /** Display colours of the current motif palette, or null before the first motif. */
   readonly paletteColours: readonly string[] | null;
+  /** True while a gallery example is on the grid: the palette is the example's, not a motif's. */
+  readonly paletteFromGallery?: boolean;
   readonly onStartBlank: () => void;
+  /** Scrolls to the gallery and focuses its heading. */
+  readonly onOpenGallery?: () => void;
   /** Set by the point paper's empty state: open the describe or upload tab and focus it. */
   readonly focusRequest?: { readonly kind: "text" | "sketch"; readonly id: number } | null;
 }
@@ -71,7 +75,7 @@ export interface MotifPanelProps {
 /** Failures where sending the same thing again will not help: the wording says "Generate again". */
 const GENERATE_AGAIN: ReadonlySet<MotifFailureKind> = new Set<MotifFailureKind>(["invalidMotif", "request"]);
 
-export function MotifPanel({ setup, online, request, paletteColours, onStartBlank, focusRequest = null }: MotifPanelProps) {
+export function MotifPanel({ setup, online, request, paletteColours, paletteFromGallery = false, onStartBlank, onOpenGallery, focusRequest = null }: MotifPanelProps) {
   const [tab, setTab] = useState<"text" | "sketch">("text");
   const [prompt, setPrompt] = useState("");
   const [sketch, setSketch] = useState<Sketch | null>(null);
@@ -170,6 +174,8 @@ export function MotifPanel({ setup, online, request, paletteColours, onStartBlan
     });
   }, [focusRequest]);
 
+  const paletteTitle = paletteFromGallery ? "Palette of the gallery example" : "Motif palette";
+
   let status: PanelStatus = "ready";
   if (state.status === "idle") status = "empty";
   else if (state.status === "loading") status = "loading";
@@ -234,10 +240,15 @@ export function MotifPanel({ setup, online, request, paletteColours, onStartBlan
         <>
           <p className="state-title">No motif yet</p>
           <p className="small">
-            Describe a motif or upload a sketch and the model suggests a clean motif at your repeat size. Or paint the grid
-            yourself.
+            Open a gallery example, or describe a motif or upload a sketch and the model suggests a clean
+            motif at your repeat size. Or paint the grid yourself.
           </p>
           <div className="state-actions">
+            {onOpenGallery === undefined ? null : (
+              <Button small variant="primary" onClick={onOpenGallery}>
+                Open a gallery example
+              </Button>
+            )}
             <Button small onClick={describe}>
               Describe a motif
             </Button>
@@ -309,8 +320,8 @@ export function MotifPanel({ setup, online, request, paletteColours, onStartBlan
         ) : null}
         {paletteColours === null ? null : (
           <div>
-            <p className="small field-label">Motif palette</p>
-            <ul className="palette" aria-label="Motif palette">
+            <p className="small field-label">{paletteTitle}</p>
+            <ul className="palette" aria-label={paletteTitle}>
               {paletteColours.map((colour, index) => (
                 <li key={index}>
                   <span className="swatch" style={{ background: colour }} aria-hidden="true" />

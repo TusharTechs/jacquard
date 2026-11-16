@@ -21,11 +21,13 @@ export function ViolationList({ violations, label }: ViolationListProps) {
   const shown = violations.slice(0, LIST_LIMIT);
   return (
     <>
-      <ul className="violation-list" aria-label={label}>
-        {shown.map((violation, index) => (
-          <li key={index}>{violationText(violation)}</li>
-        ))}
-      </ul>
+      <div className="violation-scroll" tabIndex={0} role="region" aria-label={`${label}, scrollable`}>
+        <ul className="violation-list" aria-label={label}>
+          {shown.map((violation, index) => (
+            <li key={index}>{violationText(violation)}</li>
+          ))}
+        </ul>
+      </div>
       {violations.length > shown.length ? (
         <p className="small muted">
           And <span className="mono">{violations.length - shown.length}</span> more.

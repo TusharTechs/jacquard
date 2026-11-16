@@ -51,7 +51,7 @@ export function EditorToolbar({
   const touchLabelId = useId();
   const mod = IS_MAC ? "Cmd" : "Ctrl";
   return (
-    <div className="toolbar" role="group" aria-label="Point paper tools">
+    <div className="toolbar" role="group" aria-label="Point paper tools" data-region-keys="">
       <div className="toolbar-group">
         <Button small onClick={onUndo} disabled={!canUndo} title={`Undo (${mod}+Z)`} aria-keyshortcuts={IS_MAC ? "Meta+Z" : "Control+Z"}>
           Undo

@@ -34,7 +34,9 @@ export type SetupAction =
   | { readonly type: "setRepeatPicks"; readonly picks: number }
   | { readonly type: "setMinFeature"; readonly minFeature: number }
   | { readonly type: "setSymmetry"; readonly symmetry: Symmetry }
-  | { readonly type: "setRepeatAcross"; readonly repeatAcross: boolean };
+  | { readonly type: "setRepeatAcross"; readonly repeatAcross: boolean }
+  /** Puts back a whole earlier setup (Undo of a gallery open). */
+  | { readonly type: "replace"; readonly setup: SetupState };
 
 const PROFILES: Readonly<Record<ProfileName, LoomProfile>> = {
   "120": PROFILE_120,
@@ -110,6 +112,11 @@ export function setupReducer(state: SetupState, action: SetupAction): SetupState
       return { ...state, symmetry: action.symmetry };
     case "setRepeatAcross":
       return { ...state, repeatAcross: action.repeatAcross };
+    case "replace": {
+      const { setup } = action;
+      if (!PROFILE_NAMES.includes(setup.profile) || !SYMMETRIES.includes(setup.symmetry)) return state;
+      return clampSetup({ ...setup, repeat: { ...setup.repeat } });
+    }
   }
 }
 

@@ -1,6 +1,9 @@
 // Shared setup for the component tests (jsdom). jsdom has no canvas, so getContext returns a
 // no-op 2D context; every call on it does nothing. Testing Library's automatic cleanup needs
 // vitest globals, which this package does not enable, so cleanup runs here after each test.
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 
@@ -72,4 +75,35 @@ export function accessibleName(element: HTMLElement): string {
   const title = element.getAttribute("title");
   if (title !== null && title.trim() !== "") return title.trim();
   return "";
+}
+
+const galleryDir = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "gallery");
+
+/** The text of a committed gallery file, `public/gallery/<name>`. */
+export function galleryFile(name: string): string {
+  return readFileSync(join(galleryDir, name), "utf8");
+}
+
+export type GalleryFetch = ReturnType<typeof vi.fn<(url: string, init?: RequestInit) => Promise<Response>>>;
+
+/**
+ * Replaces fetch with one that serves the committed gallery files for `.../gallery/<name>.json`
+ * (404 for an unknown name). `override` may answer a URL first; return undefined to fall through.
+ */
+export function stubGalleryFetch(override?: (url: string) => Promise<Response> | undefined): GalleryFetch {
+  const fake = vi.fn((url: string, _init?: RequestInit): Promise<Response> => {
+    const custom = override?.(url);
+    if (custom !== undefined) return custom;
+    const match = /\/gallery\/([a-z0-9-]+\.json)$/.exec(String(url));
+    if (match === null) return Promise.reject(new TypeError(`no stub for ${url}`));
+    let text: string;
+    try {
+      text = galleryFile(match[1]!);
+    } catch {
+      return Promise.resolve(new Response("not found", { status: 404 }));
+    }
+    return Promise.resolve(new Response(text, { status: 200, headers: { "content-type": "application/json" } }));
+  });
+  vi.stubGlobal("fetch", fake);
+  return fake;
 }

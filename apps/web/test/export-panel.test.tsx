@@ -38,7 +38,7 @@ type DownloadMock = Mock<(file: DownloadFile) => void>;
 
 function renderPanel(props: Partial<Omit<ExportPanelProps, "download">> & { download?: DownloadMock } = {}) {
   const download: DownloadMock = props.download ?? vi.fn<(file: DownloadFile) => void>();
-  const handlers = { onAutoFix: vi.fn(), onStartBlank: vi.fn() };
+  const handlers = { onAutoFix: vi.fn() };
   const view = render(
     <ExportPanel
       profileName="120"
@@ -195,7 +195,7 @@ describe("export panel", () => {
   it("while the float check is catching up, Cards and WIF wait and say so; the gate then appears (6.2)", async () => {
     // The check still describes the clean design, but the grid already has violations.
     const props = { profile: STRICT, plan: CLEAN.plan, design: STRIPES, violationCount: 0, checking: true };
-    const { download, rerender, onAutoFix, onStartBlank } = renderPanel(props);
+    const { download, rerender, onAutoFix } = renderPanel(props);
     expect(textOf(panel())).toContain("Checking floats…");
     for (const name of ["Cards (PDF)", "Cards (SVG)", "WIF file"]) {
       const button = within(panel()).getByRole("button", { name });
@@ -215,7 +215,6 @@ describe("export panel", () => {
         blank={false}
         planSource="design"
         onAutoFix={onAutoFix}
-        onStartBlank={onStartBlank}
         download={download}
         {...props}
         plan={BAD.plan}
@@ -251,11 +250,13 @@ describe("export panel", () => {
     expect((within(panel()).getByRole("button", { name: "Point paper (SVG)" }) as HTMLButtonElement).disabled).toBe(false);
   });
 
-  it("empty state offers a blank grid", () => {
-    const { onStartBlank } = renderPanel({ blank: true });
-    expect(textOf(panel())).toContain("Nothing to export yet");
-    click("Start from a blank grid");
-    expect(onStartBlank).toHaveBeenCalledTimes(1);
+  it("empty state is a one-line note with no button; the blank grid is offered by the motif and point-paper area", () => {
+    renderPanel({ blank: true });
+    const empty = panel().querySelector(".panel-empty");
+    expect(empty).not.toBeNull();
+    expect(textOf(empty!)).toContain("Nothing to export yet");
+    expect(empty!.querySelectorAll("p")).toHaveLength(1);
+    expect(within(panel()).queryAllByRole("button")).toHaveLength(0);
   });
 });
 

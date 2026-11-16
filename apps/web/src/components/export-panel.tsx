@@ -41,7 +41,6 @@ export interface ExportPanelProps {
   /** True while there is nothing on the grid yet. */
   readonly blank: boolean;
   readonly onAutoFix: () => void;
-  readonly onStartBlank: () => void;
   /** Saves a file; the browser download by default. */
   readonly download?: Downloader;
 }
@@ -67,7 +66,6 @@ export function ExportPanel({
   checking = false,
   blank,
   onAutoFix,
-  onStartBlank,
   download = downloadFile,
 }: ExportPanelProps) {
   const [confirm, setConfirm] = useState<ExportKind | null>(null);
@@ -136,18 +134,7 @@ export function ExportPanel({
       headingRef={headingRef}
       status={status}
       empty={
-        <>
-          <p className="state-title">Nothing to export yet</p>
-          <p className="small">
-            The card set, the point-paper sheet and the WIF file are made from your design. Paint the grid or generate a motif
-            first.
-          </p>
-          <div className="state-actions">
-            <Button small onClick={onStartBlank}>
-              Start from a blank grid
-            </Button>
-          </div>
-        </>
+        <p className="small">Nothing to export yet. The card set, the point-paper sheet and the WIF file are made once there is a design.</p>
       }
       loading={
         pending === null ? undefined : (

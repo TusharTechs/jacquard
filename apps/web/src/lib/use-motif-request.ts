@@ -21,6 +21,8 @@ export interface MotifRequestControls {
   readonly lastRequest: MotifRequest | null;
   readonly generate: (request: MotifRequest) => void;
   readonly cancel: () => void;
+  /** Drops any request in progress without a "cancelled" note and goes back to idle. */
+  readonly reset: () => void;
 }
 
 export function useMotifRequest(apply: ApplyMotif): MotifRequestControls {
@@ -64,5 +66,13 @@ export function useMotifRequest(apply: ApplyMotif): MotifRequestControls {
     controller.current?.abort();
   }, []);
 
-  return { state, lastRequest, generate, cancel };
+  const reset = useCallback(() => {
+    const own = controller.current;
+    // Clear first so the aborted request's result is ignored (it no longer owns the controller).
+    controller.current = null;
+    own?.abort();
+    setLastRequest(null);
+    setState({ status: "idle" });
+  }, []);
+  return { state, lastRequest, generate, cancel, reset };
 }

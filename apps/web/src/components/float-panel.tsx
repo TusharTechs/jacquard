@@ -25,7 +25,8 @@ export interface FloatPanelProps {
   readonly canUndo: boolean;
   readonly onAutoFix: () => void;
   readonly onUndo: () => void;
-  readonly onStartBlank: () => void;
+  /** Focus the point paper and move its cursor to the next violation, as N does. */
+  readonly onNextViolation?: () => void;
   /** REPEAT_NOT_DIVISIBLE: switch "repeat across" off in the loom setup. */
   readonly onTurnOffRepeatAcross: () => void;
   /** DESIGN_TOO_WIDE: open the loom setup and focus the profile select. */
@@ -52,7 +53,7 @@ export function FloatPanel({
   canUndo,
   onAutoFix,
   onUndo,
-  onStartBlank,
+  onNextViolation,
   onTurnOffRepeatAcross,
   onChooseProfile,
   headingRef,
@@ -93,15 +94,7 @@ export function FloatPanel({
       headingRef={headingRef}
       status={status}
       empty={
-        <>
-          <p className="state-title">Nothing to check yet</p>
-          <p className="small">Paint the grid or generate a motif, and the float check runs after every change.</p>
-          <div className="state-actions">
-            <Button small onClick={onStartBlank}>
-              Start from a blank grid
-            </Button>
-          </div>
-        </>
+        <p className="small">Nothing to check yet. The float check runs once there is a design on the point paper.</p>
       }
       loading={<p className="small">Checking floats…</p>}
       error={
@@ -171,7 +164,16 @@ export function FloatPanel({
               </p>
             </>
           )}
-          {fixed !== null || (fix.status === "discarded" && check.violations.length === 0) ? null : <FixReport fix={fix} />}
+          {fixed !== null || (fix.status === "discarded" && check.violations.length === 0) ? null : (
+            <FixReport
+              fix={fix}
+              onUndo={onUndo}
+              canUndo={canUndo}
+              {...(onNextViolation === undefined ? {} : { onNextViolation })}
+              hasViolations={check.violations.length > 0}
+              onRetry={onAutoFix}
+            />
+          )}
         </div>
       ) : null}
     </Panel>

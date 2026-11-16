@@ -852,11 +852,18 @@ a {
   background: var(--accent);
 }
 
+.violation-scroll {
+  max-height: 320px;
+  overflow: auto;
+  border-radius: var(--radius-small);
+}
+.violation-scroll:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
 .violation-list {
   display: grid;
   gap: var(--space-1);
-  max-height: 320px;
-  overflow: auto;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1046,4 +1053,85 @@ a {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
   gap: var(--space-2);
+}
+
+/* ---------- Gallery ---------- */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gallery-card {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+.gallery-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+.gallery-thumb {
+  display: block;
+  max-width: 100%;
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-small);
+  image-rendering: pixelated;
+}
+.skeleton-block {
+  display: block;
+  border-radius: var(--radius-small);
+  background: var(--card-sunk);
+  animation: skeleton-pulse 1.2s ease-in-out infinite alternate;
+}
+.skeleton-thumb {
+  width: 96px;
+  height: 96px;
+}
+.skeleton-line {
+  height: 0.875rem;
+}
+.skeleton-short {
+  width: 60%;
+}
+@keyframes skeleton-pulse {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-block {
+    animation: none;
+  }
+}
+
+/* ---------- Toast on narrow screens: at the top, so it never covers the export buttons ---------- */
+@media (max-width: 767px) {
+  .toast-region {
+    top: var(--space-3);
+    bottom: auto;
+  }
+  .toast {
+    animation-name: toast-in-top;
+  }
+}
+@keyframes toast-in-top {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }

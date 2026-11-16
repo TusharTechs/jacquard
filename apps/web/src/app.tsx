@@ -3,13 +3,14 @@
 // State lives in editorReducer and setupReducer; every lift plan, float list and fix comes from
 // the engine through engine-check.ts (10.6). The check reruns when the design, the weaves or the
 // setup change, memoised and deferred so painting stays smooth.
-import { useCallback, useDeferredValue, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useId, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import { checkFloats } from "@jacquard/engine";
-import type { Weave, WeaveAssignment } from "@jacquard/engine";
+import type { Design, Weave, WeaveAssignment } from "@jacquard/engine";
 import type { MotifRequest, MotifResponse } from "@jacquard/motif";
 import { EditorToolbar } from "./components/editor-toolbar";
 import { ExportPanel } from "./components/export-panel";
 import { FloatPanel } from "./components/float-panel";
+import { GalleryPanel } from "./components/gallery-panel";
 import { LoomSetupPanel } from "./components/loom-setup-panel";
 import { MotifPanel } from "./components/motif-panel";
 import { PointPaper, clampCell } from "./components/point-paper";
@@ -23,25 +24,25 @@ import type { PanelStatus } from "./components/ui/panel";
 import { Toast } from "./components/ui/toast";
 import type { ToastMessage } from "./components/ui/toast";
 import { WeavePanel } from "./components/weave-panel";
-import { defaultWeaves } from "./lib/default-weaves";
+import { WEAVE_SLOTS, defaultWeaves } from "./lib/default-weaves";
 import { checkDesign, fixDesign } from "./lib/engine-check";
 import { sameSource } from "./lib/fix-state";
 import type { FixSource, FixState } from "./lib/fix-state";
+import { exampleWeaves } from "./lib/gallery";
+import type { GalleryExample } from "./lib/gallery";
 import { blankDesign, resizeDesign, sizeOf } from "./lib/grid-size";
 import type { MotifFailure } from "./lib/motif-client";
 import { designFromMotif } from "./lib/motif-design";
 import { regionColours } from "./lib/palette";
 import { useMotifRequest } from "./lib/use-motif-request";
 import { useOnline } from "./lib/use-online";
-import { errorCell, flipCells, violationMarks } from "./lib/violation-marks";
+import { errorCell, flipCells, violationMarks, violationStarts } from "./lib/violation-marks";
 import { DEFAULT_WARP, yarnColours } from "./lib/yarns";
 import type { YarnChoice } from "./lib/yarns";
-import { editorReducer, initialEditorState } from "./state/editor-state";
+import { UNDO_LIMIT, editorReducer, initialEditorState } from "./state/editor-state";
 import { DEFAULT_SETUP, resolveProfile, setupReducer } from "./state/setup-state";
-import type { SetupAction } from "./state/setup-state";
+import type { SetupAction, SetupState } from "./state/setup-state";
 
-/** Weaves for every region a profile can have (the engine's maximum region limit is 8). */
-const WEAVE_SLOTS = 8;
 /** Cell size before the first fit, for environments that report no width [decision]. */
 const START_CELL = 8;
 
@@ -58,8 +59,28 @@ function mediaMatches(query: string, fallback: boolean): boolean {
   return window.matchMedia(query).matches;
 }
 
+/** Shown while a gallery example is on the grid (Phase G review, finding 4). */
+export const GALLERY_BADGE = "Gallery example made by the stand-in generator, not a model. Edit it freely.";
+
+/** Digit keys choose a region only when focus is inside an element marked with this attribute. */
+const REGION_KEYS_SELECTOR = "[data-region-keys]";
+
 /** What the point paper marks: the design's float violations, or the cells auto-fix flipped. */
 type PaperLayer = "violations" | "fixes";
+
+/** The gallery example on the grid, and the undo depth right after it was opened. */
+interface GalleryOpen {
+  readonly id: string;
+  readonly depth: number;
+}
+
+/** What opening a gallery example changes besides the grid; Undo and Redo of the open swap it. */
+interface Surroundings {
+  readonly setup: SetupState;
+  readonly palette: string[] | null;
+  readonly weaves: WeaveAssignment;
+  readonly galleryOpen: GalleryOpen | null;
+}
 
 function allZero(design: readonly (readonly number[])[]): boolean {
   return design.every((row) => row.every((cell) => cell === 0));
@@ -89,6 +110,27 @@ export function App() {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const floatHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const galleryHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  // The gallery example on the grid, and the undo depth right after it was opened: undoing past
+  // that point takes the example off the grid, and the badge with it.
+  const [galleryOpen, setGalleryOpen] = useState<GalleryOpen | null>(null);
+  // Keyed by the design object a gallery open put on the grid. The editor keeps that object on its
+  // undo and redo stacks, so when Undo leaves it the open is being undone (restore `before`), and
+  // when Redo brings it back from the top of the redo stack the open is being redone (`after`).
+  const galleryEdits = useRef(new WeakMap<Design, { readonly before: Surroundings; readonly after: Surroundings }>());
+  const editorRef = useRef(editor);
+  editorRef.current = editor;
+  // The open waiting for the editor to put its design on the grid (the reducer copies the design,
+  // so the key is known only after the render that applies the replace).
+  const pendingGalleryEdit = useRef<{ readonly before: Surroundings; readonly after: Surroundings } | null>(null);
+  useLayoutEffect(() => {
+    const pending = pendingGalleryEdit.current;
+    if (pending === null) return;
+    pendingGalleryEdit.current = null;
+    galleryEdits.current.set(editor.design, pending);
+  }, [editor.design]);
+  const [nextViolationRequest, setNextViolationRequest] = useState(0);
+  const paperSummaryId = useId();
   const online = useOnline();
 
   const profile = resolveProfile(setup.profile);
@@ -210,6 +252,76 @@ export function App() {
     });
   };
 
+  const focusGallery = (): void => {
+    const heading = galleryHeadingRef.current;
+    if (heading === null) return;
+    heading.scrollIntoView?.({ block: "start" });
+    heading.focus();
+  };
+
+  // ---- Undo and redo. A gallery open also brings back (or re-applies) its setup, palette and weaves. ----
+  const applySurroundings = useCallback((wanted: Surroundings, region: number): void => {
+    dispatchSetup({ type: "replace", setup: wanted.setup });
+    setPalette(wanted.palette === null ? null : [...wanted.palette]);
+    setWeaves(wanted.weaves);
+    setGalleryOpen(wanted.galleryOpen);
+    if (region >= wanted.setup.colourCount) dispatchEditor({ type: "setRegion", region: 0 });
+  }, []);
+  const undo = useCallback((): void => {
+    const current = editorReducer(editorRef.current, { type: "endStroke" });
+    const edit = current.undo.length > 0 ? galleryEdits.current.get(current.design) : undefined;
+    dispatchEditor({ type: "undo" });
+    editorRef.current = editorReducer(editorRef.current, { type: "undo" });
+    if (edit !== undefined) applySurroundings(edit.before, current.region);
+  }, [applySurroundings]);
+  const redo = useCallback((): void => {
+    const current = editorReducer(editorRef.current, { type: "endStroke" });
+    const next = current.redo[current.redo.length - 1];
+    const edit = next === undefined ? undefined : galleryEdits.current.get(next);
+    dispatchEditor({ type: "redo" });
+    editorRef.current = editorReducer(editorRef.current, { type: "redo" });
+    if (edit !== undefined) applySurroundings(edit.after, current.region);
+  }, [applySurroundings]);
+
+  // ---- Gallery: one undoable grid edit, plus the example's setup, palette and weaves. ----
+  const openExample = (example: GalleryExample): void => {
+    const { setup: wanted } = example;
+    const actions: SetupAction[] = [
+      { type: "setProfile", profile: wanted.profile },
+      { type: "setColourCount", colourCount: wanted.colourCount },
+      { type: "setRepeatEnds", ends: wanted.repeat.ends },
+      { type: "setRepeatPicks", picks: wanted.repeat.picks },
+      { type: "setMinFeature", minFeature: wanted.minFeature },
+      { type: "setSymmetry", symmetry: wanted.symmetry },
+      { type: "setRepeatAcross", repeatAcross: wanted.repeatAcross },
+    ];
+    const next = actions.reduce(setupReducer, setup);
+    for (const action of actions) dispatchSetup(action);
+    // The motif panel's label and state belong to the last motif request, not to this example.
+    motif.reset();
+    const before = editorReducer(editorRef.current, { type: "endStroke" });
+    const after = editorReducer(before, { type: "replace", design: example.design });
+    dispatchEditor({ type: "replace", design: example.design });
+    if (editor.region >= next.colourCount) dispatchEditor({ type: "setRegion", region: 0 });
+    const opened: Surroundings = {
+      setup: next,
+      palette: [...example.palette],
+      weaves: exampleWeaves(example),
+      galleryOpen: { id: example.id, depth: Math.min(after.undo.length, UNDO_LIMIT) },
+    };
+    pendingGalleryEdit.current = { before: { setup, palette, weaves, galleryOpen }, after: opened };
+    setPalette(opened.palette === null ? null : [...opened.palette]);
+    setWeaves(opened.weaves);
+    setGalleryOpen(opened.galleryOpen);
+    setStarted(true);
+    setLayer("violations");
+    requestAnimationFrame(() => viewportRef.current?.scrollIntoView?.({ block: "nearest" }));
+    say(`${example.title} is on the grid. Undo brings back the previous grid, loom setup, palette and weaves.`);
+  };
+  const galleryShown = galleryOpen !== null && editor.undo.length >= galleryOpen.depth ? galleryOpen : null;
+
+  const goToNextViolation = (): void => setNextViolationRequest((value) => value + 1);
+
   const focusMotif = (kind: "text" | "sketch"): void => {
     setMotifFocus((current) => ({ kind, id: (current?.id ?? 0) + 1 }));
   };
@@ -218,6 +330,7 @@ export function App() {
     setStarted(true);
     if (!(size.ends === setup.repeat.ends && size.picks === setup.repeat.picks && allZero(design))) {
       dispatchEditor({ type: "replace", design: blankDesign(setup.repeat) });
+      setGalleryOpen(null);
       say("Blank grid ready. Undo brings back the previous grid.");
     }
     focusGrid();
@@ -240,6 +353,7 @@ export function App() {
         };
       }
       dispatchEditor({ type: "replace", design: result.value.design });
+      setGalleryOpen(null);
       setPalette(result.value.palette);
       setStarted(true);
       // Bring the new design into view, as "Start from a blank grid" does (on a phone the point
@@ -281,15 +395,19 @@ export function App() {
       const key = event.key.toLowerCase();
       if (mod && key === "z") {
         event.preventDefault();
-        dispatchEditor({ type: event.shiftKey ? "redo" : "undo" });
+        if (event.shiftKey) redo();
+        else undo();
         return;
       }
       if (mod && key === "y" && event.ctrlKey) {
         event.preventDefault();
-        dispatchEditor({ type: "redo" });
+        redo();
         return;
       }
       if (!mod && !event.shiftKey && /^[1-8]$/.test(event.key)) {
+        // Only on the point paper, its toolbar or the region legend, and never under a dialog.
+        if (shortcutsOpen || document.querySelector("dialog[open]") !== null) return;
+        if (!(event.target instanceof Element) || event.target.closest(REGION_KEYS_SELECTOR) === null) return;
         const region = Number(event.key) - 1;
         if (region < setup.colourCount) {
           event.preventDefault();
@@ -299,7 +417,7 @@ export function App() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [setup.colourCount]);
+  }, [setup.colourCount, shortcutsOpen, undo, redo]);
 
   const changeWeave = (region: number, weave: Weave): void => setWeaves((current) => ({ ...current, [region]: weave }));
 
@@ -326,6 +444,25 @@ export function App() {
         : "The cloth simulation and the exports now use the lift plan of the current design.",
     );
   }, [planSource]);
+
+  // ---- Text summary of the point paper for screen readers (Phase G review, finding 11). ----
+  const paperSummary = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const row of design) for (const cell of row) counts.set(cell, (counts.get(cell) ?? 0) + 1);
+    const regions = [...counts.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([region, count]) => `region ${region}: ${count} ${count === 1 ? "cell" : "cells"}`)
+      .join(", ");
+    let floats: string;
+    if (!check.ok) floats = "The float check could not run on this design.";
+    else if (check.violations.length === 0) floats = "No float violations.";
+    else {
+      const first = violationStarts(allMarks)[0];
+      const count = check.violations.length;
+      floats = `${count} float ${count === 1 ? "violation" : "violations"}${first === undefined ? "" : `; the first starts at end ${first.end}, pick ${first.pick}`}.`;
+    }
+    return `Grid of ${size.ends} ends by ${size.picks} picks. Cells per region: ${regions === "" ? "none" : regions}. ${floats} For a full text version of the grid, use the Point paper (SVG) export.`;
+  }, [design, check, allMarks, size.ends, size.picks]);
 
   const goToFloatCheck = (): void => {
     const heading = floatHeadingRef.current;
@@ -358,6 +495,17 @@ export function App() {
 
       <main className="layout">
         <div className="column column-side">
+          <GalleryPanel onOpen={openExample} openId={galleryShown?.id ?? null} headingRef={galleryHeadingRef} />
+          <MotifPanel
+            setup={setup}
+            online={online}
+            request={motif}
+            paletteColours={palette === null ? null : regionColours(palette, palette.length)}
+            paletteFromGallery={galleryShown !== null}
+            onStartBlank={startBlank}
+            onOpenGallery={focusGallery}
+            focusRequest={motifFocus}
+          />
           <LoomSetupPanel
             setup={setup}
             onChange={changeSetup}
@@ -365,14 +513,6 @@ export function App() {
             open={setupOpen}
             onOpenChange={setSetupOpen}
             profileRef={profileRef}
-          />
-          <MotifPanel
-            setup={setup}
-            online={online}
-            request={motif}
-            paletteColours={palette === null ? null : regionColours(palette, palette.length)}
-            onStartBlank={startBlank}
-            focusRequest={motifFocus}
           />
         </div>
 
@@ -384,10 +524,13 @@ export function App() {
               <>
                 <p className="state-title">A blank grid</p>
                 <p className="small">
-                  Every cell is region <span className="mono">0</span>. Choose a region and paint with a finger, pen or mouse, or
-                  generate a motif to start from.
+                  Every cell is region <span className="mono">0</span>. Open an example from the gallery, generate a motif
+                  to start from, or choose a region and paint with a finger, pen or mouse.
                 </p>
                 <div className="state-actions">
+                  <Button small variant="primary" onClick={focusGallery}>
+                    Open a gallery example
+                  </Button>
                   <Button small onClick={() => focusMotif("text")}>
                     Describe a motif
                   </Button>
@@ -410,18 +553,25 @@ export function App() {
             }
             error={
               !check.ok ? (
-                <p className="small">
-                  The float check stopped: {check.error.message}
-                  {badCell === null ? "" : " The cell is marked with a cross."} See the float check for what to do next.
-                </p>
+                <>
+                  <p className="small">
+                    The float check stopped: {check.error.message}
+                    {badCell === null ? "" : " The cell is marked with a cross."} See the float check for what to do next.
+                  </p>
+                  <div className="state-actions">
+                    <Button small onClick={goToFloatCheck}>
+                      Go to the float check
+                    </Button>
+                  </div>
+                </>
               ) : undefined
             }
           >
             <EditorToolbar
               canUndo={editor.undo.length > 0}
               canRedo={editor.redo.length > 0}
-              onUndo={() => dispatchEditor({ type: "undo" })}
-              onRedo={() => dispatchEditor({ type: "redo" })}
+              onUndo={undo}
+              onRedo={redo}
               cellSize={cellSize}
               onCellSize={setCellSize}
               onFit={fit}
@@ -439,6 +589,7 @@ export function App() {
               }
             />
             <div className="stack">
+              {galleryShown === null ? null : <p className="label-suggestion">{GALLERY_BADGE}</p>}
               <RegionLegend colours={paintColours} region={editor.region} onChange={(region) => dispatchEditor({ type: "setRegion", region })} />
               {sizeMismatch ? (
                 <div className="note" role="status">
@@ -477,7 +628,12 @@ export function App() {
                 dispatch={dispatchEditor}
                 viewportRef={viewportRef}
                 canvasRef={canvasRef}
+                describedBy={paperSummaryId}
+                nextViolationRequest={nextViolationRequest}
               />
+              <p className="sr-only" id={paperSummaryId}>
+                {paperSummary}
+              </p>
               {shownLayer === "fixes" ? (
                 <p className="small paper-legend">
                   <span className="marker-diamond" aria-hidden="true" /> Diamond: a lift-plan cell auto-fix flipped (
@@ -501,8 +657,8 @@ export function App() {
             fix={fix}
             canUndo={editor.undo.length > 0}
             onAutoFix={runAutoFix}
-            onUndo={() => dispatchEditor({ type: "undo" })}
-            onStartBlank={startBlank}
+            onUndo={undo}
+            onNextViolation={goToNextViolation}
             onTurnOffRepeatAcross={() => changeSetup({ type: "setRepeatAcross", repeatAcross: false })}
             onChooseProfile={focusProfile}
             headingRef={floatHeadingRef}
@@ -515,7 +671,6 @@ export function App() {
             onYarnsChange={(next) => setYarnChoice({ warp: next.warp, weft: next.weft })}
             onResetYarns={() => setYarnChoice({ warp: DEFAULT_WARP, weft: null })}
             emptyReason={blankStart ? "blank" : "engineError"}
-            onStartBlank={startBlank}
             onGoToFloatCheck={goToFloatCheck}
           />
           <p className="sr-only" role="status" aria-live="polite">
@@ -540,7 +695,6 @@ export function App() {
             checking={checking}
             blank={blankStart}
             onAutoFix={runAutoFix}
-            onStartBlank={startBlank}
           />
         </div>
       </main>
