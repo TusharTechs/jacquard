@@ -127,30 +127,30 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - **Property 6: Result envelope**
     - **Validates: Requirements 8.2, 11.4**
 
-- [ ] 12. Fidelity and card tests
+- [x] 12. Fidelity and card tests
   - [x] 12.1 Write property test for fidelity to the engine
     - File `test/fidelity.property.test.ts`; `numRuns` 300; the model calls the public engine function directly and compares `canonicalJson` of both sides
     - **Property 7: Fidelity to the engine**
     - **Validates: Requirements 3.1, 3.2, 4.1, 4.2, 5.1, 5.2, 6.1, 7.1, 10.1, 10.4**
-  - [ ] 12.2 Write property test for build_cards numbering
+  - [x] 12.2 Write property test for build_cards numbering
     - File `test/build-cards-numbering.property.test.ts`
     - **Property 8: build_cards numbering**
     - **Validates: Requirements 6.2, 6.3**
-  - [ ] 12.3 Write property test for the round trip through the server
+  - [x] 12.3 Write property test for the round trip through the server
     - File `test/card-round-trip.property.test.ts`
     - **Property 9: Round trip through the server**
     - **Validates: Requirements 7.5**
 
 - [ ] 13. Error handling, argument and determinism tests
-  - [ ] 13.1 Write property test for engine errors
+  - [x] 13.1 Write property test for engine errors
     - File `test/engine-errors.property.test.ts`; includes the spy-engine check that the operation did not run on an invalid profile, and the `AUTOFIX_FAILED` stub case
     - **Property 10: Engine errors come back unchanged**
     - **Validates: Requirements 3.6, 4.3, 5.4, 6.5, 7.2, 7.3, 8.1, 8.6, 9.8, 10.2**
-  - [ ] 13.2 Write property test for continuing after failures
+  - [x] 13.2 Write property test for continuing after failures
     - File `test/keeps-answering.property.test.ts`
     - **Property 11: The server keeps answering correctly after failures**
     - **Validates: Requirements 1.5, 8.5, 11.2**
-  - [ ] 13.3 Write property test for the first malformed argument
+  - [x] 13.3 Write property test for the first malformed argument
     - File `test/first-malformed-argument.property.test.ts`; spy engine shows no engine call
     - **Property 12: The first malformed argument is the one reported**
     - **Validates: Requirements 3.5, 4.4, 7.4, 9.1, 9.2, 9.6, 9.7**

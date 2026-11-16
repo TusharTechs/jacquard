@@ -895,6 +895,20 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/test/tool-list.property.test.ts`, `list-profiles.property.test.ts`, `result-envelope.property.test.ts`, `fidelity.property.test.ts`.
 
+### 2026-11-16 — weave-mcp wave 12 (tasks 12.2, 12.3, 13.1, 13.2, 13.3)
+
+- Surface: IDE
+- Goal: Property tests for card numbering, the server round trip, engine errors, answering after failures, and the first malformed argument.
+- Kiro features used: spec `weave-mcp` (tasks 12.2, 12.3, 13.1, 13.2, 13.3); property tests (Properties 8 to 12). No hook output observed, no MCP tool, no custom agent.
+- Model / credits (start → end):
+- What worked: all five passed on the first run, 100 runs each, through an SDK `Client`.
+  - Property 10 checks that each corruption really fails in a direct engine call before comparing, so a generator that stopped producing errors would fail the test instead of passing quietly. It also uses a spy engine to show no tool operation ran on `PROFILE_INVALID`, and the stub engine for `AUTOFIX_FAILED`.
+  - Property 12 corrupts any non-empty subset of the declared arguments (remove, `null`, or a wrong JSON type) and checks with a spy that no engine function, not even `defineProfile`, was called.
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine `148 passed`; mcp `13 passed` files, `60 passed` tests).
+- What failed or surprised: no failures. The first run passing is not evidence that the properties are strong, so I checked Property 10's generator by hand: it covers 7 `build_lift_plan` faults, 6 invalid custom-profile fields, 5 plan faults and 6 card-set faults.
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/test/build-cards-numbering.property.test.ts`, `card-round-trip.property.test.ts`, `engine-errors.property.test.ts`, `keeps-answering.property.test.ts`, `first-malformed-argument.property.test.ts`.
+
 ### Template
 
 ```
