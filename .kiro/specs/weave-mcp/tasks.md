@@ -36,7 +36,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - _Requirements: 13.1, 13.2, 13.4, 13.5, 13.8, 14.9_
 
 - [ ] 2. Canonical JSON
-  - [ ] 2.1 Implement `src/canonical-json.ts`
+  - [x] 2.1 Implement `src/canonical-json.ts`
     - `canonicalJson(value: unknown): string` as in design Canonical_JSON: keys sorted by UTF-16 code unit from `Object.keys`, `undefined` members skipped, no whitespace, numbers and strings through `JSON.stringify`
     - _Requirements: 11.4, 11.5, 11.7_
   - [ ] 2.2 Write property test for key order
@@ -49,7 +49,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - **Validates: Requirements 11.4**
 
 - [ ] 3. Label_Table
-  - [ ] 3.1 Implement `src/labels.ts`
+  - [x] 3.1 Implement `src/labels.ts`
     - Types `FieldLabel` and `ProfileLabels` (a missing field is a compile error) and `LABEL_TABLE` for `"120"`, `"240"`, `"400"`; data only; where a comment has more than one token, store the least certain (`[to verify]` < `[decision]` < `[convention]` < `[sourced]`), so `PROFILE_400.cardFillOrder` is `[to verify]`
     - _Requirements: 2.2, 2.3, 2.4_
   - [ ] 3.2 Write property test for Label_Table against profiles.ts
@@ -64,10 +64,10 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 9.6, 11.4_
 
 - [ ] 5. Engine seam and argument checking
-  - [ ] 5.1 Implement `src/engine-api.ts`
+  - [x] 5.1 Implement `src/engine-api.ts`
     - `EngineApi` interface and `realEngine` (the only value import of `@jacquard/engine`); `profiles` in order 120, 240, 400
     - _Requirements: 10.3, 13.3_
-  - [ ] 5.2 Implement `src/arguments.ts`
+  - [x] 5.2 Implement `src/arguments.ts`
     - `ArgSpec` types and `checkArguments(spec, args)` as in design Argument checking: absent or `null`, then JSON type, then the extra checks for `design`, `weaves` (canonical-integer keys), `profile` (name string, `hookCount`, field types with path `profile.<field>`), `repeatAcross`, `plan`, `cardSet`; first malformed argument in declaration order; shape only, no domain checks
     - Extra-argument check for `auto_fix` only
     - _Requirements: 3.3, 3.4, 3.5, 4.4, 5.6, 7.3, 7.4, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 9.8_
@@ -99,7 +99,7 @@ These rules apply to every task and sub-task below. Each task says "Finish per T
   - [ ] 8.3 Implement `test/harness.ts`
     - `connect(engine = realEngine)` returns `{ client, close }` over `InMemoryTransport.createLinkedPair()`; helpers for a spy engine (records calls and argument references), a throwing engine, and an `AUTOFIX_FAILED` stub
     - _Requirements: 1.1, 8.3_
-  - [ ] 8.4 Implement `test/arbitraries.ts`
+  - [x] 8.4 Implement `test/arbitraries.ts`
     - mcp-local fast-check generators using only the public engine API: small designs (up to about 12 by 12, at most 4 regions), weave assignments, valid built-in and custom profiles (low `maxFloat` so violations occur), valid lift plans and card sets (through `buildLiftPlan`, `autoFix`, `buildCards`), one-fault corruptions per engine error code, one-fault corruptions per argument, and non-canonical weave keys
     - _Requirements: 3.3, 3.4, 9.5, 10.1_
 

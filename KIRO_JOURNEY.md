@@ -765,6 +765,20 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 - Spec versus vibe note: spec.
 - Evidence: `packages/mcp/test/package.test.ts`.
 
+### 2026-11-16 — weave-mcp wave 2 (tasks 2.1, 3.1, 5.1, 5.2, 8.4)
+
+- Surface: IDE
+- Goal: Write the leaf modules: Canonical_JSON, the Label_Table, the engine seam, argument checking and the test generators.
+- Kiro features used: spec `weave-mcp` (tasks 2.1, 3.1, 5.1, 5.2, 8.4). No hook output observed, no property test run yet, no MCP tool, no custom agent.
+- Model / credits (start → end):
+- What worked: `src/canonical-json.ts`, `src/labels.ts` (`PROFILE_400.cardFillOrder` is `[to verify]`), `src/engine-api.ts` (the only value import of `@jacquard/engine`), `src/arguments.ts` (presence, JSON type and key format in declaration order; extra-argument check only when `rejectExtra` is set), `test/arbitraries.ts` (valid calls for every tool, one-fault engine-error corruptions, non-canonical weave keys). `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` (engine 148 passed, mcp 6 passed).
+- What failed or surprised:
+  - I put `argumentError()` in `arguments.ts` rather than `results.ts` as task 4.1 lists it; `results.ts` will re-export it.
+  - I decided that a weave value that is an array, and `null` for an optional argument, are wrong JSON types (`ARGUMENT_INVALID`). The design says "each value is an object" and does not mention arrays.
+  - My first draft of the "lifted spare" corruption in `arbitraries.ts` changed the card size as well as the spare position, so it would have produced `CARD_SIZE_MISMATCH` instead. I rewrote it to rebuild the cards with a one-spare profile through `buildCards` before the first run.
+- Spec versus vibe note: spec.
+- Evidence: `packages/mcp/src/*.ts`, `packages/mcp/test/arbitraries.ts`.
+
 ### Template
 
 ```
