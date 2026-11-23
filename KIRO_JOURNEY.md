@@ -1459,6 +1459,24 @@ Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md
 - Spec versus vibe note: n/a.
 - Evidence: `packages/export/test/{determinism,card-layout,pdf-structure,point-paper}.property.test.ts`, root `package.json`.
 
+### 2026-11-23 — studio-experience spec and wave 0 (tasks 1.1 to 1.4)
+- Surface: IDE
+- Goal: Start the polish phase the user asked for ("make JACQUARD look and feel like a winning product"): write the `studio-experience` spec requirements-first with my own gap analysis, then lay the foundations (dependencies, Tailwind v4 tokens, fonts, two Themes, routes).
+- Kiro features used: spec `studio-experience` (requirements, design, tasks; 9 properties, all required); steering `autopilot.md`, `tech.md` (exit-code rule), `design-language.md` (updated in this wave, see below); property tests (Properties 8 and 9); MCP chrome-devtools (one 1440x900 screenshot of the restyled studio).
+- Model / credits (start → end):
+- What worked:
+  - Spec: 17 requirements, 9 correctness properties, 24 Decision log rows, 6 waves. Two properties carry the user's invariants: Property 1 (the 3D loom lifts exactly the hooks the current card punches) and Property 2 (cloth growth matches the lift plan pick for pick).
+  - Version check: `npm view <name> time` on 2026-11-23 showed motion 14.14.0, driver.js 1.14.0 and lucide-react 1.78.0 are under 14 days old, so the spec pins motion 14.11.1, driver.js 1.11.0 and lucide-react 1.70.0 (all published on or before 2026-11-09). The other candidates were old enough at the versions the user listed. `@react-three/postprocessing` is not used (bundle size; Decision log).
+  - New files: `apps/web/src/lib/{route,theme,reduced-motion,view-transition}.ts`, `src/root.tsx` (lazy Story and Studio), a first-cut `components/story/story.tsx`, `public/{favicon,grain}.svg`, an inline Theme bootstrap in `index.html`, and `styles.css` rewritten on `@import "tailwindcss"` with `@theme inline` tokens and Daylight and After hours variables.
+  - Property 8 (Theme resolution) and Property 9 (Route round trip) passed first run.
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0` after the fix below: engine 35/148, mcp 22/110, export 15/52, motif 16/75, backend 4/45, web 18/148.
+- What failed or surprised:
+  - My first exit-code read in this session was wrong: `pnpm typecheck | tail; echo $?` reports `tail`'s exit code. Every later run writes to a log and reads pnpm's own code.
+  - The first full test run failed `scans.test.ts > sends motif requests only to /api/motif`: the card-stock grain was an SVG data URI in `styles.css` with `http://www.w3.org/2000/svg` in it, and the scan forbids any URL in `src`. Fixed by moving the texture to `public/grain.svg`; the scan is unchanged.
+  - The brief conflicts with `design-language.md` (motion under 200 ms, one sans-serif, Halloween nod only in the gallery). I updated the steering file to the brief and logged it as the first `[decision]`; the user may want to review that change.
+  - Another project already listens on port 5173 on this machine, so the dev server for screenshots runs on 5193.
+- Spec versus vibe note: spec. The gap analysis found the real risk early: the App tests assume one page with every panel visible. The spec decides (16.3) that App-level tests may only add steps that open a Step; no assertion may be removed.
+- Evidence: `.kiro/specs/studio-experience/`, `apps/web/test/{theme,route}.property.test.ts`, `.kiro/steering/design-language.md`.
 ### Template
 
 ```

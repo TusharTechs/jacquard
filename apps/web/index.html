@@ -1,9 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="daylight">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Punch cards are dead as a computing medium. Handlooms still use them. JACQUARD helps designers and card punchers turn a motif into point paper, a checked lift plan and a punch-card set." />
+    <meta name="theme-color" content="#e9dfcb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#120d09" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>JACQUARD: punch cards for handlooms</title>
+    <script>
+      // Theme before first paint (studio-experience 1.4). Same rule as src/lib/theme.ts.
+      (function () {
+        var theme = null;
+        try { theme = localStorage.getItem("jacquard.theme"); } catch (e) {}
+        if (theme !== "daylight" && theme !== "after-hours") {
+          theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "after-hours" : "daylight";
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+        document.documentElement.style.colorScheme = theme === "after-hours" ? "dark" : "light";
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

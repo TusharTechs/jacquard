@@ -7,16 +7,19 @@ fileMatchPattern: "apps/web/**"
 
 ## Visual language
 
-- Theme: the card as the central object. Pale card-stock surfaces, a grid of punched holes as the recurring motif, thread-colour accents. A Halloween nod is allowed only in the gallery framing; the app itself stays calm and craft-like.
-- Colour: neutral card-stock background, near-black text, one accent. Design colours (the user's yarn colours) are the only saturated colours on screen so the design reads first.
-- Type: one sans-serif for UI, one monospace for numbers (hook, end, pick, card index).
+- Theme: "the loom room". The card as the central object: card-stock surfaces, walnut, brass, a grid of punched holes as the recurring motif, thread-colour accents. Materials, not gradients: no hue gradients, no glass blur, no purple, no generic AI look. Shading of one material (lighter and darker tones of the same colour, a candle-light falloff) is allowed.
+- Themes: "Daylight" (default studio) and "After hours" (dark, candle-lit; this is the Kiroween nod). Follow `prefers-color-scheme` until the user chooses; keep the choice. The point paper stays a light paper sheet in both.
+- Colour: card-stock or walnut background, ink text, brass as the one accent. Design colours (the user's yarn colours) are the only saturated colours on screen so the design reads first.
+- Type: a display serif (Fraunces) for headings, one sans-serif (Instrument Sans) for UI, one monospace (IBM Plex Mono) for numbers (hook, end, pick, card index). Self-hosted with Fontsource; no font CDN.
+- Tokens: Tailwind v4 `@theme` plus per-Theme custom properties in `apps/web/src/styles.css`. Components use tokens, never raw colours.
 - Grid: point paper uses a 1px light line grid with a heavier line every 8 cells. Cell size is adjustable; the default fits the narrowest supported viewport without horizontal page scroll (the grid itself may scroll).
 - Spacing: 4px base unit. Radii small and consistent.
-- Motion: short (under 200ms), none that blocks use. Respect `prefers-reduced-motion`.
+- Motion: interface transitions (Step changes, dialogs, menus) at most 300ms. Moments (a motif arriving cell by cell, violations pulsing, auto-fix placing its flips, cards punching, the 3D loom, the opening Story) may run up to 1.5s, never block input, and end at once on any edit. `prefers-reduced-motion: reduce` turns every animation, smooth scroll and autoplay off.
+- Less text: short labels plus info tips; required notes (untested card format, WIF note, simulation note, suggestion labels, states) stay visible.
 
 ## Component rules
 
-- Build components from a small shared set (Button, Field, Panel, Dialog, Toast, Tabs, Grid). Do not hand-style one-offs.
+- Build components from a small shared set (Button, IconButton, Field, Panel, Dialog, InfoTip, Toaster, Tabs, Grid). Dialogs, menus, tooltips and popovers are Radix primitives; toasts are sonner; icons are lucide. Do not hand-style one-offs.
 - Every control has a visible label, a keyboard path and a focus ring. Colour is never the only signal: float violations use colour plus a marker shape.
 - Contrast meets WCAG AA. Hit targets are at least 44px on touch.
 - Weaving terms show a short plain-language tooltip on first use (end, pick, float, lift plan). Keep wording from `weaving-domain.md`.
