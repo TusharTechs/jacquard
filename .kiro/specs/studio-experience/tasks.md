@@ -32,18 +32,18 @@ All 7 correctness properties have their own property test task. Every property t
     - _Requirements: 5.1 to 5.3_
   - [x] 2.4 Tests: `openStep` in the App-level tests; rail, Hint, toaster, Continue and cross-Step focus tests
     - _Requirements: 2.2 to 2.9, 4.1, 4.3, 5.1, 15.3_
-- [ ] 3. Weave Step
-  - [ ] 3.1 `lib/loom-model.ts` and `lib/loom-transport.ts`
+- [x] 3. Weave Step
+  - [x] 3.1 `lib/loom-model.ts` and `lib/loom-transport.ts`
     - _Requirements: 9.1 to 9.7, 7.1, 7.5_
-  - [ ] 3.2 Write property test: **Property 1: The loom lifts exactly the hooks the current card punches** — **Validates: Requirements 9.1, 9.3, 6.2, 6.3**
-  - [ ] 3.3 Write property test: **Property 2: Cloth growth matches the lift plan pick for pick** — **Validates: Requirements 9.4, 9.5, 6.3**
-  - [ ] 3.4 Write property test: **Property 3: Loom time maps to card and phase** — **Validates: Requirements 9.2, 7.2**
-  - [ ] 3.5 Write property test: **Property 4: The card strip follows the lacing chain** — **Validates: Requirements 9.6, 6.4, 12.2**
-  - [ ] 3.6 `cards/card-face.tsx`, `weave/weave-step.tsx` (transport, readout, strip, states, fallback clock, autoplay) and the lazy `weave/loom-scene.tsx`
+  - [x] 3.2 Write property test: **Property 1: The loom lifts exactly the hooks the current card punches** — **Validates: Requirements 9.1, 9.3, 6.2, 6.3**
+  - [x] 3.3 Write property test: **Property 2: Cloth growth matches the lift plan pick for pick** — **Validates: Requirements 9.4, 9.5, 6.3**
+  - [x] 3.4 Write property test: **Property 3: Loom time maps to card and phase** — **Validates: Requirements 9.2, 7.2**
+  - [x] 3.5 Write property test: **Property 4: The card strip follows the lacing chain** — **Validates: Requirements 9.6, 6.4, 12.2**
+  - [x] 3.6 `cards/card-face.tsx`, `weave/weave-step.tsx` (transport, readout, strip, states, fallback clock, autoplay) and the lazy `weave/loom-scene.tsx`
     - _Requirements: 3.4, 6.1 to 6.8, 7.1 to 7.6, 13.3, 14.3_
-  - [ ] 3.7 `lib/loom-sound.ts` and the sound toggle
+  - [x] 3.7 `lib/loom-sound.ts` and the sound toggle
     - _Requirements: 8.1 to 8.4_
-  - [ ] 3.8 Tests for the Weave Step without WebGL and the sound toggle
+  - [x] 3.8 Tests for the Weave Step without WebGL and the sound toggle
     - _Requirements: 3.4, 6.6, 7.1 to 7.6, 8.2, 8.3_
 - [ ] 4. Opening, Moments and Cards
   - [ ] 4.1 `opening.tsx` and its tests

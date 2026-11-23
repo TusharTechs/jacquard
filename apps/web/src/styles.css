@@ -1649,3 +1649,284 @@ kbd {
 .studio-stage[data-step="check"] .toolbar-floats {
   display: none;
 }
+
+/* ---------- Weave Step: the 3D loom (studio-experience Requirements 6, 7) ---------- */
+
+.weave-layout {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1024px) {
+  .weave-layout {
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+  }
+}
+
+.loom-frame {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.loom-stage {
+  position: relative;
+  height: min(62vh, 600px);
+  min-height: 300px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--room);
+  box-shadow: 0 1px 3px rgb(40 24 10 / 0.18) inset;
+}
+
+@media (max-width: 767px) {
+  .loom-stage {
+    height: 44vh;
+    min-height: 260px;
+  }
+  .loom-card-number {
+    font-size: 1.5rem;
+  }
+}
+
+.loom-stage canvas {
+  display: block;
+  touch-action: pan-y;
+}
+
+.loom-stage-loading,
+.loom-stage-fallback {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.loom-note {
+  color: var(--ink-muted);
+  font-size: 0.8rem;
+}
+
+.loom-side {
+  display: grid;
+  gap: var(--space-3);
+  align-content: start;
+}
+
+.loom-violations {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.link-button {
+  min-height: var(--target);
+  padding: 0 var(--space-1);
+  border: none;
+  background: none;
+  color: var(--brass-strong);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.loom-readout {
+  display: grid;
+  gap: 2px;
+  font-size: 0.875rem;
+  color: var(--ink-muted);
+}
+
+.loom-card-number {
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.loom-transport {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Play is the loom's own control, strong but not the Step's primary (Continue is). */
+.loom-play {
+  min-width: 112px;
+  min-height: 44px;
+  border-color: var(--ink);
+  border-width: 2px;
+  font-weight: 650;
+}
+
+.loom-controls {
+  display: grid;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.loom-scrub {
+  display: grid;
+  gap: 0;
+}
+
+.loom-current-card {
+  width: 100%;
+}
+
+.loom-speeds {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.loom-speeds .field-label {
+  margin-right: var(--space-2);
+}
+
+.slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 44px;
+  touch-action: none;
+  user-select: none;
+}
+
+.slider-track {
+  position: relative;
+  flex-grow: 1;
+  height: 6px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--sunk);
+  box-shadow: inset 0 1px 2px rgb(40 24 10 / 0.25);
+}
+
+.slider-range {
+  position: absolute;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brass);
+}
+
+.slider-thumb {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--primary);
+  border-radius: 50%;
+  background: var(--raised);
+  box-shadow: 0 1px 3px rgb(40 24 10 / 0.35);
+  cursor: grab;
+}
+
+@media (any-pointer: coarse) {
+  .slider-thumb {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.card-strip {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card-strip-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--target);
+  padding: 2px var(--space-2) 2px 2px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-small);
+  background: none;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.card-strip-item[aria-current="true"] {
+  border-color: var(--brass);
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.card-strip-number {
+  font-size: 0.7rem;
+}
+
+/* ---------- Punch cards (card-face.tsx) ---------- */
+
+:root {
+  --card-stock: #efe3c8;
+  --card-edge: #8c7350;
+  --card-hole: #2a1d12;
+  --card-ink: #3b2a1c;
+  --card-blank: #b5a07c;
+}
+
+.card-face {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(0 1px 1px rgb(40 24 10 / 0.25));
+}
+
+.card-stock {
+  fill: var(--card-stock);
+  stroke: var(--card-edge);
+  stroke-width: 1;
+}
+
+.card-face-current .card-stock {
+  stroke: var(--brass);
+  stroke-width: 2;
+}
+
+/* Punched holes are dark (the room behind the card), at least 3:1 against the stock. */
+.card-lace,
+.card-hole {
+  fill: var(--card-hole);
+}
+
+.card-blank {
+  fill: none;
+  stroke: var(--card-blank);
+  stroke-width: 0.6;
+}
+
+.card-number {
+  fill: var(--card-ink);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.card-face-punch .card-hole {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: punch-hole 160ms var(--ease-out) both;
+}
+
+@keyframes punch-hole {
+  from {
+    transform: scale(0);
+  }
+}

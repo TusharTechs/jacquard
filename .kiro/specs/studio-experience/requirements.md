@@ -116,7 +116,7 @@ Code locations: `apps/web` only, plus `.kiro/steering/design-language.md`. `pack
 2. THE Weave Step SHALL show, in sync with the scene, the card number in lacing order (card `n` weaves pick `n - 1`), the pick, the number of lifted hooks, and the current card drawn flat with its holes, highlighted in a strip of neighbouring cards. The readout SHALL be a polite live region updated at most once per pick, and only while paused or stepping.
 3. THE loom SHALL use the Plan_In_Use and say which plan it uses (fixed or design). WHEN the plan changes, THE loom SHALL go back to pick 0.
 4. WHILE the float check reports violations and no fixed plan is current, THE Weave Step SHALL show the violation count with a link to Check, and SHALL still weave.
-5. WHEN reduced motion is requested, THE loom SHALL not start by itself, and stepping SHALL jump to the end state of a pick.
+5. WHEN reduced motion is requested, THE loom SHALL not start by itself. Stepping and scrubbing to a pick SHALL show that pick with its shed open (the hooks the card lifts fully raised), with no in-between motion.
 6. WHEN there is no Plan_In_Use, THE Weave Step SHALL show the simulator's empty states (blank grid, or an engine error with "Go to the float check").
 
 ### Requirement 8: Loom sound
@@ -259,4 +259,5 @@ Gap analysis run by the agent under `.kiro/steering/autopilot.md`, using `PLAN.m
 | The motif panel's empty state repeats the point paper's start actions | Kept: the motif panel is tested on its own with those actions (`motif-panel.test.tsx`). In the Studio its gallery action is secondary, so the Step still has one primary start action, on the point paper. (design-reviewer, wave 1, finding 15) | [decision] |
 | Tooltip providers inside `Hint` and `IconButton` | Kept: panels using them are rendered without the Studio in their own tests, and Radix Tooltip throws without a provider. The cost is losing the skip-delay between neighbouring tips. (design-reviewer, wave 1, finding 21) | [decision] |
 | Fix report repeats the counts and keeps "It is kept until you edit the design…" | Kept: `float-panel.test.tsx` asserts both. (design-reviewer, wave 1, finding 28) | [decision] |
+| Which frame a step or scrub shows (7.5, corrected in wave 2) | The open shed of the pick (t = pick + 0.5): the card's hooks are up, which is the point of the view. The first wording ("the end state of a pick") would have shown every hook down. Spec fixed, recorded as a finding in the journal. | [decision] |
 

@@ -1498,6 +1498,40 @@ Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md
   - The shell tool's own exit status line said 0 for a test run that pnpm reported as exit 1. The `tech.md` rule that exists for exactly this caught it.
 - Spec versus vibe note: spec, rewritten mid-wave. Having a Decision log made the scope change auditable: one row records what wave 0 built under the first brief and what was removed.
 - Evidence: `.kiro/specs/studio-experience/`, `apps/web/src/components/shell/`, `apps/web/src/components/ui/{dialog,hint,icon-button,toaster}.tsx`, `apps/web/test/studio-shell.test.tsx`.
+### 2026-11-23 — studio-experience wave 2 (tasks 3.1 to 3.8): the 3D loom
+- Surface: IDE
+- Goal: Build the showpiece. The Weave Step shows a 3D Jacquard loom whose hooks, cords and warp ends rise exactly as the current card selects, a card chain in lacing order, a shuttle, a reed and cloth growing pick by pick. It has play, pause, scrub, step and speed controls, and procedural sound that stays muted until switched on.
+- Kiro features used: spec `studio-experience` (tasks 3.1 to 3.8; one spec correction, below); property tests Properties 1 to 4; custom agent `design-reviewer` (1 run, 26 findings); MCP chrome-devtools (Weave at 1440x900 and 390x844, Peacock butta, Temple stripe and Lotus border woven live); steering `design-language.md`, `tech.md`.
+- Model / credits (start → end):
+- What worked:
+  - `apps/web/src/lib/loom-model.ts` has no weaving rule of its own. Cards come from the engine's `buildCards`. The hooks each card lifts are read back card by card through the engine's `decodeCards`, so the hole-meaning rule stays in the engine. Colours come from `clothModel`. The file adds only time: Phases, hook heights, woven count, shuttle, reed and chain advance.
+  - Properties 1 (lift equals the punched card equals the lift plan, spare hooks never rise), 2 (woven count follows the beat, cloth texture equals clothModel, warp shows exactly where the plan lifts), 3 (time to card and Phase) and 4 (card strip follows engine `nextCard`, wrapping) all passed on the first run. Seeds 6101, 6202, 6303, 6404, 100 runs each, over profiles with `holeMeans` lift and noLift, spare hooks, repeat across on and off and `wovenFaceDown` both ways.
+  - Planted-bug check, not counted and reverted (`git diff` clean afterwards). Bug 1: lifts read from `card.punched` directly instead of through `decodeCards`. Property 1 failed with a counterexample on `holeMeans: "noLift"`, `hookCount 10`, `spareHookCount 1`, `pickCount 2`. Bug 2: woven picks counted from the end of the shuttle Phase instead of the beat. Property 2 failed with a counterexample on `hookCount 8`, `pickCount 1`. My log command cut both counterexamples at 300 characters, so they are not reproduced verbatim here.
+  - `weave/loom-scene.tsx` is lazy and in its own chunk (`loom-scene-*.js`, 1.0 MB unminified-size estimate from `vite build`). Tone is also separate (`esm-*.js`, 340 kB). A grep of the entry chunk finds no `WebGLRenderer`, `MembraneSynth` or `useFrame`.
+  - The scene is built from walnut boxes with a procedural grain, instanced brass hooks laid out like the card (rows of `hooksPerCardRow`), vertex-coloured cords that turn brass when lifted, and line-segment warp. The card chain is painted from `cardRows`. The cloth is a `DataTexture` whose offset keeps the newest pick at the fell. A `Framing` component pulls the camera back on portrait stages.
+  - design-reviewer findings fixed:
+    - The visible readout is now readable to screen readers, and announcements happen only on step or pause, in words.
+    - Playback pauses when focus enters the card strip or the scrubber, so focus is never lost.
+    - Step buttons use `aria-disabled` instead of `disabled`.
+    - The violation link is now "Go to the float check" and moves focus.
+    - The sound toggle has a constant name and is race-free (a request counter drops a late tone), with `aria-busy` while it loads.
+    - Blank state has a gallery action. Autoplay waits for a plan and for the scene to be ready.
+    - A failed chunk load gets its own message and Retry.
+    - Punched holes are dark tokens at 3:1 or more, and the current card is drawn large.
+    - Play is no longer a primary button.
+    - Paused, the loom starts at the open shed. With reduced motion, Play steps whole picks.
+    - The scene stays mounted with `frameloop="never"` when hidden, and the model is built only after the Step has opened.
+    - The scrubber is hidden for one-pick plans, with visible "Pick" and "Speed" labels, a 28 px thumb on touch and a track border.
+    - Strip names include the punched count. Strip items have borders.
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0`: engine 148, mcp 110, export 52, motif 75, backend 45, web 177 tests.
+- What failed or surprised:
+  - **Spec finding:** requirement 7.5 said a step lands on "the end state of a pick", and my first transport did that. The first screenshot with it showed a loom with every hook down, which shows nothing. 7.5 now says a step or scrub shows the pick with its shed open (t = pick + 0.5), and the Decision log has the row. No test was weakened: the transport tests were written after the fix.
+  - The first 3D screenshot was technically right but hard to read: one wide shot, every hook the same brass, and the lifted cords lost among the rest. Lifted hooks and cords now glow, and the camera is closer.
+  - Vite reloaded the page during my first scripted run, while it optimised the new three.js dependencies.
+- Surprise:
+  - The design-reviewer agent found four ways focus is lost during playback (card strip rebuilt each pick, step buttons disabled at the ends, the violation link, the Step change) and a sound race. It found them by reading the code, with no shell and nothing rendered, while 9 green component tests had missed all of them.
+- Spec versus vibe note: spec for the model and transport (properties first), vibe for the scene's look, judged from screenshots. The split worked: the properties pin what the loom must show, and the screenshots decided how.
+- Evidence: `apps/web/src/lib/{loom-model,loom-transport,loom-sound}.ts`, `apps/web/src/components/weave/`, `apps/web/test/loom-*.property.test.ts`, `apps/web/test/weave-step.test.tsx`.
 ### Template
 
 ```

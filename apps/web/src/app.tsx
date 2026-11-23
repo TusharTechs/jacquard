@@ -34,6 +34,7 @@ import type { Step } from "./lib/route";
 import { changeView } from "./lib/view-transition";
 import { WeavePanel } from "./components/weave-panel";
 import { CardsStep } from "./components/cards/cards-step";
+import { WeaveStep, prefetchLoomScene } from "./components/weave/weave-step";
 import { WEAVE_SLOTS, defaultWeaves } from "./lib/default-weaves";
 import { checkDesign, fixDesign } from "./lib/engine-check";
 import { sameSource } from "./lib/fix-state";
@@ -613,7 +614,9 @@ export function App() {
           <StudioMenu triggerRef={menuTriggerRef} onShortcuts={() => setShortcutsOpen(true)} />
         }
       />
-      <StepRail step={step} status={railStatus} statusText={railStatusText} onSelect={(next) => goTo(next)} next={railNext} linkRef={railLinkRef} />
+      <StepRail step={step} status={railStatus} statusText={railStatusText} onSelect={(next) => goTo(next)} next={railNext} linkRef={railLinkRef} onPrefetch={(item) => {
+          if (item === "weave") prefetchLoomScene();
+        }} />
       <p className="sr-only" aria-live="polite">
         {stepAnnouncement}
       </p>
@@ -818,9 +821,17 @@ export function App() {
         </section>
 
         <section aria-label="Weave" className="area area-weave" hidden={step !== "weave"}>
-          <Panel title="Weave">
-            <p className="small muted">The 3D loom arrives in the next wave.</p>
-          </Panel>
+          <WeaveStep
+            plan={planInUse}
+            planSource={planSource}
+            profile={profile}
+            yarns={exportYarns}
+            violationCount={check.ok ? check.violations.length : 0}
+            visible={step === "weave"}
+            emptyReason={blankStart ? "blank" : "engineError"}
+            onGoToFloatCheck={goToFloatCheck}
+            onOpenGallery={focusGallery}
+          />
         </section>
 
         <section aria-label="Cards" className="area area-cards" hidden={step !== "cards"}>
