@@ -15,6 +15,7 @@ export const PAPER_COLOURS = {
   cursor: "#1d5c63",
   hover: "rgba(27, 26, 23, 0.7)",
   flip: "#1b1a17",
+  paper: "#fbf7ee",
 } as const;
 
 /** Every 8 cells a heavier line (design-language.md). */
@@ -38,6 +39,10 @@ export interface PaperView {
   readonly regionNumbers?: boolean;
   readonly cursor: { readonly end: number; readonly pick: number } | null;
   readonly hover: { readonly end: number; readonly pick: number } | null;
+  /** While a motif arrives: how many cells, in weaving order, have their colour yet (11.1). */
+  readonly revealed?: number;
+  /** While auto-fix places its flips: how many of `flips`, in order, are drawn (11.3). */
+  readonly flipLimit?: number;
 }
 
 /** Black or white text, whichever reads better on a `#rrggbb` colour. */
@@ -57,7 +62,22 @@ export function effectiveRatio(ends: number, picks: number, cellSize: number, pi
   return Math.max(0.5, Math.min(pixelRatio, MAX_CANVAS_SIDE / side));
 }
 
-export function drawPointPaper(canvas: HTMLCanvasElement, view: PaperView): void {
+interface PaperContext {
+  readonly ctx: CanvasRenderingContext2D;
+  readonly ratio: number;
+  readonly cs: number;
+  readonly picks: number;
+  readonly ends: number;
+  readonly width: number;
+  readonly height: number;
+  readonly px: (cells: number) => number;
+  readonly rowOf: (pick: number) => number;
+  readonly rect: (end: number, pick: number) => [number, number, number, number];
+  readonly colourOf: (region: number) => string;
+}
+
+/** Sizes `canvas` for the view and clears it; null without a 2D context. */
+function prepare(canvas: HTMLCanvasElement, view: PaperView): PaperContext | null {
   const picks = view.design.length;
   const ends = view.design[0]?.length ?? 0;
   const ratio = effectiveRatio(ends, picks, view.cellSize, view.pixelRatio);
@@ -70,10 +90,9 @@ export function drawPointPaper(canvas: HTMLCanvasElement, view: PaperView): void
   canvas.style.width = `${ends * cs}px`;
   canvas.style.height = `${picks * cs}px`;
   const ctx = canvas.getContext("2d");
-  if (ctx === null) return;
+  if (ctx === null) return null;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.clearRect(0, 0, width, height);
-
   const colourOf = (region: number): string => view.colours[region] ?? "#888888";
   /** Row on screen for a pick: pick 0 is the bottom row. */
   const rowOf = (pick: number): number => picks - 1 - pick;
@@ -82,22 +101,31 @@ export function drawPointPaper(canvas: HTMLCanvasElement, view: PaperView): void
     const y = px(rowOf(pick));
     return [x, y, px(end + 1) - x, px(rowOf(pick) + 1) - y];
   };
+  return { ctx, ratio, cs, picks, ends, width, height, px, rowOf, rect, colourOf };
+}
 
-  // Cells, one fillRect per run of equal regions in a pick.
+/** The paper itself: cells, grid lines, region numbers, the engine error cell, hover and cursor. */
+function drawBase(paper: PaperContext, view: PaperView): void {
+  const { ctx, ratio, cs, picks, ends, width, height, px, rowOf, rect, colourOf } = paper;
+  // Cells, one fillRect per run of equal regions in a pick. While a motif is arriving (11.1) only
+  // the first `revealed` cells in weaving order (pick 0 upward, end 0 rightward) have their colour;
+  // the rest are bare paper.
+  const revealed = view.revealed === undefined ? ends * picks : Math.max(0, Math.min(ends * picks, view.revealed));
   for (let pick = 0; pick < picks; pick += 1) {
     const row = view.design[pick] ?? [];
+    const shownTo = Math.max(0, Math.min(ends, revealed - pick * ends));
     let start = 0;
     while (start < ends) {
+      const placed = start < shownTo;
       const region = row[start] ?? 0;
       let stop = start + 1;
-      while (stop < ends && (row[stop] ?? 0) === region) stop += 1;
-      ctx.fillStyle = colourOf(region);
+      while (stop < ends && (stop < shownTo) === placed && (!placed || (row[stop] ?? 0) === region)) stop += 1;
+      ctx.fillStyle = placed ? colourOf(region) : PAPER_COLOURS.paper;
       const y = px(rowOf(pick));
       ctx.fillRect(px(start), y, px(stop) - px(start), px(rowOf(pick) + 1) - y);
       start = stop;
     }
   }
-
   // Grid lines: light between cells, heavy every 8 counted from end 0 and from pick 0.
   const line = Math.max(1, Math.round(ratio));
   const drawLines = (heavy: boolean): void => {
@@ -133,61 +161,7 @@ export function drawPointPaper(canvas: HTMLCanvasElement, view: PaperView): void
     }
   }
 
-  // Violations: a halo and a strong outline on every cell of the float, and a triangle in the top
-  // right corner of its first cell, so colour is never the only signal.
   const stroke = Math.max(1, Math.round(Math.min(2, cs / 4) * ratio));
-  for (const [key, kind] of view.marks) {
-    const [pickText, endText] = key.split(",");
-    const pick = Number(pickText);
-    const end = Number(endText);
-    if (!(pick >= 0 && pick < picks && end >= 0 && end < ends)) continue;
-    const [x, y, w, h] = rect(end, pick);
-    ctx.lineWidth = stroke;
-    ctx.strokeStyle = PAPER_COLOURS.violation;
-    ctx.strokeRect(x + stroke / 2, y + stroke / 2, w - stroke, h - stroke);
-    if (w > stroke * 4) {
-      ctx.lineWidth = Math.max(1, stroke / 2);
-      ctx.strokeStyle = PAPER_COLOURS.halo;
-      ctx.strokeRect(x + stroke * 1.25, y + stroke * 1.25, w - stroke * 2.5, h - stroke * 2.5);
-    }
-    if (kind === "start") {
-      const size = Math.max(3 * ratio, w * 0.5);
-      ctx.beginPath();
-      ctx.moveTo(x + w - size, y);
-      ctx.lineTo(x + w, y);
-      ctx.lineTo(x + w, y + size);
-      ctx.closePath();
-      ctx.fillStyle = PAPER_COLOURS.violation;
-      ctx.fill();
-      ctx.lineWidth = Math.max(1, ratio / 2);
-      ctx.strokeStyle = PAPER_COLOURS.halo;
-      ctx.stroke();
-    }
-  }
-
-  // Auto-fix flips: a small filled diamond with a white edge in the cell centre, a shape of its own.
-  for (const key of view.flips ?? []) {
-    const [pickText, endText] = key.split(",");
-    const pick = Number(pickText);
-    const end = Number(endText);
-    if (!(pick >= 0 && pick < picks && end >= 0 && end < ends)) continue;
-    const [x, y, w, h] = rect(end, pick);
-    const cx = x + w / 2;
-    const cy = y + h / 2;
-    const r = Math.max(2 * ratio, w * 0.28);
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - r);
-    ctx.lineTo(cx + r, cy);
-    ctx.lineTo(cx, cy + r);
-    ctx.lineTo(cx - r, cy);
-    ctx.closePath();
-    ctx.fillStyle = PAPER_COLOURS.flip;
-    ctx.fill();
-    ctx.lineWidth = Math.max(1, ratio);
-    ctx.strokeStyle = PAPER_COLOURS.halo;
-    ctx.stroke();
-  }
-
   // An engine error that names a cell: a dashed outline and a cross, a different shape.
   const bad = view.errorCell;
   if (bad !== null && bad.pick >= 0 && bad.pick < picks && bad.end >= 0 && bad.end < ends) {
@@ -237,4 +211,87 @@ export function drawPointPaper(canvas: HTMLCanvasElement, view: PaperView): void
       ctx.strokeRect(x + ring + inner / 2, y + ring + inner / 2, w - 2 * ring - inner, h - 2 * ring - inner);
     }
   }
+}
+
+/** Marks over the paper: float violations (outline and triangle) and auto-fix flips (diamonds). */
+function drawMarks(paper: PaperContext, view: PaperView): void {
+  const { ctx, ratio, cs, picks, ends, rect } = paper;
+  const stroke = Math.max(1, Math.round(Math.min(2, cs / 4) * ratio));
+  // Violations: a halo and a strong outline on every cell of the float, and a triangle in the top
+  // right corner of its first cell, so colour is never the only signal.
+  for (const [key, kind] of view.marks) {
+    const [pickText, endText] = key.split(",");
+    const pick = Number(pickText);
+    const end = Number(endText);
+    if (!(pick >= 0 && pick < picks && end >= 0 && end < ends)) continue;
+    const [x, y, w, h] = rect(end, pick);
+    ctx.lineWidth = stroke;
+    ctx.strokeStyle = PAPER_COLOURS.violation;
+    ctx.strokeRect(x + stroke / 2, y + stroke / 2, w - stroke, h - stroke);
+    if (w > stroke * 4) {
+      ctx.lineWidth = Math.max(1, stroke / 2);
+      ctx.strokeStyle = PAPER_COLOURS.halo;
+      ctx.strokeRect(x + stroke * 1.25, y + stroke * 1.25, w - stroke * 2.5, h - stroke * 2.5);
+    }
+    if (kind === "start") {
+      const size = Math.max(3 * ratio, w * 0.5);
+      ctx.beginPath();
+      ctx.moveTo(x + w - size, y);
+      ctx.lineTo(x + w, y);
+      ctx.lineTo(x + w, y + size);
+      ctx.closePath();
+      ctx.fillStyle = PAPER_COLOURS.violation;
+      ctx.fill();
+      ctx.lineWidth = Math.max(1, ratio / 2);
+      ctx.strokeStyle = PAPER_COLOURS.halo;
+      ctx.stroke();
+    }
+  }
+
+  // Auto-fix flips: a small filled diamond with a white edge in the cell centre, a shape of its own.
+  let flipCount = 0;
+  for (const key of view.flips ?? []) {
+    if (view.flipLimit !== undefined && flipCount >= view.flipLimit) break;
+    flipCount += 1;
+    const [pickText, endText] = key.split(",");
+    const pick = Number(pickText);
+    const end = Number(endText);
+    if (!(pick >= 0 && pick < picks && end >= 0 && end < ends)) continue;
+    const [x, y, w, h] = rect(end, pick);
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    const r = Math.max(2 * ratio, w * 0.28);
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - r);
+    ctx.lineTo(cx + r, cy);
+    ctx.lineTo(cx, cy + r);
+    ctx.lineTo(cx - r, cy);
+    ctx.closePath();
+    ctx.fillStyle = PAPER_COLOURS.flip;
+    ctx.fill();
+    ctx.lineWidth = Math.max(1, ratio);
+    ctx.strokeStyle = PAPER_COLOURS.halo;
+    ctx.stroke();
+  }
+
+}
+
+/** The whole point paper on one canvas (gallery thumbnails, exports of the view). */
+export function drawPointPaper(canvas: HTMLCanvasElement, view: PaperView): void {
+  const paper = prepare(canvas, view);
+  if (paper === null) return;
+  drawBase(paper, view);
+  drawMarks(paper, view);
+}
+
+/** The paper without marks, for the point paper's base canvas. */
+export function drawPaperBase(canvas: HTMLCanvasElement, view: PaperView): void {
+  const paper = prepare(canvas, view);
+  if (paper !== null) drawBase(paper, view);
+}
+
+/** Only the marks, on the transparent overlay canvas that can pulse (11.2). */
+export function drawPaperMarks(canvas: HTMLCanvasElement, view: PaperView): void {
+  const paper = prepare(canvas, view);
+  if (paper !== null) drawMarks(paper, view);
 }

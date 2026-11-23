@@ -9,7 +9,10 @@ import type { KeyboardEvent, PointerEvent, RefObject } from "react";
 import type { Design } from "@jacquard/engine";
 import { cellLine } from "../lib/cell-line";
 import type { GridCell } from "../lib/cell-line";
-import { drawPointPaper } from "../lib/draw-point-paper";
+import { drawPaperBase, drawPaperMarks } from "../lib/draw-point-paper";
+import { FLIP_MS, flipSchedule, flipsShownAt } from "../lib/flip-sequence";
+import { prefersReducedMotion } from "../lib/reduced-motion";
+import { REVEAL_MS, revealedCount } from "../lib/reveal";
 import { cellKey, violationStarts } from "../lib/violation-marks";
 import type { MarkKind } from "../lib/violation-marks";
 import type { EditorAction } from "../state/editor-state";
@@ -63,7 +66,13 @@ export interface PointPaperProps {
    * the cursor moves as N does.
    */
   readonly nextViolationRequest?: number;
+  /** Changes when a motif or gallery example replaces the grid: the cells arrive one by one (11.1). */
+  readonly revealKey?: number;
+  /** False while the point paper is on a hidden Step: any Moment ends at once. */
+  readonly active?: boolean;
 }
+
+const NO_MARKS = new Map<string, never>();
 
 function sameCell(a: GridCell | null, b: GridCell | null): boolean {
   return a === b || (a !== null && b !== null && a.end === b.end && a.pick === b.pick);
@@ -86,6 +95,8 @@ export function PointPaper({
   canvasRef,
   describedBy,
   nextViolationRequest = 0,
+  revealKey = 0,
+  active = true,
 }: PointPaperProps) {
   const picks = design.length;
   const ends = design[0]?.length ?? 0;
@@ -125,10 +136,89 @@ export function PointPaper({
     return () => window.removeEventListener("resize", update);
   }, []);
 
+  // ---- Moments (11.1 to 11.3): a motif arriving cell by cell, auto-fix placing its flips. ----
+  const overlayRef = useRef<HTMLCanvasElement | null>(null);
+  const [revealed, setRevealed] = useState<number | undefined>(undefined);
+  const [flipLimit, setFlipLimit] = useState<number | undefined>(undefined);
+  const momentFrame = useRef<{ reveal: number; flips: number }>({ reveal: 0, flips: 0 });
+  const endMoments = useCallback((): void => {
+    cancelAnimationFrame(momentFrame.current.reveal);
+    cancelAnimationFrame(momentFrame.current.flips);
+    setRevealed(undefined);
+    setFlipLimit(undefined);
+  }, []);
+  const firstReveal = useRef(revealKey);
+  useEffect(() => {
+    if (revealKey === firstReveal.current || prefersReducedMotion() || !active) return;
+    const total = ends * picks;
+    const started = performance.now();
+    const tick = (now: number): void => {
+      const count = revealedCount(now - started, total, REVEAL_MS);
+      if (count >= total) {
+        setRevealed(undefined);
+        return;
+      }
+      setRevealed(count);
+      momentFrame.current.reveal = requestAnimationFrame(tick);
+    };
+    setRevealed(0);
+    momentFrame.current.reveal = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(momentFrame.current.reveal);
+      setRevealed(undefined);
+    };
+    // A new key starts a new reveal; the size of the grid it reveals is read once.
+  }, [revealKey]);
+  const animatedFlips = useRef<ReadonlySet<string> | undefined>(undefined);
+  useEffect(() => {
+    if (flips === undefined || flips.size === 0 || flips === animatedFlips.current) return;
+    // Each new auto-fix result animates once; showing the same result again does not.
+    animatedFlips.current = flips;
+    if (prefersReducedMotion() || !active) return;
+    const schedule = flipSchedule(flips.size, FLIP_MS);
+    const started = performance.now();
+    const tick = (now: number): void => {
+      const shown = flipsShownAt(schedule, now - started, FLIP_MS);
+      if (shown >= schedule.length) {
+        setFlipLimit(undefined);
+        return;
+      }
+      setFlipLimit(shown);
+      momentFrame.current.flips = requestAnimationFrame(tick);
+    };
+    setFlipLimit(0);
+    momentFrame.current.flips = requestAnimationFrame(tick);
+    return () => {
+      cancelAnimationFrame(momentFrame.current.flips);
+      setFlipLimit(undefined);
+    };
+  }, [flips, active]);
+  // Any change to the design from outside the canvas (undo, redo, resize) ends a reveal at once,
+  // unless the change is the arrival being revealed.
+  const revealFor = useRef({ key: revealKey, design });
+  useEffect(() => {
+    if (revealFor.current.key !== revealKey) {
+      revealFor.current = { key: revealKey, design };
+      return;
+    }
+    if (revealFor.current.design !== design) {
+      revealFor.current = { key: revealKey, design };
+      cancelAnimationFrame(momentFrame.current.reveal);
+      setRevealed(undefined);
+    }
+  }, [design, revealKey]);
+  // The pulse runs a few times when the marks change, then rests at full strength.
+  const [pulseKey, setPulseKey] = useState(0);
+  useEffect(() => setPulseKey((value) => value + 1), [marks]);
+  useEffect(() => {
+    if (!active) endMoments();
+  }, [active, endMoments]);
+  useEffect(() => () => endMoments(), [endMoments]);
+
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
     if (canvas === null) return;
-    drawPointPaper(canvas, {
+    const view = {
       design,
       colours,
       cellSize,
@@ -139,8 +229,15 @@ export function PointPaper({
       regionNumbers,
       cursor: focused && keyboard ? cursor : null,
       hover: keyboard ? null : hover,
-    });
-  }, [canvasRef, design, colours, cellSize, ratio, marks, errorCell, flips, regionNumbers, cursor, focused, keyboard, hover]);
+    };
+    drawPaperBase(canvas, revealed === undefined ? view : { ...view, revealed });
+    const overlay = overlayRef.current;
+    if (overlay !== null) {
+      // Marks wait until the motif has arrived; flips appear in the engine's order.
+      const marksView = revealed === undefined ? view : { ...view, marks: NO_MARKS, flips: new Set<string>() };
+      drawPaperMarks(overlay, flipLimit === undefined ? marksView : { ...marksView, flipLimit });
+    }
+  }, [canvasRef, design, colours, cellSize, ratio, marks, errorCell, flips, regionNumbers, cursor, focused, keyboard, hover, revealed, flipLimit]);
 
   // After a pinch changes the cell size, scroll so the point under the fingers stays put.
   useLayoutEffect(() => {
@@ -467,7 +564,10 @@ export function PointPaper({
           aria-describedby={describedBy}
           data-touch-mode={touchMode}
           style={{ touchAction: touchMode === "scroll" ? "pan-x pan-y pinch-zoom" : "none" }}
-          onPointerDown={onPointerDown}
+          onPointerDown={(event) => {
+            endMoments();
+            onPointerDown(event);
+          }}
           onPointerMove={onPointerMove}
           onPointerUp={(event) => onPointerEnd(event, false)}
           onPointerCancel={(event) => onPointerEnd(event, true)}
@@ -476,15 +576,25 @@ export function PointPaper({
             if (event.pointerType !== "touch") setHover(null);
           }}
           onContextMenu={(event) => event.preventDefault()}
+          onWheel={endMoments}
           onFocus={() => setFocused(true)}
           onBlur={() => {
             setFocused(false);
             setKeyboard(false);
           }}
-          onKeyDown={onKeyDown}
+          onKeyDown={(event) => {
+            endMoments();
+            onKeyDown(event);
+          }}
           onKeyUp={(event) => {
             if (event.key === "Tab") setKeyboard(true);
           }}
+        />
+        <canvas
+          ref={overlayRef}
+          key={pulseKey}
+          className={["paper-marks", marks.size > 0 && revealed === undefined && flipLimit === undefined ? "paper-marks-pulse" : ""].filter(Boolean).join(" ")}
+          aria-hidden="true"
         />
       </div>
       <p className="readout" aria-hidden="true">

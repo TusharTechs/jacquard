@@ -1532,6 +1532,41 @@ Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md
   - The design-reviewer agent found four ways focus is lost during playback (card strip rebuilt each pick, step buttons disabled at the ends, the violation link, the Step change) and a sound race. It found them by reading the code, with no shell and nothing rendered, while 9 green component tests had missed all of them.
 - Spec versus vibe note: spec for the model and transport (properties first), vibe for the scene's look, judged from screenshots. The split worked: the properties pin what the loom must show, and the screenshots decided how.
 - Evidence: `apps/web/src/lib/{loom-model,loom-transport,loom-sound}.ts`, `apps/web/src/components/weave/`, `apps/web/test/loom-*.property.test.ts`, `apps/web/test/weave-step.test.tsx`.
+### 2026-11-23 — studio-experience wave 3 (tasks 4.1 to 4.5): Opening, Moments, Cards
+- Surface: IDE
+- Goal: Build the one-screen Opening, the four purposeful Moments, and the Cards Step: a realistic card chain, a large card that punches its holes, and a print stylesheet.
+- Kiro features used: spec `studio-experience` (tasks 4.1 to 4.5); property tests Properties 5 and 6; custom agent `design-reviewer` (1 run, 21 findings); MCP chrome-devtools (Opening at 1440x900 mid-animation, Cards at 1440x900 and 390x844); steering `design-language.md`, `product.md` (framing of the Opening line).
+- Model / credits (start → end):
+- What worked:
+  - The Opening (`src/opening.tsx`) is a dark loom-room outline with the user's line, and the cards' holes light in turn. The lights come up and it is gone at 3.6 s. It is shown once (`jacquard.openingSeen`), never when the URL names another Step, and the menu can replay it. Skip, Escape, Enter or a click end it, and focus then goes to the Studio title. The Studio is `inert` underneath. 6 tests.
+  - The point paper drawing is split into a base canvas and a transparent marks overlay. A new motif or example now arrives cell by cell in weaving order (Property 5). Auto-fix places the engine's flips one by one in the engine's order (Property 6). Violations pulse twice and then rest. Pointer, key, wheel, undo, redo and a Step change all end a Moment at once.
+  - Property 6 was weak at first: with the default float limit of 8, few generated plans needed auto-fix. I widened the shared generator's `maxFloat` to 2 to 8 and added an assertion that at least a fifth of the runs have flips. Properties 1 to 4 also passed again on the wider generator.
+  - Cards Step: the chain is a horizontal listbox (`aria-setsize`, `aria-posinset`, arrows, Home, End, Page Up, Page Down) that wraps from the last card to card 1. The selected card is shown large and punches its holes row by row within 800 ms the first time. "Print cards" is the Step's one primary action; it goes through the violation gate and prints a portal sheet of every card with the untested-format note repeated on every page. The browser's own print command prints the same sheet.
+  - First-minute test (`test/cards-step.test.tsx`): from an empty Studio to `window.print`, Temple stripe takes 5 activations and no typing (Requirement 3.3 allows 6).
+  - design-reviewer findings fixed:
+    - The print gate.
+    - Partial flip animations no longer stick.
+    - Outside edits end the reveal.
+    - The pulse is bounded, with a contrast floor.
+    - Studio shortcuts no longer run under the Opening.
+    - The listbox set size.
+    - The punch ends by 800 ms.
+    - The Opening waits for a visible tab, and its line fades out before the lights come up.
+    - Toasts are hidden under the Opening.
+    - Richer option names, horizontal orientation, Page keys and focus on click in the chain.
+    - A print sheet in the empty and error states.
+    - A repeating print footer and the plan line on the sheet.
+    - Print hides every portal.
+  - Answered in the Decision log instead: findings 11 and 12 (re-reading the line, focus after a replay), 17 (the chain scrolls inside itself on a phone), 21 (the engine error is already shown on the point paper and in the float check).
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0`: engine 148, mcp 110, export 52, motif 75, backend 45, web 188 tests.
+- What failed or surprised:
+  - My first Cards screenshot at 390 px showed the chain scrolled to its start, with the selected card off screen. The chain is laid out while its Step is hidden, so `scrollIntoView` had nothing to measure. It now centres the selection whenever the list gets a width (ResizeObserver).
+  - My first Opening screenshot caught the last frame of the fade, because my polling script waited too long. A second capture showed the dark room.
+  - I shipped "Print cards" without the violation gate the export panel has. The reviewer caught it; no test of mine had covered it until then.
+- Surprise:
+  - design-reviewer read `opening.tsx` together with `app.tsx` and found that undo (Ctrl+Z) still worked under the Opening, because App's shortcut handler only defers to native `dialog[open]` elements. A replay from the menu could therefore undo the user's work unseen. The bug crosses two files, and no single-file test would have shown it.
+- Spec versus vibe note: spec for the schedules (Properties 5, 6) and the print gate; vibe for the Opening's timing and the chain's look, judged from screenshots.
+- Evidence: `apps/web/src/opening.tsx`, `apps/web/src/lib/{reveal,flip-sequence}.ts`, `apps/web/src/components/cards/`, `apps/web/test/{opening,cards-step}.test.tsx`, `apps/web/test/{reveal,flip-sequence}.property.test.ts`.
 ### Template
 
 ```

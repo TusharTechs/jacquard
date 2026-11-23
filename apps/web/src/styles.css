@@ -1930,3 +1930,293 @@ kbd {
     transform: scale(0);
   }
 }
+
+/* ---------- Point paper marks overlay (studio-experience 11.2) ---------- */
+
+.paper-marks {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+/* Violations pulse gently when they appear or change: two beats within 1.5 s, then full strength.
+   The outline and triangle stay at 3:1 or more in every frame, so colour and shape still mark them. */
+.paper-marks-pulse {
+  animation: mark-pulse 0.7s ease-in-out 2 both;
+}
+
+@keyframes mark-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* ---------- The Opening (studio-experience Requirement 10) ---------- */
+
+.opening {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-8);
+  padding: var(--space-6);
+  background-color: #0f0a07;
+  color: #f1e6d0;
+  cursor: pointer;
+}
+
+.opening[data-reduced="true"] {
+  background-color: #0f0a07;
+}
+
+.opening-loom {
+  width: min(420px, 80vw);
+  height: auto;
+}
+
+.opening-frame {
+  fill: none;
+  stroke: #b8893a;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  opacity: 0.55;
+}
+
+.opening-card {
+  fill: #2a1f16;
+  stroke: #b8893a;
+  stroke-width: 1;
+}
+
+.opening-hole {
+  fill: #f2c46d;
+}
+
+.opening-line {
+  max-width: 28ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 4.2vw, 3rem);
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.opening-skip {
+  position: absolute;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  min-width: 88px;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid #b8893a;
+  border-radius: 999px;
+  background: #2a1f16;
+  color: #f6eedc;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.opening-skip:focus-visible {
+  box-shadow: 0 0 0 2px #0f0a07, 0 0 0 4px #f2c46d;
+}
+
+/* ---------- Cards Step: the chain (studio-experience Requirement 12) ---------- */
+
+.chain {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.chain-selected {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--sunk);
+  box-shadow: inset 0 1px 3px rgb(40 24 10 / 0.2);
+}
+
+.chain-selected .card-face {
+  width: 100%;
+  filter: drop-shadow(0 3px 4px rgb(40 24 10 / 0.3));
+}
+
+.chain-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.chain-number {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Cards overlap like a laced chain, a cord through their lacing holes behind them. */
+.chain-list {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: var(--space-4) var(--space-3) var(--space-3);
+  overflow-x: auto;
+  list-style: none;
+  border-radius: var(--radius-small);
+  scroll-padding-inline: var(--space-6);
+}
+
+.chain-list::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(50% - 6px);
+  height: 2px;
+  background: var(--line-strong);
+  opacity: 0.6;
+}
+
+.chain-list:focus-visible {
+  box-shadow: var(--focus);
+}
+
+.chain-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  flex: none;
+  width: 72px;
+  margin-right: -18px;
+  padding: 2px;
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  transition: translate var(--motion) var(--ease-out);
+}
+
+.chain-card[aria-selected="true"] {
+  translate: 0 -8px;
+}
+
+.chain-card[aria-selected="true"] .card-face {
+  outline: 2px solid var(--brass);
+  outline-offset: 1px;
+  border-radius: 4px;
+}
+
+.chain-card-number {
+  font-size: 0.7rem;
+  color: var(--ink-muted);
+}
+
+.chain-card[aria-selected="true"] .chain-card-number {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .studio-stage[data-step="cards"] {
+    grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+    align-items: start;
+  }
+  .studio-stage[data-step="cards"] .area-cards {
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1.6fr) minmax(320px, 1fr);
+    align-items: start;
+  }
+}
+
+/* ---------- Print: only the card set (12.3) ---------- */
+
+.print-sheet {
+  display: none;
+}
+
+/* Toasts never show over the Opening. */
+body:has(.opening) [data-sonner-toaster] {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .chain-card {
+    width: 60px;
+  }
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+  body {
+    background: #ffffff;
+  }
+  body::before {
+    display: none !important;
+  }
+  /* Only the card set: the Studio, toasts, tooltips, menus and dialogs are all left out. */
+  body > :not(.print-sheet) {
+    display: none !important;
+  }
+  .print-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 8pt;
+  }
+  .print-cards {
+    padding-bottom: 10mm !important;
+  }
+  .print-sheet {
+    display: block;
+    color: #000000;
+    font-family: var(--font-sans);
+    font-size: 10pt;
+  }
+  .print-header {
+    display: grid;
+    gap: 2mm;
+    margin-bottom: 6mm;
+  }
+  .print-header h1 {
+    font-size: 14pt;
+  }
+  .print-cards {
+    display: grid;
+    gap: 4mm;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .print-card {
+    break-inside: avoid;
+  }
+  .print-card .card-face {
+    width: 100%;
+    filter: none;
+  }
+  .card-stock {
+    fill: #ffffff;
+    stroke: #000000;
+  }
+  .card-hole,
+  .card-lace {
+    fill: #000000;
+  }
+  .card-blank {
+    stroke: #888888;
+  }
+}

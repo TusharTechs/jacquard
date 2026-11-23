@@ -45,14 +45,14 @@ All 7 correctness properties have their own property test task. Every property t
     - _Requirements: 8.1 to 8.4_
   - [x] 3.8 Tests for the Weave Step without WebGL and the sound toggle
     - _Requirements: 3.4, 6.6, 7.1 to 7.6, 8.2, 8.3_
-- [ ] 4. Opening, Moments and Cards
-  - [ ] 4.1 `opening.tsx` and its tests
+- [x] 4. Opening, Moments and Cards
+  - [x] 4.1 `opening.tsx` and its tests
     - _Requirements: 10.1 to 10.5, 13.4_
-  - [ ] 4.2 `lib/reveal.ts`, `lib/flip-sequence.ts`, the marks overlay and pulse in `point-paper.tsx`
+  - [x] 4.2 `lib/reveal.ts`, `lib/flip-sequence.ts`, the marks overlay and pulse in `point-paper.tsx`
     - _Requirements: 11.1 to 11.3, 11.5, 11.6, 13.2_
-  - [ ] 4.3 Write property test: **Property 5: The motif reveal places every cell once** — **Validates: Requirements 11.1, 11.5**
-  - [ ] 4.4 Write property test: **Property 6: Auto-fix placement shows the engine's flips in order** — **Validates: Requirements 11.3**
-  - [ ] 4.5 `cards/card-chain.tsx`, `cards/print-sheet.tsx`, `cards/cards-step.tsx`, print stylesheet, punching Moment, and their tests; the first-minute path test
+  - [x] 4.3 Write property test: **Property 5: The motif reveal places every cell once** — **Validates: Requirements 11.1, 11.5**
+  - [x] 4.4 Write property test: **Property 6: Auto-fix placement shows the engine's flips in order** — **Validates: Requirements 11.3**
+  - [x] 4.5 `cards/card-chain.tsx`, `cards/print-sheet.tsx`, `cards/cards-step.tsx`, print stylesheet, punching Moment, and their tests; the first-minute path test
     - _Requirements: 3.2, 3.3, 11.4, 12.1 to 12.4_
 - [ ] 5. Performance and verification
   - [ ] 5.1 Build test for the entry chunk; Lighthouse on `vite preview`, fix to at least 90

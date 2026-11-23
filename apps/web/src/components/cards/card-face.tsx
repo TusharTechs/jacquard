@@ -51,7 +51,8 @@ export function CardFace({ card, profile, pitch = 8, current = false, className,
           cy={cy}
           r={state ? radius : radius * 0.55}
           className={state ? "card-hole" : "card-blank"}
-          style={punch && state ? { animationDelay: `${Math.round((rowIndex / Math.max(1, rows.length)) * 700)}ms` } : undefined}
+          // The punch runs row by row and ends by 800 ms: 640 ms of delays plus 160 ms per hole (11.4).
+          style={punch && state ? { animationDelay: `${Math.round((rowIndex / Math.max(1, rows.length - 1)) * 640)}ms` } : undefined}
         />,
       );
     });

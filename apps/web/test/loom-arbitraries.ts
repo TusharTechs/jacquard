@@ -24,6 +24,7 @@ export const loomCaseArb: fc.Arbitrary<LoomCase> = fc
     holeMeans: fc.constantFrom<"lift" | "noLift">("lift", "noLift"),
     wovenFaceDown: fc.boolean(),
     regions: fc.integer({ min: 1, max: 4 }),
+    maxFloat: fc.integer({ min: 2, max: 8 }),
     repeatAcross: fc.boolean(),
   })
   .chain((shape) =>
@@ -49,6 +50,7 @@ export const loomCaseArb: fc.Arbitrary<LoomCase> = fc
           spareHookCount: shape.spareHookCount,
           holeMeans: shape.holeMeans,
           wovenFaceDown: shape.wovenFaceDown,
+          maxFloat: shape.maxFloat,
         });
         const weaves: Record<number, (typeof WEAVE_CHOICES)[number]["weave"]> = {};
         weaveIds.forEach((id, region) => {

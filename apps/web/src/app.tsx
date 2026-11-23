@@ -32,6 +32,7 @@ import { setupSummary } from "./components/loom-setup-panel";
 import { STEPS, currentStep, parseStep, pushStep } from "./lib/route";
 import type { Step } from "./lib/route";
 import { changeView } from "./lib/view-transition";
+import { OPENING_EVENT } from "./opening";
 import { WeavePanel } from "./components/weave-panel";
 import { CardsStep } from "./components/cards/cards-step";
 import { WeaveStep, prefetchLoomScene } from "./components/weave/weave-step";
@@ -106,6 +107,8 @@ export function App() {
   const [cellSize, setCellSizeRaw] = useState(START_CELL);
   const [fix, setFix] = useState<FixState>({ status: "none" });
   const [step, setStep] = useState<Step>(currentStep);
+  // Increases when a motif or gallery example arrives, so the point paper places it cell by cell.
+  const [revealKey, setRevealKey] = useState(0);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [coarsePointer] = useState(() => mediaMatches("(pointer: coarse)", false));
   const [touchMode, setTouchMode] = useState<TouchMode>(() => (coarsePointer ? "scroll" : "paint"));
@@ -380,6 +383,7 @@ export function App() {
     setGalleryOpen(opened.galleryOpen);
     setStarted(true);
     setLayer("violations");
+    setRevealKey((value) => value + 1);
     requestAnimationFrame(() => viewportRef.current?.scrollIntoView?.({ block: "nearest" }));
     say(`${example.title} is on the grid. Undo brings back the previous grid, loom setup, palette and weaves.`);
   };
@@ -418,6 +422,7 @@ export function App() {
         };
       }
       dispatchEditor({ type: "replace", design: result.value.design });
+      setRevealKey((value) => value + 1);
       setGalleryOpen(null);
       setPalette(result.value.palette);
       setStarted(true);
@@ -611,7 +616,7 @@ export function App() {
         setupSummary={setupSummary(setup)}
         onOpenSetup={focusProfile}
         menu={
-          <StudioMenu triggerRef={menuTriggerRef} onShortcuts={() => setShortcutsOpen(true)} />
+          <StudioMenu triggerRef={menuTriggerRef} onShortcuts={() => setShortcutsOpen(true)} onOpening={() => window.dispatchEvent(new CustomEvent(OPENING_EVENT))} />
         }
       />
       <StepRail step={step} status={railStatus} statusText={railStatusText} onSelect={(next) => goTo(next)} next={railNext} linkRef={railLinkRef} onPrefetch={(item) => {
@@ -765,6 +770,8 @@ export function App() {
                 canvasRef={canvasRef}
                 describedBy={paperSummaryId}
                 nextViolationRequest={nextViolationRequest}
+                revealKey={revealKey}
+                active={step === "design" || step === "check"}
               />
               <p className="sr-only" id={paperSummaryId}>
                 {paperSummary}
@@ -837,16 +844,19 @@ export function App() {
         <section aria-label="Cards" className="area area-cards" hidden={step !== "cards"}>
           <CardsStep
             plan={planInUse}
+            profile={profile}
+            profileName={setup.profile}
             blank={blankStart}
             onOpenGallery={focusGallery}
             onGoToDesign={() => goTo("design")}
             onGoToFloatCheck={goToFloatCheck}
-          >
-            <p className="small muted">
-              <span className="mono">{planInUse?.pickCount ?? 0}</span> cards in lacing order.
-            </p>
-          </CardsStep>
+            planSource={planSource}
+            violationCount={check.ok ? check.violations.length : 0}
+            checking={checking}
+            onAutoFix={runAutoFix}
+          />
           <ExportPanel
+            lead={false}
             profileName={setup.profile}
             profile={profile}
             plan={planInUse}

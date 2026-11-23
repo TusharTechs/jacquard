@@ -43,6 +43,8 @@ export interface ExportPanelProps {
   readonly onAutoFix: () => void;
   /** Saves a file; the browser download by default. */
   readonly download?: Downloader;
+  /** Whether Cards (PDF) is the primary button; false where the Step has its own (Print cards). */
+  readonly lead?: boolean;
 }
 
 interface Failure {
@@ -67,6 +69,7 @@ export function ExportPanel({
   blank,
   onAutoFix,
   download = downloadFile,
+  lead = true,
 }: ExportPanelProps) {
   const [confirm, setConfirm] = useState<ExportKind | null>(null);
   const [pending, setPending] = useState<ExportKind | null>(null);
@@ -191,7 +194,7 @@ export function ExportPanel({
             {EXPORT_KINDS.map((kind) => (
               <Button
                 key={kind}
-                variant={kind === "cardsPdf" ? "primary" : "secondary"}
+                variant={lead && kind === "cardsPdf" ? "primary" : "secondary"}
                 disabled={usesLiftPlan(kind) && plan === null}
                 aria-disabled={pending !== null || waiting(kind) ? true : undefined}
                 onClick={() => request(kind)}
