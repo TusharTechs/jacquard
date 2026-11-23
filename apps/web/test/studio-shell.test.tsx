@@ -113,6 +113,20 @@ describe("studio shell", () => {
   });
 });
 
+describe("deferred Steps (14.2)", () => {
+  it("mounts the current Step first, a visited Step at once, and the rest in idle time", async () => {
+    render(<App deferHiddenSteps />);
+    expect(screen.getByRole("heading", { name: "Gallery" })).toBeTruthy();
+    // Opening a Step mounts it in the same change.
+    openStep("Cards");
+    expect(screen.getByRole("heading", { name: "Export" })).toBeTruthy();
+    openStep("Design");
+    // The others arrive without a visit.
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Float check", hidden: true })).toBeTruthy());
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Loom", hidden: true })).toBeTruthy());
+  });
+});
+
 describe("Hint (5.1)", () => {
   it("opens on tap, names its topic, and closes on Escape", async () => {
     render(

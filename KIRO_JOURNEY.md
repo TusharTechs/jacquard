@@ -1567,6 +1567,24 @@ Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md
   - design-reviewer read `opening.tsx` together with `app.tsx` and found that undo (Ctrl+Z) still worked under the Opening, because App's shortcut handler only defers to native `dialog[open]` elements. A replay from the menu could therefore undo the user's work unseen. The bug crosses two files, and no single-file test would have shown it.
 - Spec versus vibe note: spec for the schedules (Properties 5, 6) and the print gate; vibe for the Opening's timing and the chain's look, judged from screenshots.
 - Evidence: `apps/web/src/opening.tsx`, `apps/web/src/lib/{reveal,flip-sequence}.ts`, `apps/web/src/components/cards/`, `apps/web/test/{opening,cards-step}.test.tsx`, `apps/web/test/{reveal,flip-sequence}.property.test.ts`.
+### 2026-11-24 — studio-experience wave 4 (tasks 5.1, 5.2): performance and the final screenshots
+- Surface: IDE
+- Goal: Meet the Lighthouse bar on the production build, keep three.js and tone out of the entry chunk, and save the final screenshot set.
+- Kiro features used: spec `studio-experience` (tasks 5.1, 5.2); MCP chrome-devtools (`lighthouse_audit` for accessibility and best practices on Design, Weave and Cards; snapshot mode on Cards); steering `tech.md`.
+- Model / credits (start → end):
+- What worked:
+  - New build test in `apps/web/test/scans.test.ts`: the entry chunk contains none of `WebGLRenderer`, `useFrame`, `MeshStandardMaterial`, `MembraneSynth` or `NoiseSynth`, and the lazy chunks contain them.
+  - Lighthouse 13.6.0 on `vite preview`. Mobile performance was 88 at first: TBT 310 ms and one 360 ms long task, just after the gallery arrived, while every hidden Step rendered. Two fixes followed. First, hidden Steps now mount in idle time (`deferHiddenSteps`, production entry only), with a new test. Second, motion's features load lazily (entry 218 kB to 187 kB gzip). After them: mobile performance 92 (TBT 0 ms), desktop 100, `#/weave` on mobile 95. Accessibility 100 and best practices 100 on Design, Weave (mobile) and Cards (desktop snapshot). SEO went from 91 to 100 after adding `public/robots.txt`.
+  - Final screenshots, 13 files, 3.7 MB, committed under `media/polish/`: Opening, empty Design, Design with Peacock butta, Check, Weave and Cards at 1440x900 and 390x844, plus the Weave controls on a phone.
+  - No file under `packages/` or `backend/` changed in this phase: `git diff 45acd49 -- packages backend` is empty.
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0`: engine 148, mcp 110, export 52, motif 75, backend 45, web 190 tests.
+- What failed or surprised:
+  - The Chrome DevTools MCP server refused to save screenshots or Lighthouse reports into the repository ("not within any of the configured workspace roots"). I captured the final set with `puppeteer-core` from the Lighthouse npx cache against the same preview build, and recorded that in the Decision log.
+  - The MCP `lighthouse_audit` tool leaves out the performance category, so performance came from the Lighthouse CLI (`npx -y lighthouse@13.6.0`, published 2026-10-27; a measuring tool, not a dependency).
+- Surprise:
+  - The `lighthouse_audit` tool also scores an "Agentic Browsing" category (llms.txt, an ARD manifest). I left it alone: it is not one of the three categories the brief names.
+- Spec versus vibe note: spec. The 90 bar in 14.2 made me measure before optimising. Lighthouse's long-task list pointed at the hidden Steps rendering at start-up, not at the gallery check I had suspected.
+- Evidence: `apps/web/test/scans.test.ts`, `apps/web/src/components/ui/lazy-motion.tsx`, `apps/web/src/app.tsx` (`deferHiddenSteps`), `media/polish/`.
 ### Template
 
 ```

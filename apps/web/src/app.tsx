@@ -98,7 +98,27 @@ function allZero(design: readonly (readonly number[])[]): boolean {
   return design.every((row) => row.every((cell) => cell === 0));
 }
 
-export function App() {
+export interface AppProps {
+  /**
+   * Mount only the current Step at first and the others one by one in idle time, so the first
+   * screen is interactive sooner (studio-experience 14.2). A visited Step mounts at once. Off by
+   * default, so a render of the App has every panel in the document.
+   */
+  readonly deferHiddenSteps?: boolean;
+}
+
+type IdleHandle = { cancel: () => void };
+function whenIdle(run: () => void): IdleHandle {
+  const idle = (globalThis as { requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number }).requestIdleCallback;
+  if (typeof idle === "function") {
+    const handle = idle(run, { timeout: 1500 });
+    return { cancel: () => (globalThis as { cancelIdleCallback?: (handle: number) => void }).cancelIdleCallback?.(handle) };
+  }
+  const timer = setTimeout(run, 200);
+  return { cancel: () => clearTimeout(timer) };
+}
+
+export function App({ deferHiddenSteps = false }: AppProps = {}) {
   const [setup, dispatchSetup] = useReducer(setupReducer, DEFAULT_SETUP);
   const [editor, dispatchEditor] = useReducer(editorReducer, DEFAULT_SETUP.repeat, (repeat) => initialEditorState(blankDesign(repeat)));
   const [weaves, setWeaves] = useState<WeaveAssignment>(() => defaultWeaves(WEAVE_SLOTS));
@@ -107,6 +127,30 @@ export function App() {
   const [cellSize, setCellSizeRaw] = useState(START_CELL);
   const [fix, setFix] = useState<FixState>({ status: "none" });
   const [step, setStep] = useState<Step>(currentStep);
+  // Steps in the document. All of them unless deferring; then the current one, the others in idle time.
+  const [mounted, setMounted] = useState<ReadonlySet<Step>>(() => (deferHiddenSteps ? new Set([currentStep()]) : new Set(STEPS)));
+  useEffect(() => {
+    setMounted((current) => (current.has(step) ? current : new Set([...current, step])));
+  }, [step]);
+  useEffect(() => {
+    if (!deferHiddenSteps) return;
+    let handle: IdleHandle | null = null;
+    const next = (): void => {
+      handle = whenIdle(() => {
+        let added = false;
+        setMounted((current) => {
+          const missing = STEPS.find((item) => !current.has(item));
+          if (missing === undefined) return current;
+          added = true;
+          return new Set([...current, missing]);
+        });
+        if (added) next();
+      });
+    };
+    next();
+    return () => handle?.cancel();
+  }, [deferHiddenSteps]);
+  const isMounted = (item: Step): boolean => mounted.has(item) || item === step;
   // Increases when a motif or gallery example arrives, so the point paper places it cell by cell.
   const [revealKey, setRevealKey] = useState(0);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
@@ -635,6 +679,8 @@ export function App() {
 
       <main className="studio-stage" data-step={step}>
         <section aria-label="Design: start" className="area area-start" hidden={step !== "design"}>
+          {isMounted("design") ? (
+            <>
           <GalleryPanel onOpen={openExample} openId={galleryShown?.id ?? null} headingRef={galleryHeadingRef} />
           <MotifPanel
             setup={setup}
@@ -646,9 +692,13 @@ export function App() {
             onOpenGallery={focusGallery}
             focusRequest={motifFocus}
           />
+            </>
+          ) : null}
         </section>
 
         <section aria-label="Design: loom setup" className="area area-setup" hidden={step !== "design"}>
+          {isMounted("design") ? (
+            <>
           <LoomSetupPanel
             setup={setup}
             onChange={changeSetup}
@@ -657,6 +707,8 @@ export function App() {
             onOpenChange={setSetupOpen}
             profileRef={profileRef}
           />
+            </>
+          ) : null}
         </section>
 
         <div className="area area-bench" hidden={step !== "design" && step !== "check"}>
@@ -792,6 +844,8 @@ export function App() {
         </div>
 
         <section aria-label="Check" className="area area-checks" hidden={step !== "check"}>
+          {isMounted("check") ? (
+            <>
           <FloatPanel
             check={size.ends === 0 || size.picks === 0 || paperStatus === "empty" ? null : check}
             checking={checking}
@@ -825,9 +879,13 @@ export function App() {
             warnings={check.ok ? check.warnings : []}
             onChange={changeWeave}
           />
+            </>
+          ) : null}
         </section>
 
         <section aria-label="Weave" className="area area-weave" hidden={step !== "weave"}>
+          {isMounted("weave") ? (
+            <>
           <WeaveStep
             plan={planInUse}
             planSource={planSource}
@@ -839,9 +897,13 @@ export function App() {
             onGoToFloatCheck={goToFloatCheck}
             onOpenGallery={focusGallery}
           />
+            </>
+          ) : null}
         </section>
 
         <section aria-label="Cards" className="area area-cards" hidden={step !== "cards"}>
+          {isMounted("cards") ? (
+            <>
           <CardsStep
             plan={planInUse}
             profile={profile}
@@ -869,6 +931,8 @@ export function App() {
             blank={blankStart}
             onAutoFix={runAutoFix}
           />
+            </>
+          ) : null}
         </section>
       </main>
 

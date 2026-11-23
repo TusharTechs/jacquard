@@ -145,6 +145,20 @@ describe("production build (2.4)", () => {
     expect(files.some((file) => file.endsWith(".js") && statSync(file).size > 0)).toBe(true);
   });
 
+  it("keeps three.js, react-three and tone out of the entry chunk (studio-experience 14.1)", () => {
+    const html = readFileSync(join(outDir, "index.html"), "utf8");
+    const entry = /<script type="module"[^>]*src="\/([^"]+\.js)"/.exec(html)?.[1];
+    expect(entry).toBeTruthy();
+    const code = readFileSync(join(outDir, entry!), "utf8");
+    // Names that only the 3D loom (three, @react-three/fiber, drei) and the sound (tone) bring.
+    for (const marker of ["WebGLRenderer", "useFrame", "MeshStandardMaterial", "MembraneSynth", "NoiseSynth"]) {
+      expect(code.includes(marker), marker).toBe(false);
+    }
+    const chunks = filesUnder(join(outDir, "assets")).filter((file) => file.endsWith(".js"));
+    expect(chunks.some((file) => readFileSync(file, "utf8").includes("WebGLRenderer"))).toBe(true);
+    expect(chunks.some((file) => readFileSync(file, "utf8").includes("MembraneSynth"))).toBe(true);
+  });
+
   it("contains no AWS credential or model endpoint URL", () => {
     const patterns = [ACCESS_KEY_ID, ASSIGNED_SECRET, /aws_secret_access_key/i, /bedrock-runtime/i, /amazonaws\.com/i, /anthropic/i, /x-api-key/i];
     expect(matchesIn(filesUnder(outDir), outDir, patterns)).toEqual([]);

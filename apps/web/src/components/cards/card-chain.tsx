@@ -3,7 +3,8 @@
 // its number and punched count. The chain is one listbox: arrows, Home and End move the
 // selection, a click or tap picks a card. A card shown large for the first time punches its holes
 // row by row (off with reduced motion).
-import { motion } from "motion/react";
+import * as m from "motion/react-m";
+import { MotionBoundary } from "../ui/lazy-motion";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
 import type { Card, LoomProfile } from "@jacquard/engine";
@@ -83,7 +84,8 @@ export function CardChain({ cards, profile }: CardChainProps) {
   const optionId = (at: number): string => `${listId}-card-${at}`;
   return (
     <div className="chain">
-      <motion.figure
+      <MotionBoundary>
+      <m.figure
         key={index}
         className="chain-selected"
         initial={reduced ? false : { opacity: 0, y: 6 }}
@@ -104,7 +106,8 @@ export function CardChain({ cards, profile }: CardChainProps) {
             of {count} · {plural(holes, "hole", "holes")} punched · weaves pick {card.index}
           </span>
         </figcaption>
-      </motion.figure>
+      </m.figure>
+      </MotionBoundary>
       <ol
         ref={listRef}
         className="chain-list"

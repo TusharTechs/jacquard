@@ -54,10 +54,10 @@ All 7 correctness properties have their own property test task. Every property t
   - [x] 4.4 Write property test: **Property 6: Auto-fix placement shows the engine's flips in order** — **Validates: Requirements 11.3**
   - [x] 4.5 `cards/card-chain.tsx`, `cards/print-sheet.tsx`, `cards/cards-step.tsx`, print stylesheet, punching Moment, and their tests; the first-minute path test
     - _Requirements: 3.2, 3.3, 11.4, 12.1 to 12.4_
-- [ ] 5. Performance and verification
-  - [ ] 5.1 Build test for the entry chunk; Lighthouse on `vite preview`, fix to at least 90
+- [x] 5. Performance and verification
+  - [x] 5.1 Build test for the entry chunk; Lighthouse on `vite preview`, fix to at least 90
     - _Requirements: 14.1 to 14.3_
-  - [ ] 5.2 Final screenshots to `media/polish/` (each Step and the Opening, 1440x900 and 390x844); `git diff --stat phase-H -- packages backend` is empty
+  - [x] 5.2 Final screenshots to `media/polish/` (each Step and the Opening, 1440x900 and 390x844); no change under `packages/` or `backend/` in this phase (`git diff 45acd49 -- packages backend` is empty; `45acd49` is the last commit before the phase and the only one after `phase-H` that touched them)
     - _Requirements: 15.1, 16.1_
 
 ## Task Dependency Graph

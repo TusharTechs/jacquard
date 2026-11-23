@@ -2,7 +2,8 @@
 // in the dark, one line, the holes of a card chain lighting in turn like a program running, then
 // the lights come up into the Studio. Under 4 seconds, shown once per browser, skippable with the
 // Skip button, Escape, Enter or a click. The Studio renders underneath at the same time (10.5).
-import { motion } from "motion/react";
+import * as m from "motion/react-m";
+import { MotionBoundary } from "./components/ui/lazy-motion";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { parseStep } from "./lib/route";
 import { useReducedMotion } from "./lib/reduced-motion";
@@ -58,7 +59,7 @@ function LoomOutline({ reduced }: { readonly reduced: boolean }) {
         <g key={card} transform={`translate(${292 + (card % 2) * 6} ${74 + card * 40}) rotate(${card % 2 === 0 ? -4 : 4})`}>
           <rect className="opening-card" x="0" y="0" width="56" height="30" rx="2" />
           {HOLES.map(([x, y], index) => (
-            <motion.circle
+            <m.circle
               key={index}
               className="opening-hole"
               cx={8 + x * 7}
@@ -157,7 +158,8 @@ export function Opening() {
       };
 
   return (
-    <motion.div
+    <MotionBoundary>
+    <m.div
       key={run}
       className="opening"
       role="dialog"
@@ -168,9 +170,9 @@ export function Opening() {
       {...fade}
     >
       <LoomOutline reduced={reduced} />
-      <motion.p className="opening-line" id={lineId} {...ink}>
+      <m.p className="opening-line" id={lineId} {...ink}>
         {OPENING_LINE}
-      </motion.p>
+      </m.p>
       <button
         ref={skipRef}
         type="button"
@@ -182,6 +184,7 @@ export function Opening() {
       >
         Skip
       </button>
-    </motion.div>
+    </m.div>
+    </MotionBoundary>
   );
 }
