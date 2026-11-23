@@ -12,7 +12,7 @@ import { exampleWeaves, loadGallery } from "../lib/gallery";
 import type { GalleryExample, LoadedGallery } from "../lib/gallery";
 import { regionColours } from "../lib/palette";
 import { resolveProfile } from "../state/setup-state";
-import { Term } from "./term";
+import { Hint } from "./ui/hint";
 import { Button } from "./ui/button";
 import { Panel } from "./ui/panel";
 import type { PanelStatus } from "./ui/panel";
@@ -163,9 +163,11 @@ export function GalleryPanel({ onOpen, openId, headingRef }: GalleryPanelProps) 
       {state.status === "ready" && state.gallery.entries.length > 0 ? (
         <div className="stack">
           <p className="small muted">
-            Examples to open and edit. Each opens with the engine's float check. Each card shows the loom profile, the repeat
-            in <Term name="end">ends</Term> by <Term name="pick">picks</Term> and what the float check finds. The motifs were
-            made by the stand-in generator, not a model.
+            Made by the stand-in generator, not a model. Each opens with the engine's float check.{" "}
+            <Hint topic="the gallery">
+              Each card shows the loom profile, the repeat in ends by picks, and what the float check finds. Opening one replaces
+              the grid; Undo brings yours back.
+            </Hint>
           </p>
           <ul className="gallery-grid" aria-label="Gallery examples">
             {state.gallery.entries.map((entry) => {
@@ -184,7 +186,7 @@ export function GalleryPanel({ onOpen, openId, headingRef }: GalleryPanelProps) 
                   {openId === entry.id ? <p className="small muted">On the grid now</p> : null}
                   <Button
                     small
-                    variant={openId === entry.id ? "secondary" : "primary"}
+                    variant="secondary"
                     disabled={example === undefined}
                     aria-label={`Open example: ${entry.title}`}
                     onClick={() => {

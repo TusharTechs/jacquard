@@ -12,6 +12,7 @@ import { Field } from "./ui/field";
 import { Panel } from "./ui/panel";
 import type { PanelStatus } from "./ui/panel";
 import { Tabs } from "./ui/tabs";
+import { Hint } from "./ui/hint";
 
 /** Product limits from 1.3 [decision]. */
 export const PROMPT_LIMIT = 500;
@@ -239,13 +240,11 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
       empty={
         <>
           <p className="state-title">No motif yet</p>
-          <p className="small">
-            Open a gallery example, or describe a motif or upload a sketch and the model suggests a clean
-            motif at your repeat size. Or paint the grid yourself.
-          </p>
+          <p className="small">Describe it or upload a sketch; the model suggests a clean motif you can edit.</p>
           <div className="state-actions">
             {onOpenGallery === undefined ? null : (
-              <Button small variant="primary" onClick={onOpenGallery}>
+              // Secondary: the point paper's empty state carries the Step's one primary start action.
+              <Button small onClick={onOpenGallery}>
                 Open a gallery example
               </Button>
             )}
@@ -268,7 +267,7 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
             … <span className="mono">{elapsed} s</span>
           </p>
           <div className="progress" aria-hidden="true" />
-          <p className="small">You can keep editing the grid. Cancel keeps your current design.</p>
+          <p className="small">Keep editing meanwhile. Cancel keeps your design.</p>
           <div className="state-actions">
             <Button small onClick={request.cancel}>
               Cancel
@@ -347,8 +346,19 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
             {loading ? "Generating…" : "Generate motif"}
           </Button>
         </div>
-        <p className="small muted" id={hintId}>
-          {blockedReason ?? `Uses ${setup.colourCount} colours, a ${setup.repeat.ends} by ${setup.repeat.picks} repeat. The new motif replaces the grid; Undo brings the old one back.`}
+        <p className="small muted">
+          {blockedReason !== null ? (
+            <span id={hintId}>{blockedReason}</span>
+          ) : (
+            <>
+              <span id={hintId}>
+                <span className="mono">{setup.colourCount}</span> colours · <span className="mono">{setup.repeat.ends}×{setup.repeat.picks}</span>
+              </span>{" "}
+              <Hint topic="generating a motif">
+                The new motif replaces the grid; Undo brings the old one back. Colours, repeat and symmetry come from the loom setup.
+              </Hint>
+            </>
+          )}
         </p>
       </div>
     </Panel>

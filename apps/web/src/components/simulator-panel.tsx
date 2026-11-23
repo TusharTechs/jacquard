@@ -206,10 +206,10 @@ export function SimulatorPanel({
             <p className="status-line small">{PLAN_LINES[planSource]}</p>
             <div className="toolbar-group" role="group" aria-label="Side of the cloth">
               <span className="small">Side:</span>
-              <Button small variant={side === "face" ? "primary" : "secondary"} aria-pressed={side === "face"} onClick={() => setSide("face")}>
+              <Button small aria-pressed={side === "face"} onClick={() => setSide("face")}>
                 Face
               </Button>
-              <Button small variant={side === "back" ? "primary" : "secondary"} aria-pressed={side === "back"} onClick={() => setSide("back")}>
+              <Button small aria-pressed={side === "back"} onClick={() => setSide("back")}>
                 Back
               </Button>
             </div>
@@ -264,8 +264,10 @@ export function SimulatorPanel({
                   />
                 </div>
                 <p className="small muted">
-                  <span className="mono">{hookCount}</span> ends by <span className="mono">{pickCount}</span> picks. Pick 0 is at the
-                  bottom and end 0 at the left on both sides.
+                  <span className="mono">
+                    {hookCount}×{pickCount}
+                  </span>{" "}
+                  · pick 0 at the bottom, end 0 at the left
                 </p>
               </>
             )}

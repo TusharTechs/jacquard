@@ -36,8 +36,7 @@
   --shadow-lift: var(--lift-shadow);
 }
 
-:root,
-[data-theme="daylight"] {
+:root {
   --room: #e9dfcb;
   --surface: #f6f0e2;
   --raised: #fffaf0;
@@ -45,7 +44,7 @@
   --ink: #1f1a14;
   --ink-muted: #5a4f42;
   --line: #d3c6a8;
-  --line-strong: #9c8c6c;
+  --line-strong: #857452;
   --walnut: #5b3a24;
   --brass: #8a6420;
   --brass-strong: #6e4f17;
@@ -67,36 +66,6 @@
   color-scheme: light;
 }
 
-[data-theme="after-hours"] {
-  --room: #120d09;
-  --surface: #1d1610;
-  --raised: #281f17;
-  --sunk: #16100b;
-  --ink: #f1e6d0;
-  --ink-muted: #c2b49b;
-  --line: #3e3024;
-  --line-strong: #7a654b;
-  --walnut: #8a5a3a;
-  --brass: #e0b45a;
-  --brass-strong: #f2c46d;
-  --primary: #e0b45a;
-  --primary-hover: #f2c46d;
-  --on-primary: #1a120b;
-  --focus-colour: #f2c46d;
-  --danger: #ff8fa0;
-  --danger-soft: #3a1a1e;
-  --warn-soft: #3a2d14;
-  --ok: #8fd3a5;
-  --violation: #d6006f;
-  --paper: #efe6d2;
-  --tip-bg: #f1e6d0;
-  --tip-ink: #1a120b;
-  --panel-shadow: 0 1px 0 rgb(255 220 160 / 0.05) inset, 0 1px 2px rgb(0 0 0 / 0.5), 0 16px 36px -20px rgb(0 0 0 / 0.9);
-  --lift-shadow: 0 2px 6px rgb(0 0 0 / 0.5), 0 24px 48px -20px rgb(0 0 0 / 0.95);
-  --grain-opacity: 0.08;
-  color-scheme: dark;
-}
-
 :root {
   --unit: 4px;
   --space-1: var(--unit);
@@ -115,7 +84,7 @@
   --grain: url("/grain.svg");
 }
 
-@media (pointer: coarse) {
+@media (any-pointer: coarse) {
   :root {
     --target: 44px;
   }
@@ -196,8 +165,26 @@
   }
 
   :focus-visible {
-    outline: none;
+    /* Transparent outline: invisible normally, drawn by forced-colors mode, which drops shadows. */
+    outline: 2px solid transparent;
+    outline-offset: 2px;
     box-shadow: var(--focus);
+  }
+
+  html {
+    scroll-padding-top: var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    html {
+      scroll-padding-top: calc(64px + var(--space-6));
+    }
+  }
+
+  @media (max-width: 767px) {
+    html {
+      scroll-padding-bottom: 150px;
+    }
   }
 }
 
@@ -456,6 +443,22 @@ kbd {
   font-size: 0.875rem;
 }
 
+/* Toggle buttons: pressed is an inset ink state, not the primary colour (one primary per Step). */
+.btn[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--sunk);
+  box-shadow: inset 0 0 0 1px var(--ink), inset 0 2px 3px rgb(40 24 10 / 0.18);
+  font-weight: 650;
+}
+
+/* A checkbox label is the whole tap target. */
+.switch-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--target);
+  cursor: pointer;
+}
+
 .btn-icon {
   padding: 0;
   text-decoration: none;
@@ -604,7 +607,11 @@ kbd {
   border-color: var(--line);
   background: var(--raised);
   color: var(--ink);
-  box-shadow: 0 1px 2px rgb(40 24 10 / 0.15);
+  box-shadow: inset 0 -3px 0 var(--brass-strong), 0 1px 2px rgb(40 24 10 / 0.15);
+}
+
+.tab[aria-selected="true"]:focus-visible {
+  box-shadow: inset 0 -3px 0 var(--brass-strong), var(--focus);
 }
 
 /* ---------- Dialog (Radix content rendered as <dialog open>) ---------- */
@@ -1158,12 +1165,11 @@ kbd {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--raised);
-  transition: transform var(--motion) var(--ease-out), box-shadow var(--motion) ease;
+  transition: border-color var(--motion) ease;
 }
 
 .gallery-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--lift-shadow);
+  border-color: var(--line-strong);
 }
 
 .gallery-title {
@@ -1209,103 +1215,437 @@ kbd {
   }
 }
 
-/* ---------- Three-column layout (replaced by the Studio shell in wave 1) ---------- */
+/* ---------- Studio shell (studio-experience Requirement 2) ---------- */
 
-.app {
-  max-width: 1600px;
+.studio {
+  --rail-height: 64px;
+  max-width: 1680px;
   margin: 0 auto;
-  padding: var(--space-3);
+  padding: 0 var(--space-4) var(--space-8);
 }
 
-.app-header {
+.topbar {
   display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-2) var(--space-6);
+  padding: var(--space-4) 0 var(--space-3);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
   gap: var(--space-2);
-  padding-bottom: var(--space-4);
-  margin-bottom: var(--space-4);
-  border-bottom: 1px solid var(--line);
+}
+
+.brand-mark {
+  width: 32px;
+  height: 24px;
+}
+
+.brand-card {
+  fill: var(--raised);
+  stroke: var(--walnut);
+  stroke-width: 1.5;
+}
+
+.brand-hole {
+  fill: var(--walnut);
 }
 
 .app-title {
-  font-size: 1.75rem;
-  letter-spacing: 0.06em;
+  font-size: 1.5rem;
   font-weight: 650;
+  letter-spacing: 0.14em;
+  font-variation-settings: "SOFT" 0, "WONK" 1;
 }
 
-.app-lede,
-.app-sublede {
-  max-width: 70ch;
+.app-title:focus-visible {
+  border-radius: var(--radius-small);
 }
 
-.app-sublede {
+.app-lede {
+  max-width: 72ch;
   color: var(--ink-muted);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.topbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.setup-chip {
+  border-radius: 999px;
+  padding: 0 var(--space-3);
+}
+
+.setup-chip-short {
+  display: none;
+}
+
+.setup-note {
+  margin-top: var(--space-3);
+}
+
+/* The rail: four punched holes on one thread, and the Step's Continue action. */
+
+.rail-bar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: var(--rail-height);
+  margin: 0 calc(var(--space-4) * -1) var(--space-4);
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background-color: var(--surface);
+  box-shadow: 0 8px 18px -16px rgb(60 40 20 / 0.6);
+}
+
+.rail-list {
+  position: relative;
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* The thread through the holes. */
+.rail-list::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 50%;
+  height: 2px;
+  background: var(--line-strong);
+  opacity: 0.5;
+}
+
+.rail-item {
+  position: relative;
+}
+
+.rail-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: var(--space-1) var(--space-4) var(--space-1) var(--space-1);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-muted);
+  text-decoration: none;
+  transition: background-color var(--motion) ease, color var(--motion) ease, border-color var(--motion) ease;
+}
+
+.rail-link:hover {
+  color: var(--ink);
+  border-color: var(--line);
+}
+
+.rail-hole {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--room);
+  box-shadow: inset 0 2px 3px rgb(40 24 10 / 0.25);
+}
+
+.rail-text {
+  display: grid;
+  line-height: 1.15;
+}
+
+.rail-label {
+  font-weight: 650;
   font-size: 0.95rem;
 }
 
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-4);
-  align-items: start;
+.rail-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
 }
 
-.column {
+.rail-status .marker-triangle {
+  border-left-width: 5px;
+  border-right-width: 5px;
+  border-bottom-width: 9px;
+}
+
+.rail-status .marker-ok {
+  width: 8px;
+  height: 8px;
+}
+
+.rail-link[aria-current="step"] {
+  border-color: var(--brass);
+  background: var(--raised);
+  color: var(--ink);
+}
+
+.rail-link[aria-current="step"] .rail-hole {
+  border-color: var(--brass-strong);
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 0 0 0 3px rgb(138 100 32 / 0.18);
+}
+
+.rail-next {
+  min-height: 44px;
+  padding: 0 var(--space-4);
+}
+
+/* Step areas: one grid, its areas set by the current Step. */
+
+.studio-stage {
+  display: grid;
+  gap: var(--space-4);
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.area {
   display: grid;
   gap: var(--space-4);
   min-width: 0;
 }
 
-@media (min-width: 768px) {
-  .app {
-    padding: var(--space-6);
+.area[hidden] {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .studio-stage[data-step="design"] {
+    grid-template-columns: minmax(300px, 0.9fr) minmax(0, 2fr) minmax(260px, 0.75fr);
+    grid-template-areas: "start bench setup";
   }
-  .layout {
-    grid-template-columns: minmax(280px, 1fr) minmax(0, 2fr);
+  .studio-stage[data-step="check"] {
+    grid-template-columns: minmax(0, 1.5fr) minmax(340px, 1fr);
+    grid-template-areas: "bench checks";
   }
-  .column-side {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-  }
-  .column-main,
-  .column-checks {
-    grid-column: 2;
+  .area-start { grid-area: start; }
+  .area-setup { grid-area: setup; }
+  .area-bench { grid-area: bench; }
+  .area-checks { grid-area: checks; }
+  .area-checks {
+    position: sticky;
+    top: calc(var(--rail-height) + var(--space-4));
+
+    max-height: calc(100dvh - var(--rail-height) - var(--space-8));
+    overflow: auto;
+    padding-right: 2px;
   }
 }
 
-@media (min-width: 1200px) {
-  .layout {
-    grid-template-columns: minmax(280px, 1fr) minmax(0, 2.2fr) minmax(280px, 1fr);
-  }
-  .column-side {
-    grid-row: auto;
-  }
-  .column-checks {
-    grid-column: 3;
-  }
-}
-
-.toast-region {
-  position: fixed;
-  left: var(--space-3);
-  right: var(--space-3);
-  bottom: var(--space-3);
-  z-index: 10;
-  display: flex;
-  justify-content: center;
+::view-transition {
   pointer-events: none;
 }
 
-.toast {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  max-width: 560px;
-  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
-  border-radius: var(--radius);
-  background: var(--tip-bg);
-  color: var(--tip-ink);
-  pointer-events: auto;
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+  animation-timing-function: var(--ease-out);
 }
 
-.toast .btn-quiet {
+/* Narrow screens: the rail is the bottom bar, its Continue action above the four Steps. */
+
+@media (max-width: 767px) {
+  .studio {
+    padding: 0 var(--space-3) calc(var(--rail-height) + 72px);
+  }
+  .topbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .app-lede {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    font-size: 0.8rem;
+  }
+  .setup-chip-full {
+    display: none;
+  }
+  .setup-chip-short {
+    display: inline;
+  }
+  /* While typing, the on-screen keyboard leaves no room for the bar. */
+  .studio:has(textarea:focus, select:focus, input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"]):focus) .rail-bar {
+    display: none;
+  }
+  .rail-bar {
+    position: fixed;
+    inset: auto 0 0 0;
+    margin: 0;
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom));
+    border-bottom: none;
+    box-shadow: 0 -8px 18px -14px rgb(60 40 20 / 0.6);
+  }
+  .rail-list {
+    justify-content: space-between;
+    gap: 0;
+  }
+  .rail-list::before {
+    display: none;
+  }
+  .rail-item {
+    flex: 1;
+  }
+  .rail-link {
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    width: 100%;
+    min-height: 56px;
+    padding: 2px;
+    border-radius: var(--radius);
+    text-align: center;
+  }
+  .rail-hole {
+    width: 30px;
+    height: 30px;
+  }
+  .rail-text {
+    justify-items: center;
+  }
+  .rail-label {
+    font-size: 0.8rem;
+  }
+  .rail-status {
+    font-size: 0.7rem;
+  }
+  .rail-next {
+    width: 100%;
+  }
+  .panel {
+    padding: var(--space-3);
+  }
+}
+
+/* ---------- Tooltips, hints and menus (Radix) ---------- */
+
+.hint-button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--raised);
+  color: var(--ink-muted);
+  vertical-align: middle;
+  cursor: help;
+}
+
+.hint-button:hover {
+  color: var(--ink);
+  border-color: var(--ink-muted);
+}
+
+@media (pointer: coarse) {
+  .hint-button::after {
+    content: "";
+    position: absolute;
+    inset: -11px;
+  }
+}
+
+.tip {
+  z-index: 50;
+  max-width: min(300px, calc(100vw - 16px));
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-small);
+  background: var(--tip-bg);
   color: var(--tip-ink);
+  font-size: 0.825rem;
+  font-weight: 400;
+  line-height: 1.45;
+  box-shadow: var(--lift-shadow);
+  animation: fade-in 120ms ease-out;
+}
+
+.tip-arrow {
+  fill: var(--tip-bg);
+}
+
+.menu {
+  z-index: 50;
+  min-width: 220px;
+  padding: var(--space-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--raised);
+  box-shadow: var(--lift-shadow);
+  animation: fade-in 120ms ease-out;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: max(40px, var(--target));
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-small);
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.menu-item[data-highlighted] {
+  background: var(--sunk);
+  box-shadow: inset 0 0 0 2px var(--focus-colour);
+}
+
+/* ---------- Toasts (sonner) ---------- */
+
+[data-sonner-toaster] [data-sonner-toast].toast {
+  border-color: var(--line-strong);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  box-shadow: var(--lift-shadow);
+}
+
+[data-sonner-toaster] [data-close-button] {
+  border-color: var(--line-strong);
+  background: var(--raised);
+  color: var(--ink);
+}
+
+@media (any-pointer: coarse) {
+  [data-sonner-toaster] [data-close-button]::after {
+    content: "";
+    position: absolute;
+    inset: -12px;
+  }
+}
+
+[data-sonner-toaster] [data-button] {
+  min-height: 32px;
+  border-radius: var(--radius-small);
+  background: var(--raised);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* On Check the float check panel is beside the grid, so the toolbar's compact summary would repeat it. */
+.studio-stage[data-step="check"] .toolbar-floats {
+  display: none;
 }

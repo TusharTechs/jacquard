@@ -97,16 +97,16 @@ export function EditorToolbar({
         <span className="small" id={touchLabelId}>
           One finger:
         </span>
-        <Button small variant={touchMode === "paint" ? "primary" : "secondary"} aria-pressed={touchMode === "paint"} onClick={() => onTouchMode("paint")}>
+        <Button small aria-pressed={touchMode === "paint"} onClick={() => onTouchMode("paint")}>
           Paint
         </Button>
-        <Button small variant={touchMode === "scroll" ? "primary" : "secondary"} aria-pressed={touchMode === "scroll"} onClick={() => onTouchMode("scroll")}>
+        <Button small aria-pressed={touchMode === "scroll"} onClick={() => onTouchMode("scroll")}>
           Scroll
         </Button>
       </div>
       <span className="switch-row toolbar-numbers">
         <input id={numbersId} type="checkbox" checked={regionNumbers} onChange={(event) => onRegionNumbers(event.target.checked)} />
-        <label htmlFor={numbersId} className="small">
+        <label htmlFor={numbersId} className="small switch-label">
           Show region numbers{regionNumbers && cellSize < NUMBERS_FROM ? ` (from ${NUMBERS_FROM}px cells)` : ""}
         </label>
       </span>

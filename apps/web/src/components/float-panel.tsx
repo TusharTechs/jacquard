@@ -11,6 +11,7 @@ import { errorCell } from "../lib/violation-marks";
 import { Term } from "./term";
 import { Button } from "./ui/button";
 import { Panel } from "./ui/panel";
+import { Hint } from "./ui/hint";
 import type { PanelStatus } from "./ui/panel";
 import { FixReport } from "./fix-report";
 import { ViolationList } from "./violation-list";
@@ -123,8 +124,8 @@ export function FloatPanel({
       {check !== null && check.ok ? (
         <div className="stack">
           <p className="small muted">
-            A <Term name="float">float</Term> may cross at most <span className="mono">{profile.maxWarpFloat}</span> picks
-            (warp) and <span className="mono">{profile.maxWeftFloat}</span> ends (weft) on this profile.
+            <Term name="float">Float</Term> limit: warp <span className="mono">{profile.maxWarpFloat}</span> picks · weft{" "}
+            <span className="mono">{profile.maxWeftFloat}</span> ends
           </p>
           {fixed !== null ? (
             <>
@@ -152,7 +153,6 @@ export function FloatPanel({
                 <span className="marker-triangle" aria-hidden="true" />
                 {plural(check.violations.length, "violation", "violations")}
               </p>
-              <p className="small muted">Each is outlined on the point paper, with a triangle on its first cell.</p>
               <ViolationList violations={check.violations} label="Float violations" />
               <div className="state-actions">
                 <Button variant="primary" onClick={onAutoFix}>
@@ -160,7 +160,11 @@ export function FloatPanel({
                 </Button>
               </div>
               <p className="small muted">
-                Auto-fix flips cells of the <Term name="liftPlan">lift plan</Term>. Your regions on the point paper stay as they are.
+                Changes only the <Term name="liftPlan">lift plan</Term>.{" "}
+                <Hint topic="auto-fix">
+                  Auto-fix adds binding points by flipping lift-plan cells until no float is over the limit. Your regions on the point
+                  paper stay as they are.
+                </Hint>
               </p>
             </>
           )}

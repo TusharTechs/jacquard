@@ -1,9 +1,12 @@
-// The JACQUARD app: loom setup, motif step, point paper, weaves, the float check, the cloth
-// simulator and the exports.
+// The JACQUARD Studio (studio-experience Requirement 2): four Steps on a rail, Design, Check,
+// Weave and Cards, over the same state as before: loom setup, motif step, point paper, weaves,
+// the float check, the cloth simulator, the 3D loom and the exports. Hidden Steps stay mounted.
 // State lives in editorReducer and setupReducer; every lift plan, float list and fix comes from
 // the engine through engine-check.ts (10.6). The check reruns when the design, the weaves or the
 // setup change, memoised and deferred so painting stays smooth.
+import type { ReactNode } from "react";
 import { useCallback, useDeferredValue, useEffect, useId, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
+import * as Tooltip from "@radix-ui/react-tooltip";
 import { checkFloats } from "@jacquard/engine";
 import type { Design, Weave, WeaveAssignment } from "@jacquard/engine";
 import type { MotifRequest, MotifResponse } from "@jacquard/motif";
@@ -21,9 +24,16 @@ import { Button } from "./components/ui/button";
 import { Dialog } from "./components/ui/dialog";
 import { Panel } from "./components/ui/panel";
 import type { PanelStatus } from "./components/ui/panel";
-import { Toast } from "./components/ui/toast";
-import type { ToastMessage } from "./components/ui/toast";
+import { Toaster, notify } from "./components/ui/toaster";
+import { StepRail, STEP_LABELS } from "./components/shell/step-rail";
+import { StudioMenu } from "./components/shell/studio-menu";
+import { TopBar } from "./components/shell/top-bar";
+import { setupSummary } from "./components/loom-setup-panel";
+import { STEPS, currentStep, parseStep, pushStep } from "./lib/route";
+import type { Step } from "./lib/route";
+import { changeView } from "./lib/view-transition";
 import { WeavePanel } from "./components/weave-panel";
+import { CardsStep } from "./components/cards/cards-step";
 import { WEAVE_SLOTS, defaultWeaves } from "./lib/default-weaves";
 import { checkDesign, fixDesign } from "./lib/engine-check";
 import { sameSource } from "./lib/fix-state";
@@ -94,7 +104,7 @@ export function App() {
   const [started, setStarted] = useState(false);
   const [cellSize, setCellSizeRaw] = useState(START_CELL);
   const [fix, setFix] = useState<FixState>({ status: "none" });
-  const [toast, setToast] = useState<ToastMessage | null>(null);
+  const [step, setStep] = useState<Step>(currentStep);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [coarsePointer] = useState(() => mediaMatches("(pointer: coarse)", false));
   const [touchMode, setTouchMode] = useState<TouchMode>(() => (coarsePointer ? "scroll" : "paint"));
@@ -106,7 +116,6 @@ export function App() {
   const [yarnChoice, setYarnChoice] = useState<{ readonly warp: string; readonly weft: string | null }>({ warp: DEFAULT_WARP, weft: null });
   const [motifFocus, setMotifFocus] = useState<{ kind: "text" | "sketch"; id: number } | null>(null);
   const profileRef = useRef<HTMLSelectElement | null>(null);
-  const toastId = useRef(0);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const floatHeadingRef = useRef<HTMLHeadingElement | null>(null);
@@ -137,11 +146,48 @@ export function App() {
   const design = editor.design;
   const size = sizeOf(design);
 
-  const say = useCallback((text: string, sticky = false) => {
-    toastId.current += 1;
-    setToast(sticky ? { id: toastId.current, text, sticky } : { id: toastId.current, text });
+  const say = useCallback(
+    (text: string, sticky = false, action?: { readonly label: string; readonly run: () => void }) =>
+      notify(text, action === undefined ? { sticky } : { sticky, action }),
+    [],
+  );
+
+  // ---- Steps (2.3, 2.6): React state, recorded in the URL; Back and Forward read it back. ----
+  // Announce Step changes, not the first Step.
+  const stepAnnounced = useRef(false);
+  useEffect(() => {
+    stepAnnounced.current = true;
   }, []);
-  const dismissToast = useCallback(() => setToast(null), []);
+  const stepRef = useRef(step);
+  stepRef.current = step;
+  /** Shows `next`, then runs `after` once it is in the DOM (at once when it already shows). */
+  const goTo = useCallback((next: Step, after?: () => void): void => {
+    if (next === stepRef.current) {
+      after?.();
+      return;
+    }
+    stepRef.current = next;
+    pushStep(next);
+    // A plain Step change starts at the top of the Step; a follow-up scrolls to its own target.
+    changeView(() => setStep(next), after ?? (() => window.scrollTo?.({ top: 0 })));
+  }, []);
+  const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const railLinks = useRef(new Map<Step, HTMLAnchorElement>());
+  const railLinkRef = useCallback((item: Step, node: HTMLAnchorElement | null): void => {
+    if (node === null) railLinks.current.delete(item);
+    else railLinks.current.set(item, node);
+  }, []);
+  useEffect(() => {
+    const onPop = (): void => {
+      const next = parseStep(window.location.hash);
+      if (next === stepRef.current) return;
+      stepRef.current = next;
+      changeView(() => setStep(next));
+    };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+
   const setCellSize = useCallback((value: number) => setCellSizeRaw(clampCell(value)), []);
 
   // ---- Engine check (10.1): deferred so a fast stroke is not held up by the engine. ----
@@ -221,6 +267,14 @@ export function App() {
     }
     if (fixed.error.code === "AUTOFIX_FAILED") setFix({ status: "failed", error: fixed.error, source });
     else setFix({ status: "error", error: fixed.error, source });
+    // The report is in the float check; from another Step say so, with the way there.
+    if (stepRef.current !== "check") {
+      say(
+        fixed.error.code === "AUTOFIX_FAILED" ? "Auto-fix could not remove every violation." : "Auto-fix stopped with an error.",
+        true,
+        { label: "Go to the float check", run: () => goToFloatCheckRef.current() },
+      );
+    }
   };
 
   // ---- Setup changes. A new repeat size resizes the grid as one undoable edit. ----
@@ -230,7 +284,10 @@ export function App() {
     if (next.repeat.ends !== size.ends || next.repeat.picks !== size.picks) {
       if (next.repeat.ends !== setup.repeat.ends || next.repeat.picks !== setup.repeat.picks) {
         dispatchEditor({ type: "replace", design: resizeDesign(design, next.repeat) });
-        say(`Grid resized to ${next.repeat.ends} ends by ${next.repeat.picks} picks. Undo brings back the previous grid.`, true);
+        say(`Grid resized to ${next.repeat.ends} ends by ${next.repeat.picks} picks. Undo brings back the previous grid.`, true, {
+          label: "Undo",
+          run: () => undoRef.current(),
+        });
       }
     }
     if (editor.region >= next.colourCount) dispatchEditor({ type: "setRegion", region: 0 });
@@ -241,22 +298,27 @@ export function App() {
   };
 
   const focusGrid = (): void => {
+    if (stepRef.current !== "check") goTo("design");
     requestAnimationFrame(() => canvasRef.current?.focus());
   };
 
   const focusProfile = (): void => {
     setSetupOpen(true);
-    requestAnimationFrame(() => {
-      profileRef.current?.focus();
-      profileRef.current?.scrollIntoView?.({ block: "center" });
-    });
+    goTo("design", () =>
+      requestAnimationFrame(() => {
+        profileRef.current?.focus();
+        profileRef.current?.scrollIntoView?.({ block: "center" });
+      }),
+    );
   };
 
   const focusGallery = (): void => {
-    const heading = galleryHeadingRef.current;
-    if (heading === null) return;
-    heading.scrollIntoView?.({ block: "start" });
-    heading.focus();
+    goTo("design", () => {
+      const heading = galleryHeadingRef.current;
+      if (heading === null) return;
+      heading.scrollIntoView?.({ block: "start" });
+      heading.focus();
+    });
   };
 
   // ---- Undo and redo. A gallery open also brings back (or re-applies) its setup, palette and weaves. ----
@@ -274,6 +336,8 @@ export function App() {
     editorRef.current = editorReducer(editorRef.current, { type: "undo" });
     if (edit !== undefined) applySurroundings(edit.before, current.region);
   }, [applySurroundings]);
+  const undoRef = useRef(undo);
+  undoRef.current = undo;
   const redo = useCallback((): void => {
     const current = editorReducer(editorRef.current, { type: "endStroke" });
     const next = current.redo[current.redo.length - 1];
@@ -323,7 +387,7 @@ export function App() {
   const goToNextViolation = (): void => setNextViolationRequest((value) => value + 1);
 
   const focusMotif = (kind: "text" | "sketch"): void => {
-    setMotifFocus((current) => ({ kind, id: (current?.id ?? 0) + 1 }));
+    goTo("design", () => setMotifFocus((current) => ({ kind, id: (current?.id ?? 0) + 1 })));
   };
 
   const startBlank = (): void => {
@@ -390,7 +454,27 @@ export function App() {
   // ---- Editor shortcuts from anywhere except text entry (9.3, 9.5). ----
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (isTextEntry(event.target) || event.altKey) return;
+      if (isTextEntry(event.target)) return;
+      // Alt+1 to Alt+4 choose the Steps (2.9). By code, because Option+digit types a symbol on a Mac.
+      if (event.altKey) {
+        const match = /^Digit([1-4])$/.exec(event.code);
+        if (match !== null && !event.ctrlKey && !event.metaKey) {
+          if (document.querySelector("dialog[open]") !== null) return;
+          const target = STEPS[Number(match[1]) - 1];
+          if (target !== undefined) {
+            event.preventDefault();
+            goTo(target, () => {
+              // Focus that was inside the Step just hidden goes to the new Step's rail link.
+              const active = document.activeElement;
+              if (active === null || active === document.body || (active instanceof HTMLElement && active.closest("[hidden]") !== null)) {
+                railLinks.current.get(target)?.focus();
+              }
+              window.scrollTo?.({ top: 0 });
+            });
+          }
+        }
+        return;
+      }
       const mod = event.ctrlKey || event.metaKey;
       const key = event.key.toLowerCase();
       if (mod && key === "z") {
@@ -417,7 +501,7 @@ export function App() {
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [setup.colourCount, shortcutsOpen, undo, redo]);
+  }, [setup.colourCount, shortcutsOpen, undo, redo, goTo]);
 
   const changeWeave = (region: number, weave: Weave): void => setWeaves((current) => ({ ...current, [region]: weave }));
 
@@ -465,26 +549,74 @@ export function App() {
   }, [design, check, allMarks, size.ends, size.picks]);
 
   const goToFloatCheck = (): void => {
-    const heading = floatHeadingRef.current;
-    if (heading === null) return;
-    heading.scrollIntoView?.({ block: "start" });
-    heading.focus();
+    goTo("check", () => {
+      const heading = floatHeadingRef.current;
+      if (heading === null) return;
+      heading.scrollIntoView?.({ block: "start" });
+      heading.focus();
+    });
   };
+  const goToFloatCheckRef = useRef(goToFloatCheck);
+  goToFloatCheckRef.current = goToFloatCheck;
+
+  // ---- Step rail (2.2, 3.2): a short status per Step and the one primary action. ----
+  const stepCount = planInUse === null ? null : planInUse.pickCount;
+  const railStatus: Record<Step, ReactNode> = {
+    design: <span className="mono">{size.ends}×{size.picks}</span>,
+    check:
+      paperStatus === "empty" ? (
+        "—"
+      ) : !check.ok ? (
+        "Error"
+      ) : fixed !== null ? (
+        <>
+          <span className="marker-ok" aria-hidden="true" /> Fixed
+        </>
+      ) : check.violations.length > 0 ? (
+        <>
+          <span className="marker-triangle" aria-hidden="true" /> <span className="mono">{check.violations.length}</span>
+        </>
+      ) : (
+        <>
+          <span className="marker-ok" aria-hidden="true" /> OK
+        </>
+      ),
+    weave: stepCount === null ? "—" : <span className="mono">{stepCount} picks</span>,
+    cards: stepCount === null ? "—" : <span className="mono">{stepCount} cards</span>,
+  };
+  const railStatusText: Record<Step, string> = {
+    design: `${size.ends} by ${size.picks}`,
+    check:
+      paperStatus === "empty"
+        ? "nothing to check yet"
+        : !check.ok
+          ? "the check could not run"
+          : fixed !== null
+            ? "fixed by auto-fix"
+            : check.violations.length > 0
+              ? `${check.violations.length} float ${check.violations.length === 1 ? "violation" : "violations"}`
+              : "no long floats",
+    weave: stepCount === null ? "no lift plan yet" : `${stepCount} picks`,
+    cards: stepCount === null ? "no cards yet" : `${stepCount} cards`,
+  };
+  const nextStep = STEPS[STEPS.indexOf(step) + 1];
+  const stepAnnouncement = stepAnnounced.current ? `${STEP_LABELS[step]} step` : "";
+  const railNext = nextStep === undefined ? null : { label: `Continue to ${STEP_LABELS[nextStep]}`, run: () => goTo(nextStep) };
 
   return (
-    <div className="app">
-      <header className="app-header">
-        <h1 className="app-title">JACQUARD</h1>
-        <div className="holes" aria-hidden="true" />
-        <p className="app-lede">
-          Punch cards are dead as a computing medium. Handlooms still use them. JACQUARD helps designers and card punchers turn
-          a motif into a loom-ready design for a configurable loom profile. The card format has not been tested on a working loom.
-        </p>
-        <p className="app-sublede">
-          Describe or sketch a motif and the model suggests a clean, limited-colour version. You edit every cell on point paper,
-          and the weave engine checks the floats as you go.
-        </p>
-      </header>
+    <Tooltip.Provider delayDuration={300}>
+    <div className="studio" data-step={step}>
+      <TopBar
+        setupSummary={setupSummary(setup)}
+        onOpenSetup={focusProfile}
+        menu={
+          <StudioMenu triggerRef={menuTriggerRef} onShortcuts={() => setShortcutsOpen(true)} />
+        }
+      />
+      <StepRail step={step} status={railStatus} statusText={railStatusText} onSelect={(next) => goTo(next)} next={railNext} linkRef={railLinkRef} />
+      <p className="sr-only" aria-live="polite">
+        {stepAnnouncement}
+      </p>
 
       {online ? null : (
         <div className="banner" role="status">
@@ -493,8 +625,8 @@ export function App() {
         </div>
       )}
 
-      <main className="layout">
-        <div className="column column-side">
+      <main className="studio-stage" data-step={step}>
+        <section aria-label="Design: start" className="area area-start" hidden={step !== "design"}>
           <GalleryPanel onOpen={openExample} openId={galleryShown?.id ?? null} headingRef={galleryHeadingRef} />
           <MotifPanel
             setup={setup}
@@ -506,6 +638,9 @@ export function App() {
             onOpenGallery={focusGallery}
             focusRequest={motifFocus}
           />
+        </section>
+
+        <section aria-label="Design: loom setup" className="area area-setup" hidden={step !== "design"}>
           <LoomSetupPanel
             setup={setup}
             onChange={changeSetup}
@@ -514,19 +649,16 @@ export function App() {
             onOpenChange={setSetupOpen}
             profileRef={profileRef}
           />
-        </div>
+        </section>
 
-        <div className="column column-main">
+        <div className="area area-bench" hidden={step !== "design" && step !== "check"}>
           <Panel
             title="Point paper"
             status={paperStatus}
             empty={
               <>
                 <p className="state-title">A blank grid</p>
-                <p className="small">
-                  Every cell is region <span className="mono">0</span>. Open an example from the gallery, generate a motif
-                  to start from, or choose a region and paint with a finger, pen or mouse.
-                </p>
+                <p className="small">Start from an example, a motif, or paint.</p>
                 <div className="state-actions">
                   <Button small variant="primary" onClick={focusGallery}>
                     Open a gallery example
@@ -542,7 +674,7 @@ export function App() {
             }
             loading={
               <>
-                <p className="small">A motif is on its way. You can keep painting; the new motif replaces the grid when it arrives, and Undo brings this one back.</p>
+                <p className="small">A motif is on its way. Keep painting; Undo brings this grid back.</p>
                 <div className="progress" aria-hidden="true" />
                 <div className="state-actions">
                   <Button small onClick={motif.cancel}>
@@ -605,10 +737,10 @@ export function App() {
               {fixed === null ? null : (
                 <div className="toolbar-group" role="group" aria-label="Show on the point paper">
                   <span className="small">Show:</span>
-                  <Button small variant={shownLayer === "violations" ? "primary" : "secondary"} aria-pressed={shownLayer === "violations"} onClick={() => setLayer("violations")}>
+                  <Button small aria-pressed={shownLayer === "violations"} onClick={() => setLayer("violations")}>
                     Design violations
                   </Button>
-                  <Button small variant={shownLayer === "fixes" ? "primary" : "secondary"} aria-pressed={shownLayer === "fixes"} onClick={() => setLayer("fixes")}>
+                  <Button small aria-pressed={shownLayer === "fixes"} onClick={() => setLayer("fixes")}>
                     Auto-fix changes
                   </Button>
                 </div>
@@ -642,14 +774,14 @@ export function App() {
               ) : allMarks.size > 0 ? (
                 <p className="small paper-legend">
                   <span className="marker-triangle" aria-hidden="true" /> Outline: a float over the limit; triangle: its first
-                  cell. Press <kbd>N</kbd> on the grid to go to the next one.
+                  cell. <kbd>N</kbd>: next.
                 </p>
               ) : null}
             </div>
           </Panel>
         </div>
 
-        <div className="column column-checks">
+        <section aria-label="Check" className="area area-checks" hidden={step !== "check"}>
           <FloatPanel
             check={size.ends === 0 || size.picks === 0 || paperStatus === "empty" ? null : check}
             checking={checking}
@@ -683,6 +815,26 @@ export function App() {
             warnings={check.ok ? check.warnings : []}
             onChange={changeWeave}
           />
+        </section>
+
+        <section aria-label="Weave" className="area area-weave" hidden={step !== "weave"}>
+          <Panel title="Weave">
+            <p className="small muted">The 3D loom arrives in the next wave.</p>
+          </Panel>
+        </section>
+
+        <section aria-label="Cards" className="area area-cards" hidden={step !== "cards"}>
+          <CardsStep
+            plan={planInUse}
+            blank={blankStart}
+            onOpenGallery={focusGallery}
+            onGoToDesign={() => goTo("design")}
+            onGoToFloatCheck={goToFloatCheck}
+          >
+            <p className="small muted">
+              <span className="mono">{planInUse?.pickCount ?? 0}</span> cards in lacing order.
+            </p>
+          </CardsStep>
           <ExportPanel
             profileName={setup.profile}
             profile={profile}
@@ -696,11 +848,11 @@ export function App() {
             blank={blankStart}
             onAutoFix={runAutoFix}
           />
-        </div>
+        </section>
       </main>
 
-      <Toast message={toast} onDismiss={dismissToast} />
-      <Dialog open={shortcutsOpen} title="Point paper shortcuts" onClose={() => setShortcutsOpen(false)}>
+      <Toaster />
+      <Dialog open={shortcutsOpen} title="Point paper shortcuts" onClose={() => setShortcutsOpen(false)} fallbackFocus={menuTriggerRef}>
         <dl className="shortcut-list">
           <dt>
             <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd>
@@ -730,8 +882,13 @@ export function App() {
             <kbd>+</kbd> <kbd>−</kbd>
           </dt>
           <dd>Larger or smaller cells. Two fingers pinch to zoom and drag to scroll on touch screens.</dd>
+          <dt>
+            <kbd>Alt</kbd> + <kbd>1</kbd> to <kbd>4</kbd>
+          </dt>
+          <dd>Go to Design, Check, Weave or Cards.</dd>
         </dl>
       </Dialog>
     </div>
+    </Tooltip.Provider>
   );
 }

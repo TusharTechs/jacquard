@@ -4,7 +4,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { cleanup } from "@testing-library/react";
+import { act, cleanup, fireEvent, screen } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 
 function noOpContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
@@ -23,6 +23,19 @@ function noOpContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
 }
 
 export function installDom(): void {
+  // Each test starts on the Design Step (studio-experience: the Step lives in the URL).
+  window.history.replaceState(null, "", "/");
+  // jsdom has no ResizeObserver; Radix tooltips measure with it. Browsers have it natively.
+  if (typeof globalThis.ResizeObserver === "undefined") {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe(): void {}
+        unobserve(): void {}
+        disconnect(): void {}
+      },
+    );
+  }
   const contexts = new WeakMap<HTMLCanvasElement, CanvasRenderingContext2D>();
   vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(function (this: HTMLCanvasElement) {
     let context = contexts.get(this);
@@ -106,4 +119,15 @@ export function stubGalleryFetch(override?: (url: string) => Promise<Response> |
   });
   vi.stubGlobal("fetch", fake);
   return fake;
+}
+
+/**
+ * Opens a Studio Step through its rail link (studio-experience 15.3: App-level tests open the Step
+ * that holds the panel they act on; their assertions are unchanged).
+ */
+export function openStep(name: "Design" | "Check" | "Weave" | "Cards"): void {
+  const link = screen.getByRole("link", { name: new RegExp(`^${name}\\b`) });
+  act(() => {
+    fireEvent.click(link);
+  });
 }

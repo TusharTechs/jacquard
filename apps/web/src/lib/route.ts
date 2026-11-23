@@ -1,45 +1,35 @@
-// Hash routes (studio-experience 2.3, 10.5): `#/` is the Story, `#/studio/<step>` a Studio Step.
-// The hash works on static hosting without rewrites. Unknown Steps fall back to Design.
-import { useEffect, useState } from "react";
-
+// The Step in the URL (studio-experience 2.3): `#/design`, `#/check`, `#/weave`, `#/cards`, so Back,
+// Forward and reload return to it. The hash works on static hosting without rewrites. Anything
+// else opens Design.
 export const STEPS = ["design", "check", "weave", "cards"] as const;
 export type Step = (typeof STEPS)[number];
-
-export type Route = { readonly page: "story" } | { readonly page: "studio"; readonly step: Step };
 
 export function isStep(value: string): value is Step {
   return (STEPS as readonly string[]).includes(value);
 }
 
-/** Reads a `location.hash` value. Anything that is not a Studio route is the Story. */
-export function parseHash(hash: string): Route {
-  const path = hash.replace(/^#/, "").replace(/^\/+/, "").replace(/\/+$/, "");
-  const [page, step] = path.split("/");
-  if (page !== "studio") return { page: "story" };
-  return { page: "studio", step: step !== undefined && isStep(step) ? step : "design" };
+export function parseStep(hash: string): Step {
+  const name = hash.replace(/^#/, "").replace(/^\/+/, "").replace(/\/+$/, "");
+  return isStep(name) ? name : "design";
 }
 
-export function hrefFor(route: Route): string {
-  return route.page === "story" ? "#/" : `#/studio/${route.step}`;
+export function stepHref(step: Step): string {
+  return `#/${step}`;
 }
 
-function currentHash(): string {
-  return typeof window === "undefined" ? "" : window.location.hash;
+/** The Step in the current URL. */
+export function currentStep(): Step {
+  return typeof window === "undefined" ? "design" : parseStep(window.location.hash);
 }
 
-/** Changes the hash (adds a history entry), which `useRoute` hears through `hashchange`. */
-export function navigate(route: Route): void {
+/** Records a Step change as a history entry without a hashchange round trip. */
+export function pushStep(step: Step): void {
   if (typeof window === "undefined") return;
-  const href = hrefFor(route);
-  if (window.location.hash !== href) window.location.hash = href;
-}
-
-export function useRoute(): Route {
-  const [route, setRoute] = useState<Route>(() => parseHash(currentHash()));
-  useEffect(() => {
-    const onChange = (): void => setRoute(parseHash(currentHash()));
-    window.addEventListener("hashchange", onChange);
-    return () => window.removeEventListener("hashchange", onChange);
-  }, []);
-  return route;
+  const href = stepHref(step);
+  if (window.location.hash === href) return;
+  try {
+    window.history.pushState(null, "", href);
+  } catch {
+    window.location.hash = href;
+  }
 }

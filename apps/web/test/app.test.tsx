@@ -3,7 +3,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "../src/app";
-import { accessibleName, installDom, stubGalleryFetch, textOf } from "./dom-setup";
+import { accessibleName, installDom, openStep, stubGalleryFetch, textOf } from "./dom-setup";
 
 function readout(): string {
   const node = document.querySelector(".readout");
@@ -41,7 +41,12 @@ function regionText(): string {
 describe("app", () => {
   it("renders every panel", () => {
     render(<App />);
-    for (const name of ["Gallery", "Loom setup", "Motif", "Point paper", "Float check", "Weave per region"]) {
+    for (const name of ["Gallery", "Loom setup", "Motif", "Point paper"]) {
+      expect(screen.getByRole("heading", { name })).toBeTruthy();
+    }
+    expect(screen.getByRole("application")).toBeTruthy();
+    openStep("Check");
+    for (const name of ["Point paper", "Float check", "Weave per region"]) {
       expect(screen.getByRole("heading", { name })).toBeTruthy();
     }
     expect(screen.getByRole("application")).toBeTruthy();
@@ -82,7 +87,7 @@ describe("app", () => {
     expect(unnamed).toEqual([]);
   });
 
-  it("shows the offline banner and keeps the editor usable; back online offers generating again (12.4)", () => {
+  it("shows the offline banner and keeps the editor usable; back online offers generating again (12.4)", async () => {
     render(<App />);
     expect(screen.queryByText("You are offline.")).toBeNull();
     act(() => {
@@ -103,7 +108,8 @@ describe("app", () => {
       window.dispatchEvent(new Event("online"));
     });
     expect(screen.queryByText("You are offline.")).toBeNull();
-    expect(textOf(document.body)).toContain("Back online. You can generate a motif again.");
+    // The toast (sonner) renders on the next task.
+    await waitFor(() => expect(textOf(document.body)).toContain("Back online. You can generate a motif again."));
   });
 
   it("paints from the keyboard, then undoes with Ctrl+Z and redoes with Ctrl+Shift+Z and Ctrl+Y (9.3, 9.5)", () => {
@@ -147,6 +153,7 @@ describe("app", () => {
     const toggle = within(setup).getByRole("switch") as HTMLInputElement;
     fireEvent.click(toggle);
     expect(toggle.checked).toBe(true);
+    openStep("Check");
     const floats = screen.getByRole("heading", { name: "Float check" }).closest("section")!;
     const action = await waitFor(() => within(floats).getByRole("button", { name: "Turn off repeat across" }));
     fireEvent.click(action);
@@ -177,16 +184,21 @@ describe("app", () => {
   });
   it("shows the cloth simulator and the export panel, empty until there is a design (2.5, 6.1)", () => {
     render(<App />);
+    openStep("Check");
     const simulator = screen.getByRole("heading", { name: "Cloth simulation" }).closest("section")!;
-    const exports = screen.getByRole("heading", { name: "Export" }).closest("section")!;
     expect(textOf(simulator)).toContain("No cloth to show yet");
-    expect(textOf(exports)).toContain("Nothing to export yet");
     // On first run only the motif and point-paper area offers a blank grid; the others are notes.
     expect(within(simulator).queryAllByRole("button")).toHaveLength(0);
+    openStep("Cards");
+    const exports = screen.getByRole("heading", { name: "Export" }).closest("section")!;
+    expect(textOf(exports)).toContain("Nothing to export yet");
     expect(within(exports).queryAllByRole("button")).toHaveLength(0);
+    openStep("Design");
     fireEvent.click(within(section("Motif")).getByRole("button", { name: "Start from a blank grid" }));
+    openStep("Check");
     expect(textOf(simulator)).toContain("Showing the lift plan of the current design");
     expect(simulator.querySelector("canvas")).not.toBeNull();
+    openStep("Cards");
     expect(within(exports).getByRole("button", { name: "Cards (PDF)" })).toBeTruthy();
     // The weft yarn starts as region 0's display colour; the warp is a dark neutral.
     const [warp, weft] = [...simulator.querySelectorAll<HTMLInputElement>('input[type="color"]')];
@@ -196,6 +208,7 @@ describe("app", () => {
   it("exporting cards right after a stroke that adds violations never downloads without the gate (6.2)", async () => {
     const anchorClick = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => undefined);
     render(<App />);
+    openStep("Check");
     const weaves = screen.getByRole("heading", { name: "Weave per region" }).closest("section")!;
     fireEvent.change(within(weaves).getByLabelText("Region 0"), { target: { value: "satin-8-3-warp" } });
     const canvas = screen.getByRole("application");
@@ -204,6 +217,7 @@ describe("app", () => {
     fireEvent.pointerMove(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, buttons: 1, clientX: 164, clientY: 380 });
     fireEvent.pointerUp(canvas, { pointerId: 1, pointerType: "mouse", isPrimary: true, clientX: 164, clientY: 380 });
     // No waiting for the float check: click straight after the stroke.
+    openStep("Cards");
     const exports = screen.getByRole("heading", { name: "Export" }).closest("section")!;
     const cards = within(exports).getByRole("button", { name: "Cards (PDF)" });
     fireEvent.click(cards);
@@ -222,6 +236,7 @@ describe("app", () => {
   });
   it("after auto-fix the simulator and the exports use the fixed lift plan (2.4, 6.3)", async () => {
     render(<App />);
+    openStep("Check");
     // Region 0 warp-faced satin 8 with one end of region 1 gives floats past the limit of 8.
     const weaves = screen.getByRole("heading", { name: "Weave per region" }).closest("section")!;
     fireEvent.change(within(weaves).getByLabelText("Region 0"), { target: { value: "satin-8-3-warp" } });
@@ -233,9 +248,11 @@ describe("app", () => {
     const floats = screen.getByRole("heading", { name: "Float check" }).closest("section")!;
     const autoFix = await waitFor(() => within(floats).getByRole("button", { name: "Auto-fix" }));
     const simulator = screen.getByRole("heading", { name: "Cloth simulation" }).closest("section")!;
+    openStep("Cards");
     const exports = screen.getByRole("heading", { name: "Export" }).closest("section")!;
     expect(textOf(simulator)).toContain("Showing the lift plan of the current design");
     expect(textOf(exports)).toMatch(/\d+ float violations? in the lift plan/);
+    openStep("Check");
     fireEvent.click(autoFix);
     await waitFor(() => expect(textOf(simulator)).toContain("Showing the fixed lift plan from auto-fix"));
     expect(textOf(exports)).toContain("Exports use the fixed lift plan from auto-fix");
@@ -243,8 +260,9 @@ describe("app", () => {
 
   it("orders the page for a first visit: lede, gallery, motif, loom setup, then the point paper and checks", () => {
     render(<App />);
+    // Steps hide the panels they do not show, so the order is read with hidden panels included.
     const order = ["Gallery", "Motif", "Loom setup", "Point paper", "Float check", "Cloth simulation", "Export"].map((name) =>
-      screen.getByRole("heading", { name }),
+      screen.getByRole("heading", { name, hidden: true }),
     );
     const lede = document.querySelector(".app-lede")!;
     expect(lede.compareDocumentPosition(order[0]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -264,6 +282,7 @@ describe("app", () => {
 
   it("number keys change the region only on the point paper, its toolbar or the legend", () => {
     render(<App />);
+    openStep("Check");
     const canvas = screen.getByRole("application");
     fireEvent.keyDown(document.body, { key: "2" });
     expect(regionText()).toContain("Painting region 0");

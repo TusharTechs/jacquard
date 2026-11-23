@@ -6,7 +6,7 @@ import type { MotifRequest } from "@jacquard/motif";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App, GALLERY_BADGE } from "../src/app";
 import { GALLERY_ERROR } from "../src/components/gallery-panel";
-import { galleryFile, installDom, stubGalleryFetch, textOf } from "./dom-setup";
+import { galleryFile, installDom, openStep, stubGalleryFetch, textOf } from "./dom-setup";
 
 interface IndexEntry {
   readonly id: string;
@@ -135,6 +135,7 @@ describe("gallery panel", () => {
     const peacock = JSON.parse(galleryFile("peacock-butta.json")) as { check: { violationsBefore: number } };
     expect(peacock.check.violationsBefore).toBeGreaterThan(0);
     fireEvent.click(await openButton("Peacock butta"));
+    openStep("Check");
     const floats = section("Float check");
     await waitFor(() => expect(within(floats).getByRole("button", { name: "Auto-fix" })).toBeTruthy());
     const count = peacock.check.violationsBefore;

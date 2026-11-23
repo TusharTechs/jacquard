@@ -1,8 +1,11 @@
-// Shared Dialog on the native <dialog> element. Opening it remembers the focused element, and
-// closing it (button, Escape, backdrop form, or the parent setting `open` false) returns focus
-// there. When that element is gone or disabled, focus goes to `fallbackFocus` instead, so it never
-// falls to the page body.
-import { useEffect, useId, useRef } from "react";
+// Shared Dialog on Radix (studio-experience 4.1): focus is trapped while open, Escape and the
+// close button close it. Content renders as a `<dialog open>` element, so it is a dialog in the
+// DOM as well as in the accessibility tree. When `open` turns false focus returns, at once, to
+// the element focused before opening; when that element is gone or disabled it goes to
+// `fallbackFocus`, so it never falls to the page body. Radix's own (later) focus return is
+// prevented so the two never fight.
+import * as RadixDialog from "@radix-ui/react-dialog";
+import { useEffect, useRef } from "react";
 import type { ReactNode, RefObject } from "react";
 import { Button } from "./button";
 
@@ -22,60 +25,53 @@ function canTakeFocus(element: HTMLElement | null): element is HTMLElement {
 }
 
 export function Dialog({ open, title, onClose, children, closeLabel = "Close", fallbackFocus }: DialogProps) {
-  const ref = useRef<HTMLDialogElement | null>(null);
   const returnTo = useRef<HTMLElement | null>(null);
-  const titleId = useId();
+  const wasOpen = useRef(false);
   const fallbackRef = useRef(fallbackFocus);
   fallbackRef.current = fallbackFocus;
 
-  /** Returns focus once per opening; a second call (close event after a closed `open`) does nothing. */
-  const restoreFocus = (): void => {
-    if (returnTo.current === null) return;
+  // Remember the opener during the render that opens the dialog, before Radix moves focus.
+  if (open && !wasOpen.current && typeof document !== "undefined") {
+    returnTo.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  }
+
+  // A passive effect: by then Radix has released its focus trap for the closing dialog.
+  useEffect(() => {
+    if (open) {
+      wasOpen.current = true;
+      return;
+    }
+    if (!wasOpen.current) return;
+    wasOpen.current = false;
     const target = returnTo.current;
     returnTo.current = null;
     if (canTakeFocus(target)) target.focus();
     else fallbackRef.current?.current?.focus();
-  };
-
-  useEffect(() => {
-    const dialog = ref.current;
-    if (dialog === null) return;
-    if (open && !dialog.open) {
-      returnTo.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      if (typeof dialog.showModal === "function") dialog.showModal();
-      else dialog.setAttribute("open", "");
-    } else if (!open && dialog.open) {
-      if (typeof dialog.close === "function") dialog.close();
-      else dialog.removeAttribute("open");
-      // Without a native close event (old browsers, jsdom) focus is returned here.
-      restoreFocus();
-    }
   }, [open]);
 
-  useEffect(() => {
-    const dialog = ref.current;
-    if (dialog === null) return;
-    const handleClose = (): void => {
-      restoreFocus();
-      onClose();
-    };
-    dialog.addEventListener("close", handleClose);
-    return () => dialog.removeEventListener("close", handleClose);
-  }, [onClose]);
-
   return (
-    <dialog ref={ref} className="dialog" aria-labelledby={titleId}>
-      <div className="dialog-header">
-        <h2 id={titleId} className="dialog-title">
-          {title}
-        </h2>
-      </div>
-      <div className="dialog-body">{children}</div>
-      <form method="dialog" className="dialog-footer">
-        <Button type="submit" variant="primary">
-          {closeLabel}
-        </Button>
-      </form>
-    </dialog>
+    <RadixDialog.Root
+      open={open}
+      onOpenChange={(next) => {
+        if (!next) onClose();
+      }}
+    >
+      <RadixDialog.Portal>
+        <RadixDialog.Overlay className="dialog-overlay" />
+        <RadixDialog.Content asChild aria-describedby={undefined} onCloseAutoFocus={(event) => event.preventDefault()}>
+          <dialog open className="dialog">
+            <div className="dialog-header">
+              <RadixDialog.Title className="dialog-title">{title}</RadixDialog.Title>
+            </div>
+            <div className="dialog-body">{children}</div>
+            <div className="dialog-footer">
+              <Button variant="primary" onClick={onClose}>
+                {closeLabel}
+              </Button>
+            </div>
+          </dialog>
+        </RadixDialog.Content>
+      </RadixDialog.Portal>
+    </RadixDialog.Root>
   );
 }

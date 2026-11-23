@@ -8,8 +8,8 @@ import type { Symmetry } from "@jacquard/motif";
 import { PROFILE_NAMES, SYMMETRIES, resolveProfile, setupLimits } from "../state/setup-state";
 import type { ProfileName, SetupAction, SetupState } from "../state/setup-state";
 import { NumberSetting } from "./number-setting";
-import { Term } from "./term";
 import { Field } from "./ui/field";
+import { Hint } from "./ui/hint";
 import { Panel } from "./ui/panel";
 
 const SYMMETRY_LABELS: Readonly<Record<Symmetry, string>> = {
@@ -43,7 +43,15 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = tr
   const switchMessageId = useId();
 
   return (
-    <Panel title="Loom setup">
+    <Panel
+      title="Loom setup"
+      actions={
+        <Hint topic="the loom setup">
+          The repeat is counted in ends across and picks up. Colour count, symmetry and minimum feature apply to the next motif you
+          generate.
+        </Hint>
+      }
+    >
       <details
         className="setup-details"
         open={open}
@@ -57,10 +65,6 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = tr
           {setup.repeatAcross ? " · repeat across" : ""}
         </summary>
       <div className="stack">
-        <p className="small muted">
-          The repeat is counted in <Term name="end">ends</Term> across and <Term name="pick">picks</Term> up. Colour count,
-          symmetry and minimum feature apply to the next motif you generate.
-        </p>
         <Field label="Loom profile" hint={<>Up to <span className="mono">{profile.regionLimit}</span> regions on this profile.</>}>
           {(control) => (
             <select
@@ -83,7 +87,7 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = tr
           value={setup.colourCount}
           min={limits.colourCount.min}
           max={limits.colourCount.max}
-          hint={<>Regions, background included. From <span className="mono">{limits.colourCount.min}</span> to <span className="mono">{limits.colourCount.max}</span>.</>}
+          hint={<>Background included. <span className="mono">{limits.colourCount.min}</span> to <span className="mono">{limits.colourCount.max}</span>.</>}
           onCommit={(colourCount) => onChange({ type: "setColourCount", colourCount })}
         />
         <div className="grid-2">
@@ -108,7 +112,7 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = tr
           min={limits.minFeature.min}
           max={limits.minFeature.max}
           unit="cells"
-          hint={<>Smaller areas in a generated motif are merged into a neighbour. From <span className="mono">{limits.minFeature.min}</span> to <span className="mono">{limits.minFeature.max}</span> cells.</>}
+          hint={<>Smaller areas merge into a neighbour. <span className="mono">{limits.minFeature.min}</span> to <span className="mono">{limits.minFeature.max}</span>.</>}
           onCommit={(minFeature) => onChange({ type: "setMinFeature", minFeature })}
         />
         <Field label="Symmetry">
@@ -137,23 +141,22 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = tr
               aria-describedby={repeatAcrossMessage === null ? undefined : switchMessageId}
               onChange={(event) => onChange({ type: "setRepeatAcross", repeatAcross: event.target.checked })}
             />
-            <label className="field-label" htmlFor={switchId}>
+            <label className="field-label switch-label" htmlFor={switchId}>
               Repeat across all <span className="mono">{profile.hookCount}</span> hooks
             </label>
+            <Hint topic="repeat across">Off: hooks past the repeat width stay down. On: the repeat fills every hook.</Hint>
           </div>
-          {repeatAcrossMessage === null ? (
-            <p className="field-hint">Off: hooks past the repeat width stay down.</p>
-          ) : (
+          {repeatAcrossMessage === null ? null : (
             <p className="field-error" id={switchMessageId} role="alert">
               {repeatAcrossMessage}
             </p>
           )}
         </div>
-        <p className="note">
-          The card format is a configurable loom profile. It has not been tested on a working loom.
-        </p>
       </div>
       </details>
+      <p className="note setup-note">
+        The card format is a configurable loom profile. It has not been tested on a working loom.
+      </p>
     </Panel>
   );
 }

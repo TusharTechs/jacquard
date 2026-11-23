@@ -10,7 +10,7 @@ import type { YarnColours } from "@jacquard/export";
 import type { Design, LiftPlan, LoomProfile } from "@jacquard/engine";
 import { downloadFile } from "../lib/download";
 import type { Downloader } from "../lib/download";
-import { EXPORT_KINDS, EXPORT_LABELS, buildExportFile, exportFileName, usesLiftPlan } from "../lib/export-files";
+import { EXPORT_KINDS, EXPORT_LABELS, buildExportFile, usesLiftPlan } from "../lib/export-files";
 import type { ExportKind } from "../lib/export-files";
 import type { PlanSource } from "./simulator-panel";
 import { Term } from "./term";
@@ -206,9 +206,6 @@ export function ExportPanel({
               settings.
             </p>
           )}
-          <p className="small muted">
-            Files are named like <span className="mono">{exportFileName("cardsPdf", profileName)}</span>.
-          </p>
           <p className="note">{CARD_SHEET_NOTE}</p>
           <p className="small muted">{profileSummary(profile)}</p>
           <p className="note">

@@ -56,10 +56,9 @@ export function FixReport({ fix, onUndo, canUndo = false, onNextViolation, hasVi
       return (
         <div className="note">
           <p>
-            Auto-fix flipped <span className="mono">{plural(fix.flips.length, "lift-plan cell", "lift-plan cells")}</span>. The
-            fixed lift plan has <span className="mono">{plural(fix.remaining, "violation", "violations")}</span>. It is kept until
-            you edit the design, the weaves or the setup. Your regions on the point paper are unchanged; choose “Auto-fix
-            changes” above the grid to see the flipped cells, each marked with a diamond.
+            Auto-fix flipped <span className="mono">{plural(fix.flips.length, "lift-plan cell", "lift-plan cells")}</span>;{" "}
+            <span className="mono">{plural(fix.remaining, "violation", "violations")}</span> left. It is kept until you edit the design,
+            the weaves or the setup; your regions are unchanged.
           </p>
         </div>
       );

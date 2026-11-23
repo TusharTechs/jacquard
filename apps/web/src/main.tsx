@@ -4,14 +4,14 @@ import "@fontsource-variable/fraunces";
 import "@fontsource-variable/instrument-sans";
 import "@fontsource/ibm-plex-mono/400.css";
 import "@fontsource/ibm-plex-mono/500.css";
-import { Root } from "./root";
+import { App } from "./app";
 import "./styles.css";
 
 const root = document.getElementById("root");
 if (root) {
   createRoot(root).render(
     <StrictMode>
-      <Root />
+      <App />
     </StrictMode>,
   );
 }
