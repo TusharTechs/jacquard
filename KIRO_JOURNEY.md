@@ -19,6 +19,8 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 ---
 
 ## Status for Tushar
+Deploy update, 2026-11-24 (tag `phase-deploy`): **the site is live at https://main.d28e9v65r7sow0.amplifyapp.com** (AWS Amplify Hosting, us-west-2, manual deployment, no repository connection). The whole flow was checked there at 1440x900 and 390x844 (gallery, Describe a motif, Upload a sketch, painting, Check, auto-fix, Weave with the 3D loom, Cards, print, all four exports), with no console errors. Lighthouse: performance 97 mobile, 100 desktop; accessibility and best practices 100. Motifs come from the in-browser stand-in; a sketch is not traced without the model, and the site says so. Redeploy with `scripts/deploy-web.sh`. Created in AWS: one Amplify app (`jacquard`) and its branch `main`, expected under $1 a month (see the deploy entry). The backend, Lambda, API Gateway and Bedrock are still not deployed.
+
 Wave 5 update, 2026-11-24 (tag `phase-polish-2`): the woven result now shows the design. Gallery examples and fitting designs open with repeat across on (float claims recomputed with the engine; no counts changed, no example needed a new fixture). A Cloth view shows the motif: six Peacock butta stars and five Lotus border diamonds at 1440x900, see `media/polish/weave-cloth-*.png`. Cards are punched across their whole width. The Design step is simpler (View popover, folded setup), the Opening line is yours, and the selected speed is filled. Lighthouse and all 642 tests hold. Still open: the items below.
 
 Updated 2026-11-24 at the end of the `studio-experience` phase (tag `phase-polish`). Earlier status (Phases B to H) follows below this update and still applies.
@@ -1705,6 +1707,56 @@ Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md
   - The web tests could import the backend's TypeScript directly (`../../../backend/src/core`), with its NodeNext `.js` import paths, and vitest resolved them with no config. So Property 1 compares against the real backend code, not a copy of it.
 - Spec versus vibe note: spec. The decision to switch on `PROD` instead of only "no `VITE_API_BASE`" came from the gap analysis: without it, dev and the motif-client tests would have silently lost the backend path.
 - Evidence: `apps/web/src/lib/motif-local.ts`, `apps/web/test/motif-local.property.test.ts`, `apps/web/test/motif-local.test.tsx`, `.kiro/specs/deploy-static/`.
+### 2026-11-24 — deploy-static waves 1 and 2 (tasks 2.1 to 3.2): the static site on AWS Amplify Hosting
+- Surface: IDE
+- Goal: Put the web app on a public HTTPS URL as a static site (Tushar's approval: static site only, us-west-2), check the whole flow there, and record what was created and what it costs.
+- Kiro features used: spec `deploy-static` (tasks 2.1 to 3.2); MCP servers aws-documentation (new in this phase; `search_documentation`, `read_documentation`) and chrome-devtools (the full flow on the live URL at 1440x900 and 390x844, console, network list, accessibility snapshot, `lighthouse_audit` not used here because the CLI gives all three categories); hook `block-engine-fixture-edits` (checked every file edit); steering `autopilot.md`, `tech.md`.
+- Model / credits (start → end):
+- What worked:
+  - **The AWS Documentation MCP server** (`awslabs.aws-documentation-mcp-server@1.2.5` via `uvx`, published 2026-11-09 21:57 UTC; 1.2.6 from 2026-11-17 was too new) was used before anything ran. What it answered:
+    - `CreateDeployment` is for "a manually deployed Amplify app ... not connected to a Git repository". Without a `fileMap` it returns one `zipUploadUrl` and a `jobId` to pass to `StartDeployment`.
+    - The time between `CreateDeployment` and `StartDeployment` "cannot exceed 8 hours" or the job fails.
+    - From the manual-deploy guide: "zip the contents of your build output and not the top level folder", or the site's root is not initialised ("Access Denied"); the zip limit is 5 GB.
+    - Amplify's welcome page sends prices to the public pricing page. That page (fetched directly) gives: storage $0.023 per GB-month after 5 GB, data out $0.15 per GB after 15 GB, build minutes $0.01 per minute (manual deploys use none), and free-tier figures for the first 12 months.
+    - The script follows exactly those steps: zip the contents of `dist`, `create-deployment` (`--query '[jobId, zipUploadUrl]'`), upload with `curl --upload-file`, `start-deployment` straight after, poll `get-job`.
+  - `scripts/deploy-web.sh` ran three times. The first run created the app and the branch (job 1). The second and third reused both (jobs 2 and 3) and added only a deployment. `list-apps` still shows one `jacquard` app, and the other app in the account (`tab-net-terms`) was never touched.
+  - Direct visits: `/`, `/#/weave` and `/gallery/index.json` returned 200 over HTTPS. A direct visit to `/#/weave` and a reload both opened the Weave Step, so no rewrite rule is needed.
+  - The full flow on the live URL at 1440x900 and again at 390x844, all checked by script in the page:
+    - Describe a motif: the stand-in motif appears, labelled "Stand-in motif (model not connected) — edit it freely".
+    - Upload a sketch: a real PNG produces a stand-in motif. The note before generating is shown, and after it "The stand-in does not trace your sketch. It picks a pattern from the file's bytes."
+    - Network: the request list shows only the gallery JSON, and no `/api/motif` call.
+    - Painting from the keyboard works, with Undo enabled.
+    - Peacock butta, Check, Auto-fix gives "Fixed lift plan: 0 violations · 1 cell flipped".
+    - Weave renders a WebGL canvas and the loom weaves.
+    - Cards: focus moves to Print cards. All four exports saved (`jacquard-240-cards.pdf`, `jacquard-240-cards.svg`, `jacquard-240-point-paper.svg`, `jacquard-240.wif`) with no export error. Print called `window.print` once and the sheet held all 40 cards.
+    - Console: no errors.
+  - Lighthouse 13.6.0 on the live URL: `#/design` on mobile, performance 97, accessibility 100, best practices 100 (FCP 0.8 s, LCP 2.4 s, TBT 30 ms). Desktop 100/100/100. `#/weave` on mobile 99/100/100. The only flagged audit is `valid-source-maps`, which is informational; source maps are off by choice.
+  - `media/deploy/`: 18 screenshots of the live URL (5.8 MB), the same views as `media/polish/`.
+  - Privacy:
+    - `scripts/check-no-account-id.sh` reads the account id into a variable, never prints it, and counts its occurrences in tracked and new files, in the last 200 commit messages, and in Amplify console URLs in files.
+    - Every run found 0 of each.
+    - The deploy script selects only the fields it needs with `--query`, so no ARN or presigned URL is printed.
+    - The app id is in `.deploy/amplify-app-id`, which is gitignored. It also appears inside the public URL, as the brief allows.
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0`: engine 148, mcp 110, export 52, motif 75, backend 45, web 217.
+- **AWS resources created, and expected cost:**
+  - One AWS Amplify Hosting app, `jacquard`, platform WEB, no repository, us-west-2.
+  - One branch, `main` (stage PRODUCTION), with three manual deployments.
+  - Nothing else: no S3 bucket, CloudFront distribution, Lambda, API Gateway, IAM role, domain or WAF.
+  - Expected monthly cost:
+    - Storage: about 1 MB per deployment, a few MB in all, so well inside the 5 GB free allowance; otherwise under $0.01.
+    - Data served: one full visit downloads about 1.4 MB including the 3D loom. 1,000 judge visits are about 1.4 GB, inside the 15 GB free allowance; without the free tier, about $0.21.
+    - Builds: none (manual deploys).
+    - Total: $0 within the free tier, and under $1 a month without it at expected traffic.
+- What failed or surprised:
+  - `scripts/check-no-account-id.sh` failed its first run with exit 1 and printed nothing: under `set -o pipefail`, the grep pipeline exits non-zero when it finds no match. I fixed the pipelines (`|| true` inside the count) and the check now prints its counts.
+  - The Chrome DevTools MCP server's `upload_file` refused a file in `/tmp` and also one inside the repository ("not within any of the configured workspace roots"), the same limit that stopped it saving screenshots. I tested Upload a sketch by building a PNG on a canvas in the page and setting the file input through `DataTransfer`, which runs the app's own `change` handler and file reading. The saved screenshots were captured with `puppeteer-core` as before.
+  - After the third deploy the MCP browser tab still loaded the old JavaScript from its cache, so the console kept showing a shadow warning that the new build had already fixed. A fresh isolated page loaded the new chunks and showed only the `THREE.Clock` deprecation warning, which comes from inside `@react-three/fiber` 9.8.2, not our code.
+  - The shadow fix: r3f's `shadows` boolean selects `PCFSoftShadowMap`, which three 0.187 has removed. `shadows="percentage"` selects `PCFShadowMap` directly.
+- Surprise:
+  - The AWS Documentation MCP server answered the questions that matter for a manual deploy in two calls, with the API's own words: the 8-hour limit between the two calls, and "zip the contents, not the top-level folder". The second is the mistake most likely to break a first deploy, and the script follows it. It did not have prices, so I read those from the public pricing page.
+  - Amplify served `/#/weave` with no rewrite rule. The hash never reaches the server, so the earlier choice of hash routing (studio-experience) made the static deploy simpler.
+- Spec versus vibe note: spec. The privacy rules (5.1 to 5.3) shaped the script before it ran, so no command in this phase printed an ARN or the account id.
+- Evidence: `scripts/deploy-web.sh`, `scripts/check-no-account-id.sh`, `.kiro/settings/mcp.json`, `README.md`, `media/deploy/`, tag `phase-deploy`.
 ### Template
 
 ```
@@ -1725,15 +1777,15 @@ Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 6 / 0 | weave-engine (34 properties), weave-mcp (16), motif-input (14), simulate-and-export (11), kiro-product (no properties; snapshot and config tests), studio-experience (10 properties; rewritten once after the user's second brief; spec corrections: 7.5 open shed, and in wave 5 the cloth-view framing tried and reverted). All tasks checked. Spec findings fixed during tasks: weave-mcp design on SDK array arguments; motif-input speck performance, 1.3 and 4.6 wording, dev-script note; simulate-and-export profile-check order (Property 11), file table, WIF layout block; kiro-product gallery Decision log row. No bugfix spec yet (needs the user's WIF or swatch result) |
-| Property-based tests / bugs they caught | 85 / 1 | Engine 34, mcp 16, motif 14, export 11, web studio-experience 10 (plus the web editor property from motif-input). Bug caught: studio-experience Property 9 (wave 5) found the cloth-view camera framing a small design too loosely (a fixed minimum distance). No property found a product bug. Failures on test mistakes: engine P32, P33; mcp P4 (`__proto__`), P6 (outcome label), P15 (null-prototype snapshot); motif P12 (over-long prompt generator was not over-long). Planted-bug checks (not counted): engine checkFloats off-by-one; mcp none; motif speck tie and orientation; backend secret leak (P13); web redo clearing (P14); export seven planted bugs, all caught |
-| Tests (files / tests) | engine 35 / 148; mcp 22 / 110; export 15 / 52; motif 16 / 75; backend 4 / 45; web 33 / 212 | 642 tests; last run at the end of studio-experience wave 5, all `EXIT_CODE=0` |
+| Specs (feature / bugfix) | 7 / 0 | weave-engine (34 properties), weave-mcp (16), motif-input (14), simulate-and-export (11), kiro-product (no properties; snapshot and config tests), deploy-static (1 property), studio-experience (10 properties; rewritten once after the user's second brief; spec corrections: 7.5 open shed, and in wave 5 the cloth-view framing tried and reverted). All tasks checked. Spec findings fixed during tasks: weave-mcp design on SDK array arguments; motif-input speck performance, 1.3 and 4.6 wording, dev-script note; simulate-and-export profile-check order (Property 11), file table, WIF layout block; kiro-product gallery Decision log row. No bugfix spec yet (needs the user's WIF or swatch result) |
+| Property-based tests / bugs they caught | 86 / 1 | Engine 34, mcp 16, motif 14, export 11, web studio-experience 10, web deploy-static 1 (plus the web editor property from motif-input). Bug caught: studio-experience Property 9 (wave 5) found the cloth-view camera framing a small design too loosely (a fixed minimum distance). No property found a product bug. Failures on test mistakes: engine P32, P33; mcp P4 (`__proto__`), P6 (outcome label), P15 (null-prototype snapshot); motif P12 (over-long prompt generator was not over-long). Planted-bug checks (not counted): engine checkFloats off-by-one; mcp none; motif speck tie and orientation; backend secret leak (P13); web redo clearing (P14); export seven planted bugs, all caught |
+| Tests (files / tests) | engine 35 / 148; mcp 22 / 110; export 15 / 52; motif 16 / 75; backend 4 / 45; web 35 / 217 | 647 tests; last run at the end of deploy-static, all `EXIT_CODE=0` |
 | Hooks | 3 | Earlier counts as before. Since 13:00Z on Nov 16 (autopilot), block-engine-fixture-edits checked 286 file-tool calls (149 `fs_write`, 136 `str_replace`, 1 `fs_append`) and blocked none; no engine file was edited in that time, so the save hook had nothing to run on. journey-entry-on-stop also fired inside a Kiro CLI headless run, and at the end of the studio-experience session and of its wave 5 session (both 2026-11-24) |
 | Steering files | 7 | 5 always-on (product, tech, structure, journey, autopilot), 2 file-matched (weaving-domain for `packages/engine/**`, design-language for `apps/web/**`) |
 | Custom agents | 5 | journey-scribe (named as the writer of the weave-mcp spec-phase entries; not invoked during the autopilot run); weave-auditor (7 runs, Phases B, C, D, F, G, studio-experience and its wave 5 (1 real bug: a stale repeat policy after Undo): 12 unlabelled-loom-fact findings in total (C 2, D 1, F 2, polish 7), 0 float or round-trip errors; polish also 3 card-display findings, fixed); design-reviewer (9 runs: Phases C, D, F, G twice: 15 + 11 + 12 + 15 + 3 findings, all fixed; studio-experience waves 1 to 3, the phase end and wave 5: 33 + 26 + 21 + 19 + 18 findings, fixed or answered in the Decision log); release-runner (created, used only by the release-check workflow, not yet run); spec-checker (1 local headless run, VERDICT: PASS) |
-| MCP servers (third-party / our own) | 2 / 1 | jacquard-weave (ours; used by weave-auditor in every review), chrome-devtools (360 px checks in Phases C, D, G; 1440x900 and 390x844 screenshots and `lighthouse_audit` in studio-experience), context7 (registered, not used) |
+| MCP servers (third-party / our own) | 3 / 1 | jacquard-weave (ours; used by weave-auditor in every review), chrome-devtools (360 px checks in Phases C, D, G; 1440x900 and 390x844 screenshots and `lighthouse_audit` in studio-experience), context7 (registered, not used), aws-documentation (awslabs.aws-documentation-mcp-server 1.2.5; used in deploy-static to check the Amplify manual-deploy steps and prices) |
 | Powers (used / shipped) | 0 / 1 | `power/` (loom): plugin.json, mcp.json, 2 skills, bundled server; tested by `power.test.ts` from a folder outside the repo. Not yet installed in a fresh workspace (user's step) |
 | Workflows | 1 | `.kiro/workflows/release-check.workflow.json`; not yet run (workflows are off by default) |
-| CLI headless runs in CI | 0 (1 local) | `.github/workflows/kiro-spec-check.yml` is guarded by `KIRO_CI_ENABLED`; one local run of the same command, VERDICT: PASS |
+| CLI headless runs in CI | 0 (1 local) | `.github/workflows/kiro-spec-check.yml` is guarded by `KIRO_CI_ENABLED`. Kiro API keys need a paid Kiro plan, so the check ran locally instead: one local run of the same command, VERDICT: PASS |
 | Web automations | 0 | Prompt in `.kiro/automations/gallery-daily.md`; the task is the user's to create |
 | Credits used of 4,000 | 0 | |

@@ -597,7 +597,7 @@ export default function LoomScene({ model, yarns, timeRef, playing, t, active, o
       <Canvas
         dpr={[1, 2]}
         frameloop={!active ? "never" : playing ? "always" : "demand"}
-        shadows
+        shadows="percentage"
         camera={{ position: [3.4, 3.1, 5.2], fov: 42, near: 0.05, far: 60 }}
         gl={{ antialias: true, powerPreference: "high-performance" }}
         onCreated={() => onReady?.()}

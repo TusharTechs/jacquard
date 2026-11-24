@@ -44,3 +44,5 @@ Thumbs.db
 media/**/*.mov
 media/**/*.mp4
 media/**/*.mkv
+# Deploy state: the Amplify app id (deploy-static 2.3). Never commit.
+.deploy/

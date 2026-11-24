@@ -2,7 +2,9 @@
   "mcpServers": {
     "jacquard-weave": {
       "command": "node",
-      "args": ["packages/mcp/dist/index.js"],
+      "args": [
+        "packages/mcp/dist/index.js"
+      ],
       "disabled": false,
       "autoApprove": [
         "list_profiles",
@@ -15,13 +17,36 @@
     },
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp@4.7.0"],
+      "args": [
+        "-y",
+        "@upstash/context7-mcp@4.7.0"
+      ],
       "disabled": false
     },
     "chrome-devtools": {
       "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@1.13.0", "--isolated"],
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@1.13.0",
+        "--isolated"
+      ],
       "disabled": false
+    },
+    "aws-documentation": {
+      "command": "uvx",
+      "args": [
+        "awslabs.aws-documentation-mcp-server@1.2.5"
+      ],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR",
+        "AWS_DOCUMENTATION_PARTITION": "aws"
+      },
+      "disabled": false,
+      "autoApprove": [
+        "search_documentation",
+        "read_documentation",
+        "recommend"
+      ]
     }
   }
 }
