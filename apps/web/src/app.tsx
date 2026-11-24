@@ -9,7 +9,7 @@ import { useCallback, useDeferredValue, useEffect, useId, useLayoutEffect, useMe
 import * as Tooltip from "@radix-ui/react-tooltip";
 import { checkFloats } from "@jacquard/engine";
 import type { Design, Weave, WeaveAssignment } from "@jacquard/engine";
-import type { MotifRequest, MotifResponse } from "@jacquard/motif";
+import type { MotifRequest } from "@jacquard/motif";
 import { EditorToolbar } from "./components/editor-toolbar";
 import { ExportPanel } from "./components/export-panel";
 import { FloatPanel } from "./components/float-panel";
@@ -29,7 +29,9 @@ import { StepRail, STEP_LABELS } from "./components/shell/step-rail";
 import { StudioMenu } from "./components/shell/studio-menu";
 import { TopBar } from "./components/shell/top-bar";
 import { setupSummary } from "./components/loom-setup-panel";
-import { STEPS, currentStep, parseStep, pushStep } from "./lib/route";
+import { STEPS, currentStep, parseStep, pushStep, stepHref } from "./lib/route";
+import { browserStorage, clearSavedDesign, loadSavedDesign, saveDesign } from "./lib/saved-design";
+import type { SavedDesign } from "./lib/saved-design";
 import type { Step } from "./lib/route";
 import { changeView } from "./lib/view-transition";
 import { repeatFits, repeatPolicy } from "./lib/repeat-policy";
@@ -50,6 +52,7 @@ import { localMotifs, prefetchLocalMotifs } from "./lib/motif-client";
 import { designFromMotif } from "./lib/motif-design";
 import { regionColours } from "./lib/palette";
 import { useMotifRequest } from "./lib/use-motif-request";
+import type { PlacedMotif } from "./lib/use-motif-request";
 import { useOnline } from "./lib/use-online";
 import { errorCell, flipCells, violationMarks, violationStarts } from "./lib/violation-marks";
 import { DEFAULT_WARP, yarnColours } from "./lib/yarns";
@@ -108,6 +111,18 @@ export interface AppProps {
    * default, so a render of the App has every panel in the document.
    */
   readonly deferHiddenSteps?: boolean;
+  /**
+   * Keep the design, setup, palette, weaves, yarns and Step in localStorage across reloads
+   * (motif-builder Requirement 5). On only in the real app (main.tsx), so tests share no state.
+   */
+  readonly persist?: boolean;
+}
+
+/** True when the URL names no Step, so a saved Step may be opened. */
+function noStepInUrl(): boolean {
+  if (typeof window === "undefined") return true;
+  const hash = window.location.hash.replace(/^#\/?/, "");
+  return hash === "";
 }
 
 type IdleHandle = { cancel: () => void };
@@ -121,22 +136,40 @@ function whenIdle(run: () => void): IdleHandle {
   return { cancel: () => clearTimeout(timer) };
 }
 
-export function App({ deferHiddenSteps = false }: AppProps = {}) {
+export function App({ deferHiddenSteps = false, persist = false }: AppProps = {}) {
+  // A saved design is read once, before the first render (motif-builder 5.1).
+  const [saved] = useState<SavedDesign | null>(() => (persist ? loadSavedDesign(browserStorage()) : null));
   // The first blank grid is an arriving design: repeat across starts on when it fits (17.1).
-  const [setup, dispatchSetup] = useReducer(setupReducer, DEFAULT_SETUP, (initial) => ({
-    ...initial,
-    repeatAcross: repeatFits(initial.repeat.ends, resolveProfile(initial.profile).hookCount),
-  }));
+  const [setup, dispatchSetup] = useReducer(setupReducer, DEFAULT_SETUP, (initial) =>
+    saved !== null
+      ? saved.setup
+      : {
+          ...initial,
+          repeatAcross: repeatFits(initial.repeat.ends, resolveProfile(initial.profile).hookCount),
+        },
+  );
   const repeatState = useRef<RepeatPolicy>({ repeatAcross: setup.repeatAcross, chosen: false });
-  const [editor, dispatchEditor] = useReducer(editorReducer, DEFAULT_SETUP.repeat, (repeat) => initialEditorState(blankDesign(repeat)));
-  const [weaves, setWeaves] = useState<WeaveAssignment>(() => defaultWeaves(WEAVE_SLOTS));
-  const [palette, setPalette] = useState<string[] | null>(null);
-  const [started, setStarted] = useState(false);
+  const [editor, dispatchEditor] = useReducer(editorReducer, DEFAULT_SETUP.repeat, (repeat) =>
+    initialEditorState(saved !== null ? saved.design.map((row) => [...row]) : blankDesign(repeat)),
+  );
+  const [weaves, setWeaves] = useState<WeaveAssignment>(() => (saved !== null ? saved.weaves : defaultWeaves(WEAVE_SLOTS)));
+  const [palette, setPalette] = useState<string[] | null>(() => (saved?.palette == null ? null : [...saved.palette]));
+  const [started, setStarted] = useState(saved !== null);
   const [cellSize, setCellSizeRaw] = useState(START_CELL);
   const [fix, setFix] = useState<FixState>({ status: "none" });
-  const [step, setStep] = useState<Step>(currentStep);
+  // The Step in the URL, or the saved Step when the URL names none (motif-builder 5.1).
+  const [initialStep] = useState<Step>(() => (saved !== null && noStepInUrl() ? saved.step : currentStep()));
+  const [step, setStep] = useState<Step>(initialStep);
+  useEffect(() => {
+    if (initialStep === currentStep()) return;
+    try {
+      window.history.replaceState(null, "", stepHref(initialStep));
+    } catch {
+      // The Step still shows; only the URL is not updated.
+    }
+  }, [initialStep]);
   // Steps in the document. All of them unless deferring; then the current one, the others in idle time.
-  const [mounted, setMounted] = useState<ReadonlySet<Step>>(() => (deferHiddenSteps ? new Set([currentStep()]) : new Set(STEPS)));
+  const [mounted, setMounted] = useState<ReadonlySet<Step>>(() => (deferHiddenSteps ? new Set([initialStep]) : new Set(STEPS)));
   useEffect(() => {
     setMounted((current) => (current.has(step) ? current : new Set([...current, step])));
   }, [step]);
@@ -170,7 +203,7 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
   // The loom setup is a one-line summary with Edit at every width (19.3); Edit opens it.
   const [setupOpen, setSetupOpen] = useState(false);
   // Yarn colours (2.3). A null weft follows region 0's display colour until the user picks one.
-  const [yarnChoice, setYarnChoice] = useState<{ readonly warp: string; readonly weft: string | null }>({ warp: DEFAULT_WARP, weft: null });
+  const [yarnChoice, setYarnChoice] = useState<{ readonly warp: string; readonly weft: string | null }>(() => saved?.yarns ?? { warp: DEFAULT_WARP, weft: null });
   const [motifFocus, setMotifFocus] = useState<{ kind: "text" | "sketch"; id: number } | null>(null);
   const profileRef = useRef<HTMLSelectElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -490,6 +523,8 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
   arriveRef.current = arrive;
 
   const startBlank = (): void => {
+    // Start from a blank grid also forgets the saved design (motif-builder 5.5).
+    if (persist) clearSavedDesign(browserStorage());
     setStarted(true);
     arrive(setup.repeat.ends, setup.profile, setup.repeatAcross);
     if (!(size.ends === setup.repeat.ends && size.picks === setup.repeat.picks && allZero(design))) {
@@ -500,13 +535,37 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
     focusGrid();
   };
 
+  // ---- Saving (motif-builder 5.1, 5.5): 400 ms after the last change and when the page is hidden.
+  // An all-blank grid is not saved: there is nothing to bring back.
+  const saveNow = useRef<() => void>(() => undefined);
+  saveNow.current = () => {
+    const storage = browserStorage();
+    if (allZero(design)) clearSavedDesign(storage);
+    else saveDesign(storage, { design, setup, palette, weaves, yarns: yarnChoice, step });
+  };
+  useEffect(() => {
+    if (!persist) return;
+    const timer = setTimeout(() => saveNow.current(), 400);
+    return () => clearTimeout(timer);
+  }, [persist, design, setup, palette, weaves, yarnChoice, step]);
+  useEffect(() => {
+    if (!persist) return;
+    const onHide = (): void => saveNow.current();
+    window.addEventListener("pagehide", onHide);
+    return () => window.removeEventListener("pagehide", onHide);
+  }, [persist]);
+
   // ---- Motif step. ----
   const applyMotif = useCallback(
-    (response: MotifResponse, request: MotifRequest): MotifFailure | null => {
+    (response: PlacedMotif, request: MotifRequest): MotifFailure | null => {
+      // A builder motif brings its own symmetry and colours (motif-builder 3.5).
+      const plan = response.plan;
+      const symmetry = plan?.symmetry ?? request.symmetry;
+      const colourCount = plan === undefined ? request.colourCount : Math.max(setup.colourCount, request.colourCount, response.palette.length);
       const result = designFromMotif(response.svg, {
         ...setup,
-        colourCount: request.colourCount,
-        symmetry: request.symmetry,
+        colourCount,
+        symmetry,
         repeat: request.repeat,
       });
       if (!result.ok) {
@@ -518,6 +577,17 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
       }
       dispatchEditor({ type: "replace", design: result.value.design });
       arriveRef.current(result.value.design[0]?.length ?? request.repeat.ends, setup.profile, setup.repeatAcross);
+      if (plan !== undefined) {
+        // The loom setup shows what the builder used; Undo brings back grid, setup and palette
+        // together, as for a gallery example.
+        const nextSetup: SetupState = { ...setup, colourCount, symmetry, repeatAcross: repeatState.current.repeatAcross };
+        pendingGalleryEdit.current = {
+          before: { setup, palette, weaves, galleryOpen },
+          after: { setup: nextSetup, palette: [...result.value.palette], weaves, galleryOpen: null },
+        };
+        dispatchSetup({ type: "replace", setup: nextSetup });
+        repeatState.current = { ...repeatState.current, repeatAcross: nextSetup.repeatAcross };
+      }
       setRevealKey((value) => value + 1);
       setGalleryOpen(null);
       setPalette(result.value.palette);
@@ -526,13 +596,17 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
       // paper sits below the setup and motif panels). Focus stays where it is.
       requestAnimationFrame(() => viewportRef.current?.scrollIntoView?.({ block: "nearest" }));
       say(
-        response.source === "standIn"
-          ? "Stand-in motif placed on the grid. Edit it freely; Undo brings back the previous grid."
-          : "Suggested motif placed on the grid. Edit it freely; Undo brings back the previous grid.",
+        response.source === "builder"
+          ? "Motif built from your description and placed on the grid. Edit it freely; Undo brings back the previous grid and loom setup."
+          : response.source === "standIn"
+            ? localMotif
+              ? "Pattern placed on the grid. Edit it freely; Undo brings back the previous grid."
+              : "Stand-in motif placed on the grid. Edit it freely; Undo brings back the previous grid."
+            : "Suggested motif placed on the grid. Edit it freely; Undo brings back the previous grid.",
       );
       return null;
     },
-    [setup, say],
+    [setup, say, palette, weaves, galleryOpen, localMotif],
   );
   const motif = useMotifRequest(applyMotif);
 

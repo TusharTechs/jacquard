@@ -14,13 +14,13 @@ All 4 correctness properties have their own property test task. Every property t
   - [x] 1.5 Write property test: **Property 3: Every builder motif weaves within the float limit after auto-fix** — **Validates: Requirements 2.7**
   - [x] 1.6 Example tests: lotus (2.8), the six verification descriptions, fallback, mirrored elephant
     - _Requirements: 1.3, 1.5, 2.5, 2.8_
-- [ ] 2. Web app
-  - [ ] 2.1 `lib/motif-builder.ts`, `lib/use-motif-builder.ts`, `place` in `use-motif-request.ts`, `components/motif-chips.tsx`, panel wiring and copy, `applyMotif` setup and Undo
+- [x] 2. Web app
+  - [x] 2.1 `lib/motif-builder.ts`, `lib/use-motif-builder.ts`, `place` in `use-motif-request.ts`, `components/motif-chips.tsx`, panel wiring and copy, `applyMotif` setup and Undo
     - _Requirements: 3.1 to 3.6, 4.1 to 4.3_
-  - [ ] 2.2 `lib/saved-design.ts` and `persist` in `App` and `main.tsx`
+  - [x] 2.2 `lib/saved-design.ts` and `persist` in `App` and `main.tsx`
     - _Requirements: 5.1 to 5.5, 5.7_
-  - [ ] 2.3 Write property test: **Property 4: Saved design round trip** — **Validates: Requirements 5.3, 5.4, 5.6**
-  - [ ] 2.4 Component tests: chips, labels, no "model" in the static panel, builder placement and Undo, persistence in `App`
+  - [x] 2.3 Write property test: **Property 4: Saved design round trip** — **Validates: Requirements 5.3, 5.4, 5.6**
+  - [x] 2.4 Component tests: chips, labels, no "model" in the static panel, builder placement and Undo, persistence in `App`
     - _Requirements: 3.2 to 3.5, 4.1, 5.1, 5.5_
 - [ ] 3. Headers, deploy and record
   - [ ] 3.1 CSP check against the built app with the header served locally; `scripts/amplify-custom-headers.yml`; `deploy-web.sh` applies it

@@ -1,12 +1,18 @@
 // The motif step (3.6, 3.7, 8.5, 12.1, 12.2): describe a motif or upload a sketch, ask the backend
 // for a motif, and show the four states. A motif from the model is labelled as a suggestion; one
 // from the stand-in is labelled as a stand-in. The design stays editable in every state.
-import { useEffect, useId, useRef, useState } from "react";
+// On the static build (motif-builder 3.1 to 3.6, 4.1, 4.2) Describe runs the motif builder in the
+// browser and shows what it understood as Chips; a sketch gives the stand-in's pattern from the
+// file. Nothing on that path says "model", because there is none.
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
-import type { MotifInput, MotifRequest } from "@jacquard/motif";
+import type { MotifInput, MotifRequest, PlanOverrides } from "@jacquard/motif";
 import type { MotifFailureKind } from "../lib/motif-client";
 import type { MotifRequestControls } from "../lib/use-motif-request";
+import { useMotifBuilder } from "../lib/use-motif-builder";
 import type { SetupState } from "../state/setup-state";
+import { setupLimits } from "../state/setup-state";
+import { MotifChips } from "./motif-chips";
 import { Button } from "./ui/button";
 import { Field } from "./ui/field";
 import { Panel } from "./ui/panel";
@@ -69,7 +75,10 @@ export interface MotifPanelProps {
   readonly onStartBlank: () => void;
   /** Scrolls to the gallery and focuses its heading. */
   readonly onOpenGallery?: () => void;
-  /** True in the static deploy: motifs come from the in-browser stand-in (deploy-static 1.4). */
+  /**
+   * True in the static deploy: Describe uses the in-browser motif builder and a sketch the
+   * in-browser stand-in (deploy-static 1.4, motif-builder 3.1).
+   */
   readonly localStandIn?: boolean;
   /** Set by the point paper's empty state: open the describe or upload tab and focus it. */
   readonly focusRequest?: { readonly kind: "text" | "sketch"; readonly id: number } | null;
@@ -80,7 +89,16 @@ const GENERATE_AGAIN: ReadonlySet<MotifFailureKind> = new Set<MotifFailureKind>(
 
 export function MotifPanel({ setup, online, request, paletteColours, paletteFromGallery = false, onStartBlank, onOpenGallery, focusRequest = null, localStandIn = false }: MotifPanelProps) {
   const [tab, setTab] = useState<"text" | "sketch">("text");
-  const [prompt, setPrompt] = useState("");
+  const [prompt, setPromptRaw] = useState("");
+  // Chip edits on top of the text; typing clears them (motif-builder 1.7).
+  const [overrides, setOverrides] = useState<PlanOverrides>({});
+  const [builderError, setBuilderError] = useState<string | null>(null);
+  const setPrompt = (text: string): void => {
+    setPromptRaw(text);
+    setOverrides({});
+    setBuilderError(null);
+  };
+  const { builder, load: loadBuilder } = useMotifBuilder(localStandIn);
   const [sketch, setSketch] = useState<Sketch | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
@@ -100,6 +118,15 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
     if (sketch?.previewUrl) URL.revokeObjectURL(sketch.previewUrl);
   }, [sketch]);
 
+  const maxColours = Math.min(4, setupLimits(setup.profile).colourCount.max);
+  const builderOptions = useMemo(
+    () => ({ colourCount: setup.colourCount, maxColours, overrides }),
+    [setup.colourCount, maxColours, overrides],
+  );
+  const description = useMemo(
+    () => (builder === null || prompt.trim() === "" ? null : builder.describe(prompt, builderOptions)),
+    [builder, prompt, builderOptions],
+  );
   const promptLength = codePoints(prompt);
   const promptTooLong = promptLength > PROMPT_LIMIT;
   const loading = state.status === "loading";
@@ -123,6 +150,10 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
 
   const generate = (): void => {
     if (input === null || !online) return;
+    if (localStandIn && input.kind === "text") {
+      void buildLocally(input.prompt);
+      return;
+    }
     const body: MotifRequest = {
       input,
       colourCount: setup.colourCount,
@@ -130,6 +161,31 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
       repeat: { ends: setup.repeat.ends, picks: setup.repeat.picks },
     };
     request.generate(body);
+  };
+
+  /** The motif builder: words to a motif, in the browser (motif-builder 3.1, 3.5). */
+  const buildLocally = async (text: string): Promise<void> => {
+    setBuilderError(null);
+    const module = builder ?? (await loadBuilder());
+    if (module === null) {
+      setBuilderError("The motif builder did not load. Check your connection and try again; you can keep editing the grid by hand.");
+      return;
+    }
+    const built = module.buildFromDescription(text, builderOptions);
+    if (!built.ok) {
+      setBuilderError(built.message);
+      return;
+    }
+    const { plan } = built.description;
+    request.place(
+      { svg: built.svg, palette: built.palette, source: "builder", plan },
+      {
+        input: { kind: "text", prompt: text },
+        colourCount: Math.max(setup.colourCount, plan.colours.length),
+        symmetry: plan.symmetry,
+        repeat: { ends: setup.repeat.ends, picks: setup.repeat.picks },
+      },
+    );
   };
 
   const onFile = async (event: ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -201,6 +257,9 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
           ref={promptRef}
           className="textarea"
           value={prompt}
+          onFocus={() => {
+            if (localStandIn) void loadBuilder();
+          }}
           onChange={(event) => setPrompt(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) generate();
@@ -209,13 +268,23 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
       )}
     </Field>
   );
-
+  const describeArea = (
+    <div className="stack">
+      {describeTab}
+      {localStandIn && description !== null ? (
+        <MotifChips description={description} overrides={overrides} onChange={setOverrides} maxColours={maxColours} disabled={loading} />
+      ) : null}
+      {builderError === null ? null : (
+        <p className="field-error" role="alert">
+          {builderError}
+        </p>
+      )}
+    </div>
+  );
   const sketchTab = (
     <div className="stack">
       {localStandIn ? (
-        <p className="note">
-          Without the motif model, a sketch is not traced: the stand-in makes a pattern from the file instead.
-        </p>
+        <p className="note">Sketches are not traced here: you get a pattern made from the file instead.</p>
       ) : null}
       <Field label="Sketch image" hint="PNG or JPEG, at most 1.5 MB." error={fileError ?? undefined}>
         {(control) => (
@@ -247,7 +316,11 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
       empty={
         <>
           <p className="state-title">No motif yet</p>
-          <p className="small">Describe it or upload a sketch; the model suggests a clean motif you can edit.</p>
+          <p className="small">
+            {localStandIn
+              ? "Describe a motif and the motif builder draws it, or upload a sketch for a pattern made from the file. Edit either by hand."
+              : "Describe it or upload a sketch; the model suggests a clean motif you can edit."}
+          </p>
           <div className="state-actions">
             {onOpenGallery === undefined ? null : (
               // Secondary: the point paper's empty state carries the Step's one primary start action.
@@ -270,7 +343,11 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
       loading={
         <>
           <p className="state-title">
-            {state.status === "loading" && state.inputKind === "sketch" ? "Sending your sketch for a motif" : "Asking for a motif"}
+            {localStandIn
+              ? "Making a motif"
+              : state.status === "loading" && state.inputKind === "sketch"
+                ? "Sending your sketch for a motif"
+                : "Asking for a motif"}
             … <span className="mono">{elapsed} s</span>
           </p>
           <div className="progress" aria-hidden="true" />
@@ -315,11 +392,17 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
         {state.status === "success" ? (
           <div className="stack">
             <p className="label-suggestion">
-              {state.source === "standIn"
-                ? "Stand-in motif (model not connected) — edit it freely"
-                : "Suggestion from the model — edit it freely"}
+              {state.source === "builder"
+                ? "Motif builder, not AI — edit it freely"
+                : localStandIn && state.source === "standIn"
+                  ? state.inputKind === "sketch"
+                    ? "Pattern from your file, not a tracing — edit it freely"
+                    : "Pattern from your words, not a drawing of them — edit it freely"
+                  : state.source === "standIn"
+                    ? "Stand-in motif (model not connected) — edit it freely"
+                    : "Suggestion from the model — edit it freely"}
             </p>
-            {state.source === "standIn" && state.inputKind === "sketch" ? (
+            {!localStandIn && state.source === "standIn" && state.inputKind === "sketch" ? (
               <p className="small muted">The stand-in does not trace your sketch. It picks a pattern from the file’s bytes.</p>
             ) : null}
           </div>
@@ -344,7 +427,7 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
           selected={tab}
           onSelect={(id) => setTab(id === "sketch" ? "sketch" : "text")}
           items={[
-            { id: "text", label: "Describe", panel: describeTab },
+            { id: "text", label: "Describe", panel: describeArea },
             { id: "sketch", label: "Upload sketch", panel: sketchTab },
           ]}
         />
@@ -362,7 +445,9 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
                 <span className="mono">{setup.colourCount}</span> colours · <span className="mono">{setup.repeat.ends}×{setup.repeat.picks}</span>
               </span>{" "}
               <Hint topic="generating a motif">
-                The new motif replaces the grid; Undo brings the old one back. Colours, repeat and symmetry come from the loom setup.
+                {localStandIn
+                  ? "The new motif replaces the grid; Undo brings the old one back. From a description, symmetry and colours follow the chips; the repeat comes from the loom setup."
+                  : "The new motif replaces the grid; Undo brings the old one back. Colours, repeat and symmetry come from the loom setup."}
               </Hint>
             </>
           )}

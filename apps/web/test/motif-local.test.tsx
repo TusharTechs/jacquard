@@ -1,6 +1,6 @@
 // The static deploy's motif path (deploy-static 1.1, 1.3, 1.4): with the local option the client
 // never calls fetch and returns the stand-in, labelled as today; the sketch tab says plainly that a
-// sketch is not traced without the model.
+// sketch is not traced (reworded in motif-builder, Requirement 4).
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { MotifPanel } from "../src/components/motif-panel";
@@ -41,7 +41,9 @@ describe("local motifs", () => {
     render(<MotifPanel setup={DEFAULT_SETUP} online request={request} paletteColours={null} onStartBlank={vi.fn()} localStandIn />);
     fireEvent.click(screen.getByRole("tab", { name: "Upload sketch" }));
     const panel = screen.getByRole("tabpanel");
-    expect(textOf(panel)).toContain("Without the motif model, a sketch is not traced: the stand-in makes a pattern from the file instead.");
+    // Reworded in motif-builder (Requirement 4): the static build never says "model".
+    expect(textOf(panel)).toContain("Sketches are not traced here: you get a pattern made from the file instead.");
+    expect(textOf(panel)).not.toMatch(/model/i);
     expect(within(panel).getByLabelText("Sketch image")).toBeTruthy();
   });
 });
