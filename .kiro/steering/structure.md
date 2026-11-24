@@ -26,7 +26,6 @@ inclusion: always
 │   └── mcp/             MCP server wrapping the engine
 ├── backend/             AWS model-call proxy (Lambda)
 ├── power/               `loom` Power: plugin.json, skills/
-├── research/            competition and prior-art notes (read-only reference)
 ├── PLAN.md
 ├── BUILD_PLAYBOOK.md
 ├── KIRO_JOURNEY.md
@@ -49,4 +48,4 @@ inclusion: always
 
 - Never add `.kiro` to `.gitignore`.
 - Do not put weaving logic in `apps/web` or `packages/mcp`; it belongs in the engine. Turning a motif image into a region grid belongs in `packages/motif` (the engine never handles images or calls a model).
-- Do not edit anything under `research/` unless asked.
+- `private/` is gitignored: local notes that stay on the builder's machine. Do not edit it unless asked, and never link to it from tracked files.

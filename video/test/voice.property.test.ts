@@ -1,7 +1,7 @@
 // Voice assembly (demo-video Requirement 8), with synthetic tones as the line files: the tests need
 // no speech model (the narration itself is Kokoro-82M, Requirement 9). Properties 4 to 6 and
 // examples for the overrun report and RECORDING.md.
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import fc from "fast-check";
@@ -70,10 +70,13 @@ describe("voice lines", () => {
     expect(checkLineFiles(LINES.map((line) => line.file), LINES)).toEqual({ missing: [], unexpected: [] });
   });
 
-  it("keeps voice/RECORDING.md in step with the script", () => {
+  it("lists every line in RECORDING.md, and a local copy is in step with the script", () => {
+    // voice/RECORDING.md is gitignored and made by `pnpm script`; a fresh clone has none.
+    const markdown = recordingMarkdown();
+    for (const line of LINES) expect(markdown).toContain(`${line.number}. **${line.file}**`);
+    for (const line of LINES) expect(markdown).toContain(line.text);
     const file = join(dirname(fileURLToPath(import.meta.url)), "..", "voice", "RECORDING.md");
-    expect(readFileSync(file, "utf8")).toBe(recordingMarkdown());
-    for (const line of LINES) expect(recordingMarkdown()).toContain(line.text);
+    if (existsSync(file)) expect(readFileSync(file, "utf8")).toBe(markdown);
   });
 });
 

@@ -34,7 +34,7 @@ Not installed: Kiro Crew. It is only needed for the optional Best Kiro Crew App 
 
 ### Project folder and repo
 
-Create an empty folder (for example `~/Projects/jacquard`), copy in `PLAN.md`, `KIRO_JOURNEY.md`, `BUILD_PLAYBOOK.md` and the `research/` folder as reference material, then open that folder in Kiro. The public GitHub repo needs an open-source licence visible in its About section and `/.kiro` must never be added to `.gitignore`.
+Create an empty folder (for example `~/Projects/jacquard`), copy in `PLAN.md`, `KIRO_JOURNEY.md`, `BUILD_PLAYBOOK.md` and the research notes as reference material (now kept outside git, in the gitignored `private/research/`), then open that folder in Kiro. The public GitHub repo needs an open-source licence visible in its About section and `/.kiro` must never be added to `.gitignore`.
 
 ---
 
@@ -44,7 +44,7 @@ These are what make Kiro log the journey and stay consistent. Paste each prompt 
 
 **Prompt 1 — steering**
 
-> Read PLAN.md and research/11-competition-summary.md. Create steering files in .kiro/steering:
+> Read PLAN.md and the research notes. Create steering files in .kiro/steering:
 > - product.md (always included): what JACQUARD is, who it is for, the framing rules from PLAN.md, and what is out of scope.
 > - tech.md (always): pnpm monorepo; packages/engine is pure TypeScript with no runtime dependencies, tested with vitest and fast-check; packages/mcp is an MCP server wrapping the engine; apps/web is a React single-page app; a small AWS backend proxies model calls so no key reaches the browser; hosting on AWS Amplify or S3 with CloudFront, never Vercel or Netlify.
 > - structure.md (always): folder layout and naming rules.

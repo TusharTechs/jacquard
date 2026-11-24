@@ -48,11 +48,16 @@ media/**/*.mkv
 .deploy/
 # Demo video (demo-video 1.2): copied media, capture, audio stems and renders are generated
 video/public/
-# Tushar's recorded narration lines (demo-video 8.1); voice/RECORDING.md is committed
+# Narration line files (demo-video 8.1, 9.3), made locally by `pnpm --filter @jacquard/video tts`
 video/voice/lines/*.wav
 video/voice/lines/*.json
 # The synthetic voice's Python venv (demo-video 9.1); pyproject.toml and uv.lock are committed
 video/voice/tts/.venv/
+# Generated locally by `pnpm --filter @jacquard/video script` (demo-video 2.2, 8.2); not committed
+video/script.md
+video/voice/RECORDING.md
 video/capture/frames/
 video/test-results/
 video/playwright-report/
+# Local notes kept on this machine only (research and planning material)
+private/

@@ -4,16 +4,15 @@
 
 **Pitch:** In 1804, a loom read punch cards. Computers borrowed the idea, then abandoned them; handlooms did not [sourced, S2 and S3 in `.kiro/steering/weaving-domain.md`]. JACQUARD brings the punch card back: describe a motif and a motif builder turns it into a design (the AI path is built but off), or upload a sketch; get a card-ready design, a simulated cloth, and the card set to weave it.
 
-**Why this idea:** It won the second judge-panel vote 5 of 7 with the builder alone on camera and 7 of 7 with a real weaver or textile designer on camera. It is the only shortlisted idea with no look-alike among 476 Kiroween 2026 repos (as of Nov 15). Details: `research/10-judge-panel-results.md`, `research/11-competition-summary.md`.
 
 ## The three things that decide the score
 
-1. **Proof that the output is real, without a weaver on camera.** Decided Nov 16: the builder records the demo alone. The judges scored that version 37.6 of 50 on average and still gave it 5 of 7 first-place votes, with Impact as the weak criterion. Three substitutes close part of that gap:
+1. **Proof that the output is real, without a weaver on camera.** Decided Nov 16: the builder records the demo alone. Three substitutes for a weaver on camera:
    - **Weave it by hand.** Print the card set, punch a few cards, and weave a small swatch (about 24 threads by 24 rows, two yarn colours) on a cardboard frame loom by following the generated lift plan row by row. Put the swatch next to the simulator on camera. This is the strongest proof available to one person.
    - **Independent check.** Export WIF (the standard weaving interchange format) and show the file opening correctly in a weaving tool we did not write.
    - **Honest framing.** Say on camera: "I am not a weaver, so here is how I checked it." Optionally send the live link to a Weavers' Service Centre, a textile institute or an online weaving community; quote any reply with permission. Fifteen minutes of effort, no dependency on it.
 2. **Weave output that is verifiably correct.** No open spec for card dimensions was found, so the card format is a configurable loom profile with defaults taken from a published source, and the app says plainly that it has not been tested on a working loom. The float checker must visibly catch bad designs. The motif must not be a pixelated AI picture: the model writes a clean limited-colour vector motif, and the deterministic engine does the weaving work.
-3. **Kiro configuration shipped as a product.** A `.kiro` folder with specs, steering and hooks is in 55 of 57 competitor repos checked, so it earns nothing extra. The differentiators are a weave-engine MCP server and a Power other Kiro users can install, plus property-based tests with real invariants.
+3. **Kiro configuration shipped as a product.** Beyond specs, steering and hooks: a weave-engine MCP server and a Power other Kiro users can install, plus property-based tests with real invariants.
 
 ## Framing rules
 
