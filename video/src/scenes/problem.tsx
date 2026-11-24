@@ -7,13 +7,13 @@ import { Stock } from "../parts";
 import { COLOURS, FONTS, FPS } from "../theme";
 
 /** One punched card, drawn from cardSheetLayout's geometry (millimetres scaled to `scale` px). */
-export function Card({ card, data, scale, lit = false }: { readonly card: CardData; readonly data: ProblemData; readonly scale: number; readonly lit?: boolean }) {
+export function Card({ card, data, scale, lit = false, blank = false }: { readonly card: CardData; readonly data: ProblemData; readonly scale: number; readonly lit?: boolean; readonly blank?: boolean }) {
   const { width, height, holeRadius, laceRadius, numberX, numberY } = data.card;
   return (
     <svg width={width * scale} height={height * scale} viewBox={`0 0 ${width} ${height}`} style={{ display: "block", filter: "drop-shadow(0 6px 10px rgb(60 40 20 / 0.25))" }}>
       <rect x={0.2} y={0.2} width={width - 0.4} height={height - 0.4} rx={1.6} fill={COLOURS.paper} stroke={lit ? COLOURS.brass : COLOURS.lineStrong} strokeWidth={lit ? 0.8 : 0.35} />
       {card.holes.map((hole, index) =>
-        hole.punched ? (
+        hole.punched && !blank ? (
           <circle key={index} cx={hole.x} cy={hole.y} r={holeRadius} fill={COLOURS.walnut} />
         ) : (
           <circle key={index} cx={hole.x} cy={hole.y} r={holeRadius * 0.55} fill="none" stroke={COLOURS.line} strokeWidth={0.25} />
@@ -29,16 +29,16 @@ export function Card({ card, data, scale, lit = false }: { readonly card: CardDa
   );
 }
 
-/** 0 to 7 s: the laced chain, one card at a time, each with the app's card clack. */
+/** 0 to 6.4 s: the laced chain, one card at a time, each with the app's card clack. */
 function CardChain({ data }: { readonly data: ProblemData }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const cards = data.card.cards.slice(0, 9);
-  const every = Math.round(0.62 * fps);
+  const every = Math.round(0.58 * fps);
   const scale = 7.4;
   const gap = 20;
   const step = data.card.height * scale + gap;
-  const drift = interpolate(frame, [0, 7 * fps], [140, -220]);
+  const drift = interpolate(frame, [0, 6.4 * fps], [140, -220]);
   return (
     <Stock>
       <div style={{ position: "absolute", left: "50%", top: 0, transform: `translate(-50%, ${drift}px)` }}>
@@ -99,12 +99,12 @@ function PaperGrid({ data, row, violation = false, zoom = 1 }: { readonly data: 
   );
 }
 
-/** 7 to 14 s: one pick lit on the point paper, and its card beside it. */
+/** 6.4 to 16.7 s: one pick lit on the point paper, and its card beside it. */
 function RowToCard({ data }: { readonly data: ProblemData }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const steps = 10;
-  const every = Math.round(0.62 * fps);
+  const steps = 12;
+  const every = Math.round(0.8 * fps);
   const index = Math.min(steps - 1, Math.floor(Math.max(0, frame - 0.4 * fps) / every));
   const card = data.card.cards[index]!;
   const enter = interpolate(frame, [0, 10], [0, 1], { extrapolateRight: "clamp" });
@@ -127,7 +127,7 @@ function RowToCard({ data }: { readonly data: ProblemData }) {
   );
 }
 
-/** 14 to 21 s: the float over the limit, found by the engine, eased into view. */
+/** 16.7 to 21.8 s: the float over the limit, found by the engine, eased into view. */
 function LongFloat({ data }: { readonly data: ProblemData }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -151,17 +151,43 @@ function LongFloat({ data }: { readonly data: ProblemData }) {
   );
 }
 
+/** 21.8 to 27.4 s: JACQUARD's check flags the float on point paper; the pick's card is still blank. */
+function Caught({ data }: { readonly data: ProblemData }) {
+  const v = data.violation;
+  const card = data.card.cards.find((item) => item.pick === v.pick) ?? data.card.cards[0]!;
+  return (
+    <Stock>
+      <div style={{ position: "absolute", left: 120, top: 70, width: data.width * CELL, height: data.picks * CELL, overflow: "hidden", borderRadius: 4 }}>
+        <PaperGrid data={data} row={v.pick} violation zoom={2.1} />
+      </div>
+      <div style={{ position: "absolute", left: 1000, top: 250 }}>
+        <div style={{ fontFamily: FONTS.mono, fontSize: 30, color: COLOURS.violation }}>▲ flagged on point paper</div>
+        <div style={{ height: 30 }} />
+        <Card card={card} data={data} scale={5.6} blank />
+        <div style={{ fontFamily: FONTS.mono, fontSize: 28, color: COLOURS.inkMuted, marginTop: 18 }}>card {card.number} · not punched yet</div>
+      </div>
+    </Stock>
+  );
+}
+
+/** Sub-scene windows, in seconds from the start of the Main_Cut (Script_Data beats). */
+const WINDOWS = { chain: [0, 6.4], rows: [6.4, 16.7], float: [16.7, 21.8], caught: [21.8, 27.4] } as const;
+
 export function ProblemScene({ data }: { readonly data: ProblemData }) {
+  const span = ([from, to]: readonly [number, number]) => ({ from: Math.round(from * FPS), durationInFrames: Math.round((to - from) * FPS) });
   return (
     <>
-      <Sequence durationInFrames={7 * FPS}>
+      <Sequence {...span(WINDOWS.chain)}>
         <CardChain data={data} />
       </Sequence>
-      <Sequence from={7 * FPS} durationInFrames={7 * FPS}>
+      <Sequence {...span(WINDOWS.rows)}>
         <RowToCard data={data} />
       </Sequence>
-      <Sequence from={14 * FPS} durationInFrames={7 * FPS}>
+      <Sequence {...span(WINDOWS.float)}>
         <LongFloat data={data} />
+      </Sequence>
+      <Sequence {...span(WINDOWS.caught)}>
+        <Caught data={data} />
       </Sequence>
     </>
   );

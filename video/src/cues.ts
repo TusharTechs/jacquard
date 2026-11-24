@@ -106,3 +106,8 @@ export function fromSrt(text: string): Cue[] {
     return { start: parseStamp(from ?? ""), end: parseStamp(to ?? ""), lines: lines.filter((line) => line !== "") };
   });
 }
+
+/** Cues for every part of every scene, in order (the captions and the .srt use exactly these). */
+export function cuesForParts(scenes: readonly { readonly parts: readonly { readonly text: string; readonly start: number; readonly end: number }[] }[]): Cue[] {
+  return scenes.flatMap((scene) => scene.parts.flatMap((part) => cuesFor(part.text, part.start, part.end)));
+}

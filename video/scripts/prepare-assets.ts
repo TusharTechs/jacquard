@@ -25,11 +25,10 @@ function ffmpeg(args: string[]): void {
 
 // ---- Footage (privacy-log.md lists every range and crop) ----
 const journey = join(repo, "media", "journey");
-/** Kiro window without the menu bar (clock), the Dock and the status bar. */
-const KIRO_CROP = "crop=1920:1064:0:46";
 const clips: { out: string; src: string; from: number; to: number; crop: string }[] = [
-  { out: "hooks.mp4", src: "2026-11-16-clip-hooks-firing-live-wave7.mp4", from: 18, to: 30, crop: KIRO_CROP },
-  { out: "lattice.mp4", src: "2026-11-16-clip-lattice-test-finds-design-error.mp4", from: 87.5, to: 95, crop: KIRO_CROP },
+  // hook-runs.log lines only: the crop starts below the terminal's prompt line, which shows the
+  // local account and host name, so no frame of the range holds it (checked frame by frame).
+  { out: "hooks-log.mp4", src: "2026-11-16-clip-hooks-firing-live-wave7.mp4", from: 16.5, to: 21.5, crop: "crop=762:278:478:822" },
   // The agent's "Input required" panel, for a readable close-up.
   { out: "lattice-panel.mp4", src: "2026-11-16-clip-lattice-test-finds-design-error.mp4", from: 87.5, to: 95, crop: "crop=572:700:1334:240" },
   // The page only: no tabs, address bar, profile button, notification, Dock or menu bar.
@@ -38,8 +37,9 @@ const clips: { out: string; src: string; from: number; to: number; crop: string 
 for (const clip of clips) {
   ffmpeg(["-ss", String(clip.from), "-to", String(clip.to), "-i", join(journey, clip.src), "-vf", `${clip.crop},fps=30,format=yuv420p`, "-an", "-c:v", "libx264", "-crf", "16", "-preset", "slow", join(pub, "media", clip.out)]);
 }
-// Stills.
-ffmpeg(["-i", join(journey, "2026-11-16-planted-bug-counterexample.png"), "-vf", KIRO_CROP, join(pub, "media", "planted-bug.png")]);
+// Stills. The two Run Command Hook panels at 22 s of the hooks clip, below the Run Command box
+// that shows a home-directory path.
+ffmpeg(["-ss", "22", "-i", join(journey, "2026-11-16-clip-hooks-firing-live-wave7.mp4"), "-frames:v", "1", "-vf", "crop=486:142:1376:588", join(pub, "media", "hooks-panel.png")]);
 copyFileSync(join(repo, "media", "motif-builder", "paisley-border-paper-1440.png"), join(pub, "media", "paisley-fixed.png"));
 copyFileSync(join(repo, "media", "polish", "weave-cloth-peacock-1440.png"), join(pub, "media", "cloth-after.png"));
 // The same still before the user's review: media/polish/weave-1440.png at tag phase-polish.
@@ -133,6 +133,11 @@ const excerpts = {
   power: `${plugin.name} ${plugin.version}`,
   cliVerdict: cliLog.find((line) => line.startsWith("VERDICT:"))?.slice(0, "VERDICT: PASS".length) ?? "",
 };
+// Privacy (demo-video 4.1): no home-directory path, account, host or full name in any text the
+// video shows; and no figure taken only from a weaver's own page (Tushar's review, item 7).
+const FORBIDDEN = [/\/Users\//, /techtush/i, /@192/, /Tushar Agarwal/, /42[,.]?000/];
+const shown = JSON.stringify(excerpts) + readFileSync(join(pub, "data", "problem.json"), "utf8");
+for (const pattern of FORBIDDEN) if (pattern.test(shown)) throw new Error(`excerpts contain ${pattern}`);
 writeFileSync(join(pub, "data", "excerpts.json"), JSON.stringify(excerpts, null, 1));
 writeFileSync(join(pub, "data", "assets.json"), JSON.stringify({ voice: existsSync(join(pub, "audio", "voice.wav")) }));
 console.log(`public/media: ${clips.length} clips, 4 stills; public/data: problem.json (violation ${violation === undefined ? "none" : "found"}), excerpts.json`);

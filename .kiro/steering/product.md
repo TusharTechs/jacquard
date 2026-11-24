@@ -6,7 +6,7 @@ inclusion: always
 
 ## What it is
 
-The first computer programs were punch cards written for looms in 1804. Computing abandoned them as a medium. Handlooms did not [sourced, S2 and S3 in `weaving-domain.md`]. JACQUARD brings the punch card back as something AI can write: the user describes or sketches a motif and gets a card-ready design, a simulated cloth, and the card set to weave it.
+In 1804, a loom read punch cards. Computers borrowed the idea, then abandoned punch cards as a medium. Handlooms did not [sourced, S2 and S3 in `weaving-domain.md`]. JACQUARD brings the punch card back: the user describes a motif, which a motif builder turns into a design (the AI path is built but off), or uploads a sketch, and gets a card-ready design, a simulated cloth, and the card set to weave it.
 
 Entry for Kiroween 2026, category Resurrection. Deadline Fri Dec 4, 2026, 2:00 PM PT.
 

@@ -3,7 +3,7 @@
 import { AbsoluteFill, Audio, Composition, Sequence, Series, staticFile } from "remotion";
 import { useData } from "./data";
 import { VERTICAL_DURATION, VERTICAL_PARTS } from "./edit";
-import { cuesFor } from "./cues";
+import { cuesForParts } from "./cues";
 import type { Cue } from "./cues";
 import { waitForFonts } from "./fonts";
 import { dbToGain, musicGainDb } from "./mix";
@@ -18,7 +18,7 @@ import { FPS, MAIN, VERTICAL } from "./theme";
 
 waitForFonts();
 
-const CUES: readonly Cue[] = SCENES.flatMap((scene) => cuesFor(scene.narration, scene.voice.start, scene.voice.end));
+const CUES: readonly Cue[] = cuesForParts(SCENES);
 const WINDOWS = SCENES.map((scene) => scene.voice);
 const scene = (id: string) => SCENES.find((item) => item.id === id)!;
 

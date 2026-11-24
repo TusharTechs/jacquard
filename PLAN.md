@@ -2,7 +2,7 @@
 
 **Category:** Resurrection. **Deadline:** Fri Dec 4, 2026, 2:00 PM PT (Sat Dec 5, 3:30 AM IST). Target submission: Thu Dec 3 IST, one day early.
 
-**Pitch:** The first computer programs were punch cards written for looms in 1804. Computing abandoned them; handlooms did not [sourced, S2 and S3 in `.kiro/steering/weaving-domain.md`]. JACQUARD brings the punch card back as something AI can write: describe or sketch a motif, get a card-ready design, a simulated cloth, and the card set to weave it.
+**Pitch:** In 1804, a loom read punch cards. Computers borrowed the idea, then abandoned them; handlooms did not [sourced, S2 and S3 in `.kiro/steering/weaving-domain.md`]. JACQUARD brings the punch card back: describe a motif and a motif builder turns it into a design (the AI path is built but off), or upload a sketch; get a card-ready design, a simulated cloth, and the card set to weave it.
 
 **Why this idea:** It won the second judge-panel vote 5 of 7 with the builder alone on camera and 7 of 7 with a real weaver or textile designer on camera. It is the only shortlisted idea with no look-alike among 476 Kiroween 2026 repos (as of Nov 15). Details: `research/10-judge-panel-results.md`, `research/11-competition-summary.md`.
 

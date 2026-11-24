@@ -15,17 +15,16 @@ export function CloseScene({ compact = false }: { readonly compact?: boolean }) 
             JACQUARD
           </Heading>
         </Enter>
-        <Enter delay={20}>
+        <Enter delay={12}>
           <div style={line}>The card format is a configurable loom profile, not yet tested on a working loom.</div>
         </Enter>
-        <Enter delay={110}>
-          <div style={line}>The motif step is a builder, not AI.</div>
-        </Enter>
-        <Enter delay={190} style={{ marginTop: 40 }}>
+        {/* With "The site is live and the code is open source" (part 2, 7 s in). */}
+        <Enter delay={210} style={{ marginTop: 40 }}>
           <div style={mono}>{LIVE_URL.replace("https://", "")}</div>
-          <div style={mono}>{REPO_URL.replace("https://", "")}</div>
+          <div style={mono}>{REPO_URL.replace("https://", "")} · open source, MIT licence</div>
         </Enter>
-        <Enter delay={300}>
+        {/* With "Built with Kiro" (part 3, 13.9 s in). */}
+        <Enter delay={417}>
           <div style={{ fontFamily: FONTS.display, fontSize: compact ? 52 : 60, fontWeight: 600, color: COLOURS.brassStrong, marginTop: 50 }}>Built with Kiro</div>
         </Enter>
       </div>

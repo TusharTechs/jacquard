@@ -18,7 +18,7 @@ function Arrow() {
   return <div style={{ fontFamily: FONTS.sans, fontSize: 40, color: COLOURS.brass, textAlign: "center", margin: "6px 0" }}>↓</div>;
 }
 
-/** 86 to 95.9: a requirement, the property that validates it, the task that tests it. */
+/** 86 to 96.2: a requirement, the property that validates it, the task that tests it. */
 function SpecChain({ excerpts }: { readonly excerpts: Excerpts }) {
   const [requirement, property, task] = excerpts.specChain;
   return (
@@ -53,50 +53,68 @@ function SpecChain({ excerpts }: { readonly excerpts: Excerpts }) {
   );
 }
 
-/** 95.9 to 98.5: steering with its labels. */
+/** 96.2 to 100.4: one labelled line of steering, large. */
 function Steering({ excerpts }: { readonly excerpts: Excerpts }) {
+  const line = excerpts.steering.find((item) => item.includes("Handlooms still weaving")) ?? excerpts.steering[0]!;
+  // "- Handlooms still weaving from punched cards: **[sourced, S2, S3]** (…)": the claim and its label.
+  const claim = line.replace(/^-\s*/, "").replace(/\*\*/g, "").replace(/\s*\(.*$/, "");
   return (
     <Stock>
-      <div style={{ position: "absolute", left: 140, right: 140, top: 80 }}>
+      <div style={{ position: "absolute", left: 140, right: 140, top: 250 }}>
         <Panel title=".kiro/steering/weaving-domain.md">
-          {excerpts.steering.map((line, index) => (
-            <div key={index} style={{ marginBottom: 18 }}>
-              <Code text={line} size={25} />
-            </div>
-          ))}
+          <Code text={claim} size={58} />
         </Panel>
+        <div style={{ marginTop: 26 }}>
+          <Label>every statement about real looms carries a label: [sourced], [convention], [decision] or [to verify]</Label>
+        </div>
       </div>
     </Stock>
   );
 }
 
-/** 98.5 to 107.5: the hooks, off until the workspace was trusted, then firing live. */
+/** 100.4 to 104.7: the hooks firing, readable: hook-runs.log and the Run Command Hook panels. */
 function Hooks({ excerpts }: { readonly excerpts: Excerpts }) {
-  const frame = useCurrentFrame();
-  const trust = interpolate(frame, [0, 12, 150, 166], [0, 1, 1, 0], { extrapolateLeft: "clamp", extrapolateRight: "clamp" });
   return (
     <Stock>
-      <div style={{ position: "absolute", left: 60, top: 40, width: 1240, height: 687, borderRadius: 8, overflow: "hidden", boxShadow: "0 18px 40px -20px rgb(60 40 20 / 0.55)" }}>
-        <OffthreadVideo src={staticFile("media/hooks.mp4")} muted style={{ width: "100%", height: "100%" }} />
+      <div style={{ position: "absolute", left: 60, top: 36 }}>
+        <Label>.kiro/hook-runs.log, live</Label>
+        <div style={{ marginTop: 10, width: 1440, height: 525, borderRadius: 8, overflow: "hidden", boxShadow: "0 18px 40px -20px rgb(60 40 20 / 0.55)" }}>
+          <OffthreadVideo src={staticFile("media/hooks-log.mp4")} muted style={{ width: "100%", height: "100%" }} />
+        </div>
       </div>
-      <div style={{ position: "absolute", left: 1340, top: 40, width: 520 }}>
+      <div style={{ position: "absolute", left: 60, top: 626 }}>
+        <Img src={staticFile("media/hooks-panel.png")} style={{ width: 826, height: 241, borderRadius: 8, boxShadow: "0 18px 40px -20px rgb(60 40 20 / 0.55)" }} />
+      </div>
+      <div style={{ position: "absolute", left: 940, top: 626, width: 900 }}>
         <Label>.kiro/hooks/</Label>
-        <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 14 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
           {excerpts.hookNames.map((name) => (
             <Chip key={name}>{name}</Chip>
           ))}
         </div>
       </div>
-      <div style={{ position: "absolute", left: 60, right: 60, top: 760, opacity: trust }}>
-        <Panel title="Kiro log">
-          <Code text="hooks.v2.executionDisabledUntrustedWorkspace" size={34} highlight={/(executionDisabledUntrustedWorkspace)/} />
+    </Stock>
+  );
+}
+
+/** 104.7 to 109.0: the log line that explained it, fully visible from the first frame. */
+function Trust() {
+  return (
+    <Stock>
+      <div style={{ position: "absolute", left: 80, right: 80, top: 300 }}>
+        <Panel title="Kiro log, day one">
+          {/* 44 characters at 56 px mono (about 1480 px) keep the key on one line. */}
+          <Code text="hooks.v2.executionDisabledUntrustedWorkspace" size={56} highlight={/(executionDisabledUntrustedWorkspace)/} />
         </Panel>
+        <div style={{ marginTop: 26 }}>
+          <Label>hook execution was off for an untrusted workspace; trusting the folder fixed it</Label>
+        </div>
       </div>
     </Stock>
   );
 }
 
-/** 107.5 to 114.8: the lattice test that proved the design document wrong. */
+/** 109.0 to 116.8: the lattice test that proved the design document wrong. */
 function Lattice() {
   return (
     <Stock>
@@ -113,7 +131,7 @@ function Lattice() {
   );
 }
 
-/** 114.8 to 118.3: the planted bug's shrunk counterexample. */
+/** 116.8 to 120.8: the planted bug's shrunk counterexample. */
 function Planted({ excerpts }: { readonly excerpts: Excerpts }) {
   const counterexample = excerpts.planted.find((line) => line.startsWith("- Counterexample")) ?? "";
   const lifts = /"lifts":\[\[true\],\[false\]\]/.exec(counterexample)?.[0] ?? "";
@@ -134,7 +152,7 @@ function Planted({ excerpts }: { readonly excerpts: Excerpts }) {
   );
 }
 
-/** 118.3 to 125.1: the mirrored paisley border that lost its figures, and the fixed one. */
+/** 120.8 to 128.1: the mirrored paisley border that lost its figures, and the fixed one. */
 function Paisley({ excerpts }: { readonly excerpts: Excerpts }) {
   const counterexample = (excerpts.paisley.find((line) => line.startsWith("Counterexample")) ?? "").replace(/^Counterexample:\s*/, "").replace(/`/g, "");
   const error = (excerpts.paisley.find((line) => line.startsWith("Error")) ?? "").replace(/^Error:\s*/, "").replace(/`/g, "");
@@ -157,7 +175,7 @@ function Paisley({ excerpts }: { readonly excerpts: Excerpts }) {
   );
 }
 
-/** 125.1 to 135.9: custom agents and the MCP servers; Kiro driving Chrome through DevTools. */
+/** 128.1 to 138.4: custom agents and the MCP servers; Kiro driving Chrome through DevTools. */
 function AgentsMcp({ excerpts }: { readonly excerpts: Excerpts }) {
   return (
     <Stock>
@@ -186,12 +204,17 @@ function AgentsMcp({ excerpts }: { readonly excerpts: Excerpts }) {
         <div style={{ marginTop: 16 }}>
           <Label>jacquard-weave is ours</Label>
         </div>
+        <div style={{ height: 40 }} />
+        <Label>deployed by Kiro</Label>
+        <div style={{ marginTop: 12 }}>
+          <Chip>AWS Amplify Hosting · scripts/deploy-web.sh</Chip>
+        </div>
       </div>
     </Stock>
   );
 }
 
-/** 135.9 to 144.9: the Power and the local Kiro CLI run. */
+/** 138.4 to 144.2: the Power and the local Kiro CLI run. */
 function PowerCli({ excerpts }: { readonly excerpts: Excerpts }) {
   return (
     <Stock>
@@ -207,14 +230,16 @@ function PowerCli({ excerpts }: { readonly excerpts: Excerpts }) {
           </Panel>
         </Enter>
       </div>
-      <Enter delay={110} style={{ position: "absolute", left: 140, right: 140, top: 560 }}>
-        <Label>The GitHub Actions run is set up but off: Kiro API keys need a paid Kiro plan.</Label>
+      <Enter delay={60} style={{ position: "absolute", left: 140, right: 140, top: 560 }}>
+        <Panel title=".github/workflows/kiro-spec-check.yml">
+          <Code text="The CI run is set up but off: Kiro API keys need a paid Kiro plan." size={40} />
+        </Panel>
       </Enter>
     </Stock>
   );
 }
 
-/** 144.9 to 152: what Kiro missed. The cloth before and after the review. */
+/** 144.2 to 152: what Kiro missed. The cloth before and after the review. */
 function ClothBeforeAfter() {
   return (
     <Stock>
@@ -236,15 +261,17 @@ function ClothBeforeAfter() {
 }
 
 const PARTS: readonly { readonly at: number; readonly until: number; readonly render: (excerpts: Excerpts) => ReactNode }[] = [
-  { at: 86, until: 95.9, render: (excerpts) => <SpecChain excerpts={excerpts} /> },
-  { at: 95.9, until: 98.5, render: (excerpts) => <Steering excerpts={excerpts} /> },
-  { at: 98.5, until: 107.5, render: (excerpts) => <Hooks excerpts={excerpts} /> },
-  { at: 107.5, until: 114.8, render: () => <Lattice /> },
-  { at: 114.8, until: 118.3, render: (excerpts) => <Planted excerpts={excerpts} /> },
-  { at: 118.3, until: 125.1, render: (excerpts) => <Paisley excerpts={excerpts} /> },
-  { at: 125.1, until: 135.9, render: (excerpts) => <AgentsMcp excerpts={excerpts} /> },
-  { at: 135.9, until: 144.9, render: (excerpts) => <PowerCli excerpts={excerpts} /> },
-  { at: 144.9, until: 152, render: () => <ClothBeforeAfter /> },
+  { at: 86, until: 96.2, render: (excerpts) => <SpecChain excerpts={excerpts} /> },
+  { at: 96.2, until: 100.4, render: (excerpts) => <Steering excerpts={excerpts} /> },
+  { at: 100.4, until: 104.7, render: (excerpts) => <Hooks excerpts={excerpts} /> },
+  // Cut in on "none of them fired until I trusted the workspace" (part 4 starts at 104.8).
+  { at: 104.7, until: 109.0, render: () => <Trust /> },
+  { at: 109.0, until: 116.8, render: () => <Lattice /> },
+  { at: 116.8, until: 120.8, render: (excerpts) => <Planted excerpts={excerpts} /> },
+  { at: 120.8, until: 128.1, render: (excerpts) => <Paisley excerpts={excerpts} /> },
+  { at: 128.1, until: 138.4, render: (excerpts) => <AgentsMcp excerpts={excerpts} /> },
+  { at: 138.4, until: 144.2, render: (excerpts) => <PowerCli excerpts={excerpts} /> },
+  { at: 144.2, until: 152, render: () => <ClothBeforeAfter /> },
 ];
 
 export function KiroScene({ origin, excerpts }: { readonly origin: number; readonly excerpts: Excerpts }) {
