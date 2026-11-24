@@ -3,6 +3,7 @@
 // shuttle crosses and a low thud as the reed beats the pick in. Loaded only when the user turns
 // sound on (this module is imported dynamically), and quiet.
 import type { PhaseName } from "./loom-model";
+import { LOOM_PATCHES } from "./loom-sound-patches";
 
 export interface LoomSound {
   /** Plays the sound of a Phase as it begins; the caller calls this once per Phase per pick. */
@@ -13,30 +14,21 @@ export interface LoomSound {
 export async function createLoomSound(): Promise<LoomSound> {
   const Tone = await import("tone");
   await Tone.start();
-  const output = new Tone.Volume(-14).toDestination();
-
-  const clack = new Tone.NoiseSynth({ noise: { type: "white" }, envelope: { attack: 0.001, decay: 0.045, sustain: 0, release: 0.02 } });
-  const clackFilter = new Tone.Filter({ type: "highpass", frequency: 1800 });
+  const P = LOOM_PATCHES;
+  const output = new Tone.Volume(P.outputVolumeDb).toDestination();
+  const clack = new Tone.NoiseSynth(structuredClone(P.clack.synth) as never);
+  const clackFilter = new Tone.Filter(structuredClone(P.clack.filter) as never);
   clack.chain(clackFilter, output);
-
-  const tick = new Tone.MetalSynth({
-    envelope: { attack: 0.001, decay: 0.08, release: 0.05 },
-    harmonicity: 5.1,
-    modulationIndex: 16,
-    resonance: 3200,
-    octaves: 1.2,
-  });
-  tick.frequency.value = 260;
-  tick.volume.value = -22;
+  const tick = new Tone.MetalSynth(structuredClone(P.tick.synth) as never);
+  tick.frequency.value = P.tick.frequency;
+  tick.volume.value = P.tick.volumeDb;
   tick.connect(output);
-
-  const whoosh = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.06, decay: 0.18, sustain: 0.2, release: 0.15 } });
-  const whooshFilter = new Tone.Filter({ type: "bandpass", frequency: 700, Q: 1.4 });
+  const whoosh = new Tone.NoiseSynth(structuredClone(P.whoosh.synth) as never);
+  const whooshFilter = new Tone.Filter(structuredClone(P.whoosh.filter) as never);
   whoosh.chain(whooshFilter, output);
-  whoosh.volume.value = -10;
-
-  const thud = new Tone.MembraneSynth({ pitchDecay: 0.03, octaves: 3, envelope: { attack: 0.001, decay: 0.22, sustain: 0, release: 0.1 } });
-  thud.volume.value = -6;
+  whoosh.volume.value = P.whoosh.volumeDb;
+  const thud = new Tone.MembraneSynth(structuredClone(P.thud.synth) as never);
+  thud.volume.value = P.thud.volumeDb;
   thud.connect(output);
 
   const nodes = [clack, clackFilter, tick, whoosh, whooshFilter, thud, output];
@@ -49,19 +41,19 @@ export async function createLoomSound(): Promise<LoomSound> {
       try {
         switch (phase) {
           case "advance":
-            clack.triggerAttackRelease(0.04, now);
+            clack.triggerAttackRelease(P.clack.duration, now);
             break;
           case "lift":
-            tick.triggerAttackRelease("32n", now);
+            tick.triggerAttackRelease(P.tick.duration, now);
             break;
           case "shuttle":
             whooshFilter.frequency.cancelScheduledValues(now);
-            whooshFilter.frequency.setValueAtTime(500, now);
-            whooshFilter.frequency.exponentialRampToValueAtTime(1600, now + 0.25);
-            whoosh.triggerAttackRelease(0.25, now);
+            whooshFilter.frequency.setValueAtTime(P.whoosh.sweep.from, now);
+            whooshFilter.frequency.exponentialRampToValueAtTime(P.whoosh.sweep.to, now + P.whoosh.sweep.seconds);
+            whoosh.triggerAttackRelease(P.whoosh.duration, now);
             break;
           case "beat":
-            thud.triggerAttackRelease("C1", "16n", now);
+            thud.triggerAttackRelease(P.thud.note, P.thud.duration, now);
             break;
           case "settle":
             break;
