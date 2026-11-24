@@ -19,6 +19,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 ---
 
 ## Status for Tushar
+Judge prep, 2026-11-24 (commit 2afe8de and the journal commit after it): README.md rewritten for judges, brand images in `media/brand/`, `research/` moved to the gitignored `private/research/`, `video/script.md` and `video/voice/RECORDING.md` now local only. GitHub settings (description, homepage, topics, social preview) are written out in the session report and were **not applied**. Still yours: the credits figure, a Windows run, and the repository settings once it is recreated.
 Demo video, 2026-11-24: **approved and tagged `phase-video`** (a617fd5). The voice is af_heart. Main_Cut 168.9 s, Vertical_Cut 44.9 s, both in `video/out/` (local, gitignored).
 Demo video, final review applied, 2026-11-24 (commit d7bcdcb): **not tagged `phase-video`, waiting for you.**
 - Narration: 157 wpm on average (it was 175), 138 s of speech in the 169 s cut, 0.33 to 0.36 s between sentences. Voice: af_heart. Nine short lines still fill only 74 to 83 % of their windows at the 0.8 floor; am_michael would fill them better, at a lower grade.
@@ -2108,6 +2109,27 @@ No property test failed in this session: rewritten Properties 7 and 9 passed on 
 - What failed or surprised: nothing in this session. No test ran in it; the last full run, at the tagged commit, passed 727 tests.
 - Spec versus vibe note: none for this entry.
 - Evidence: `git rev-list -n 1 phase-video` → a617fd5; commit b071fd6.
+### 2026-11-24 — Judge prep: internal material out of git, brand images, README for judges
+- Surface: Kiro IDE.
+- Goal: make the repository ready for judges: move internal material out of git, add brand images, rewrite README.md, write the GitHub settings commands (not applied), run the checks and test the README instructions in a fresh clone.
+- Kiro features used: steering `product.md` (framing rules for the README), `tech.md` (EXIT_CODE rule), `structure.md` (changed: the `research/` rule became a `private/` rule); built-in web search (census source S5). No spec, custom agent, MCP tool or property test was run for this work; no hook output was seen.
+- Model / credits (start → end):
+- What worked:
+  - `research/` moved to the gitignored `private/research/` (12 files untracked, kept locally). `video/script.md` and `video/voice/RECORDING.md` untracked and gitignored; they are still generated locally. References fixed in `structure.md`, `PLAN.md`, `BUILD_PLAYBOOK.md` and the demo-video spec (requirements 2.2 and 8.2, design tree, a Decision log row). `PLAN.md` lost its "Why this idea" paragraph and two competition sentences. This journal still mentions `research/` and judge votes in older entries; it is a historical record and was left as it is.
+  - `video/test/voice.property.test.ts`: the RECORDING.md test compares with the file only when it exists, so a fresh clone passes.
+  - `video/scripts/brand.ts` (Playwright Chromium, colours from `video/src/theme.ts`) rendered `media/brand/jacquard-logo-light.png`, `jacquard-logo-dark.png` (1818x328, transparent) and `social-preview.png` (1280x640); `demo-thumbnail.png` is a copy of the YouTube thumbnail. No PNG has a text or EXIF chunk.
+  - README.md rewritten: logo `<picture>`, link table, thumbnail, the problem with sources S1 to S5, four steps with screenshots, a two-minute tour of the live site (Peacock butta: 1 violation, 1 flip, 0 after, from `apps/web/public/gallery/peacock-butta.json`), a criteria table, How Kiro built it (10 rows), surprises, numbers, two Mermaid diagrams, local run, MCP and Power install, repo map, limits.
+  - Checks: `pnpm typecheck` TYPECHECK_EXIT_CODE=0; `pnpm test` TEST_EXIT_CODE=0 with engine 148, mcp 110, export 52, motif 101, backend 45, web 231, video 40 (727). README links: 83 relative links and anchors, 0 bad (`/tmp/checklinks.mjs`). Both Mermaid blocks parse and render with mermaid 12.3.0 (published 2026-11-03, installed in a temp folder, not in the repo). `scripts/check-no-account-id.sh` exit 0. No home path, email or account ID in any changed file.
+  - Fresh clone in a temp folder (from the local repository at 2afe8de): `corepack pnpm --version` 12.16.1; `pnpm install` exit 0; `pnpm test` exit 0, 727 tests; `pnpm typecheck` exit 0; `pnpm --filter @jacquard/web build` exit 0; `pnpm --filter @jacquard/mcp build` exit 0; the dev server served `<title>JACQUARD: punch cards for handlooms</title>`; `packages/mcp/dist/index.js` answered `tools/list` with the six tools.
+- What failed or surprised:
+  - Fonts loaded through `file://` URLs did not apply under Playwright `setContent`; brand.ts now embeds fonts and images as data URLs and throws if Fraunces did not load.
+  - My first look at the rendered logo showed a stale cached image; a fresh read showed the current render.
+  - The README draft had wrong details that I caught by reading the code before the commit: it cited S1 for "long floats snag and weaken cloth" (`weaving-domain.md` gives no source for that), said the opening skips on any click (it has a Skip button, Escape, Enter or a click), said Print cards shows a layout (it opens the print dialog), and gave `localhost:5173` (Vite listens on 127.0.0.1, and moves to the next port when 5173 is busy, as it did in the clone test).
+  - The first Mermaid check failed because the video package has `@playwright/test`, not `playwright`. One scan command was refused by the permission parser (`${(f)files}`) and was rewritten.
+  - Britannica (403) and Project Gutenberg (503) refused curl, so those two links were not re-checked in this session. Windows was not tested; only macOS.
+  - The credits figure is not recorded anywhere in the repo, so the README does not state one.
+- Spec versus vibe note: vibe; no spec covers repository presentation.
+- Evidence: commit 2afe8de; `README.md`; `media/brand/`; `video/scripts/brand.ts`; `.gitignore`.
 ### Template
 
 ```

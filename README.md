@@ -159,10 +159,10 @@ git clone https://github.com/TusharTechs/jacquard.git
 cd jacquard
 corepack enable            # gives you pnpm 12.16.1 from package.json
 pnpm install
-pnpm --filter @jacquard/web dev     # the Studio at http://localhost:5173
+pnpm --filter @jacquard/web dev     # the Studio at http://127.0.0.1:5173
 ```
 
-If `corepack enable` is not allowed on your machine, install pnpm with `npm install -g pnpm@12.16.1` instead.
+Vite uses the next free port if 5173 is taken, and prints the address. If `corepack enable` is not allowed on your machine, install pnpm with `npm install -g pnpm@12.16.1` instead.
 
 Checks and build:
 
