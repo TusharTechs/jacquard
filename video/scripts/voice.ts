@@ -69,7 +69,12 @@ const sentenceRanges = (line: (typeof lines)[number]) => {
   const scale = VOICE_RATE / data.rate;
   return data.sentences.map((range) => ({ start: Math.round(range.start * scale), end: Math.round(range.end * scale) }));
 };
-const inputs = lines.map((line) => ({ line, samples: floats(ffmpeg(["-v", "error", "-i", join(linesDir, line.file), ...pcmOut])), sentences: sentenceRanges(line) }));
+const heardWords = (line: (typeof lines)[number]) => {
+  const side = join(linesDir, line.file.replace(/\.wav$/, ".json"));
+  if (!existsSync(side)) return undefined;
+  return (JSON.parse(readFileSync(side, "utf8")) as { words?: { word: string; start: number; end: number }[] }).words;
+};
+const inputs = lines.map((line) => ({ line, samples: floats(ffmpeg(["-v", "error", "-i", join(linesDir, line.file), ...pcmOut])), sentences: sentenceRanges(line), words: heardWords(line) }));
 const assembly = assembleVoice(
   inputs,
   {
@@ -98,6 +103,7 @@ if (writeAssets) {
     start: Number(item.at.toFixed(3)),
     end: Number(item.end.toFixed(3)),
     sentences: (item.sentences.length > 0 ? item.sentences : [{ start: item.at, end: item.end }]).map((span) => ({ start: Number(span.start.toFixed(3)), end: Number(span.end.toFixed(3)) })),
+    words: item.words.map((word) => ({ word: word.word, start: Number(word.start.toFixed(3)), end: Number(word.end.toFixed(3)) })),
   }));
   writeFileSync(
     "src/voice-timing.ts",

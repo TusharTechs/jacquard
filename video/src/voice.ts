@@ -138,6 +138,8 @@ export interface Placed {
   readonly end: number;
   /** Each sentence's speech, in video seconds, when the line came with sentence ranges. */
   readonly sentences: readonly { readonly start: number; readonly end: number }[];
+  /** Heard words, in video seconds, when the line came with word times. */
+  readonly words: readonly { readonly word: string; readonly start: number; readonly end: number }[];
 }
 
 /** A sample range [start, end) of one sentence in a line's recording. */
@@ -155,15 +157,21 @@ export type Assembly =
  * overruns; the result lists them all. `inputs` are mono at VOICE_RATE, one per line, in order.
  */
 export function assembleVoice(
-  inputs: readonly { readonly line: VoiceLine; readonly samples: Float32Array; readonly sentences?: readonly SampleRange[] }[],
+  inputs: readonly {
+    readonly line: VoiceLine;
+    readonly samples: Float32Array;
+    readonly sentences?: readonly SampleRange[];
+    /** Word times in seconds from the start of the recording. */
+    readonly words?: readonly { readonly word: string; readonly start: number; readonly end: number }[];
+  }[],
   processors: Processors,
   duration: number,
 ): Assembly {
   const rate = VOICE_RATE;
   const pad = Math.round(PAD_SECONDS * rate);
-  const planned: { line: VoiceLine; clip: Float32Array; lead: number; speech: number; fit: Fit; sentences: { start: number; end: number }[] }[] = [];
+  const planned: { line: VoiceLine; clip: Float32Array; lead: number; speech: number; fit: Fit; sentences: { start: number; end: number }[]; words: { word: string; start: number; end: number }[] }[] = [];
   const overruns: Overrun[] = [];
-  for (const { line, samples, sentences = [] } of inputs) {
+  for (const { line, samples, sentences = [], words = [] } of inputs) {
     const bounds = trimBounds(samples, rate);
     if (bounds === null) {
       overruns.push({ line, speech: 0 });
@@ -179,7 +187,8 @@ export function assembleVoice(
       const inner = trimBounds(samples.slice(range.start, range.end), rate);
       return inner === null ? [] : [{ start: (range.start + inner.start - bounds.start) / rate, end: (range.start + inner.end - bounds.start) / rate }];
     });
-    planned.push({ line, clip: samples.slice(from, to), lead: bounds.start - from, speech, fit, sentences: spans });
+    const heard = words.map((word) => ({ word: word.word, start: word.start - bounds.start / rate, end: word.end - bounds.start / rate }));
+    planned.push({ line, clip: samples.slice(from, to), lead: bounds.start - from, speech, fit, sentences: spans, words: heard });
   }
   const silent = overruns.filter((item) => item.speech === 0);
   if (silent.length > 0) return { ok: false, overruns: silent, message: `Silent recording${silent.length === 1 ? "" : "s"}: ${silent.map((item) => item.line.name).join(", ")}. Re-record ${silent.length === 1 ? "it" : "them"}.` };
@@ -187,7 +196,7 @@ export function assembleVoice(
 
   const track = new Float32Array(Math.round(duration * rate));
   const placed: Placed[] = [];
-  for (const { line, clip, lead, speech, fit, sentences } of planned) {
+  for (const { line, clip, lead, speech, fit, sentences, words } of planned) {
     const stretched = fit.tempo > 1 ? processors.stretch(clip, fit.tempo) : clip;
     const shaped = processors.normalise(stretched);
     const leadAfter = Math.round(lead / fit.tempo);
@@ -197,7 +206,15 @@ export function assembleVoice(
       if (at >= 0 && at < track.length) track[at] = track[at]! + shaped[index]!;
     }
     const at = (seconds: number): number => line.start + Math.max(0, Math.min(speech, seconds)) / fit.tempo;
-    placed.push({ line, speech, tempo: fit.tempo, at: line.start, end: at(speech), sentences: sentences.map((span) => ({ start: at(span.start), end: at(span.end) })) });
+    placed.push({
+      line,
+      speech,
+      tempo: fit.tempo,
+      at: line.start,
+      end: at(speech),
+      sentences: sentences.map((span) => ({ start: at(span.start), end: at(span.end) })),
+      words: words.map((word) => ({ word: word.word, start: at(word.start), end: at(word.end) })),
+    });
   }
   return { ok: true, track, placed };
 }

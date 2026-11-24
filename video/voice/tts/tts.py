@@ -26,6 +26,26 @@ def fetch(repo: str, filename: str, revision: str) -> str:
     return hf_hub_download(repo_id=repo, filename=filename, revision=revision)
 
 
+# Kokoro starts each sentence with about 0.3 s of silence and ends it with about 0.45 s. Each
+# sentence is cut to its speech plus MARGIN either side, so the pause between two sentences is
+# the job's own "pause" plus 2 x MARGIN (demo-video 9.3).
+MARGIN = 0.04
+
+
+def trim(clip, rate: int):
+    import numpy as np
+
+    frame = int(0.01 * rate)
+    levels = np.array([np.sqrt(np.mean(clip[i : i + frame] ** 2)) for i in range(0, max(1, len(clip) - frame), frame)])
+    if levels.size == 0 or levels.max() <= 0:
+        return clip
+    above = np.where(levels > levels.max() * 10 ** (-40 / 20))[0]
+    margin = int(MARGIN * rate)
+    start = max(0, above[0] * frame - margin)
+    end = min(len(clip), (above[-1] + 1) * frame + margin)
+    return clip[start:end]
+
+
 def synth(jobs_file: str) -> None:
     import numpy as np
     import soundfile as sf
@@ -61,13 +81,18 @@ def synth(jobs_file: str) -> None:
             ]
             if not audio:
                 raise SystemExit(f"{job['out']}: no audio for sentence {index + 1}: {sentence}")
-            clip = np.concatenate(audio)
+            clip = trim(np.concatenate(audio), KOKORO_RATE)
             if index > 0:
                 pieces.append(pause)
                 at += len(pause)
             pieces.append(clip)
             ranges.append({"start": at, "end": at + len(clip)})
             at += len(clip)
+        # Half a second of silence at each end of the file; the voice assembly trims it.
+        edge = np.zeros(int(0.5 * KOKORO_RATE), dtype=np.float32)
+        pieces = [edge, *pieces, edge]
+        ranges = [{"start": r["start"] + len(edge), "end": r["end"] + len(edge)} for r in ranges]
+        at += 2 * len(edge)
         out = Path(job["out"])
         out.parent.mkdir(parents=True, exist_ok=True)
         sf.write(out, np.concatenate(pieces), KOKORO_RATE, subtype="PCM_16")
@@ -104,9 +129,11 @@ def asr(jobs_file: str) -> None:
         audio = decode16k(file)
         if not isinstance(item, str):
             audio = audio[int(item["from"] * 16000) : int(item["to"] * 16000)]
-        segments, _ = model.transcribe(audio, language="en", beam_size=5, condition_on_previous_text=False, vad_filter=False)
+        segments, _ = model.transcribe(audio, language="en", beam_size=5, condition_on_previous_text=False, vad_filter=False, word_timestamps=jobs.get("words", False))
+        segments = list(segments)
         text = " ".join(segment.text.strip() for segment in segments).strip()
-        results.append({"file": file, "transcript": text})
+        words = [{"word": word.word.strip(), "start": round(word.start, 3), "end": round(word.end, 3)} for segment in segments for word in (segment.words or [])]
+        results.append({"file": file, "transcript": text, "words": words})
         label = Path(file).name if isinstance(item, str) else f"{Path(file).name} from {item['from']:.2f} s"
         print(f"{label}: {text}", flush=True)
     Path(jobs["out"]).write_text(json.dumps(results, indent=1))

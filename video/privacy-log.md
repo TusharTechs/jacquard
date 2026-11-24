@@ -32,3 +32,7 @@ Never used: `media/journey/autopilot/`, the long recordings in `media/journey` (
 - After that check the tally chip and line 14 changed from 96 to 99 property-based tests; the frame at 95 s was checked again.
 - New on screen: the end card's "Narration: synthetic voice (Kokoro-82M)", in both cuts.
 - The voice is generated locally (`video/voice/tts/`); nothing was sent to a cloud service. Model weights are cached in `~/.cache/jacquard-tts`, outside git.
+
+## Final review renders (2026-11-24)
+
+- `video/out/jacquard-demo.mp4` (168.9 s) checked at 1 frame every 2 s (85 frames) and `video/out/jacquard-demo-vertical.mp4` (44.9 s) at 1 frame a second (45 frames), plus 4 frames a second over 25 to 31 s of the vertical cut. The vertical cut's new crops of the capture (the Describe panel, the point paper, the 3D loom, the Cloth view) show only the app; they come from `public/capture/live.mp4`, which shows only the page. No home-directory path, user name, host name, email address, AWS account id, ARN or Amplify console URL in either cut; the only URLs are the live amplifyapp.com address and the GitHub repository.

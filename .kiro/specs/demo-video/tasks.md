@@ -42,6 +42,11 @@ All 9 correctness properties have their own property test task. Every property t
   - [x] 6.4 Write property test: **Property 7: The speed stays in range and never slows a line only to fill time** — **Validates: Requirements 9.3**
   - [x] 6.5 Write property test: **Property 8: Captions follow the voice and keep the narration** — **Validates: Requirements 9.6**
   - [x] 6.6 Write property test: **Property 9: The Vertical_Cut holds the chosen lines in 45 s** — **Validates: Requirements 9.9**
+- [x] 7. Final review: voice pace and the phone cut
+  - [x] 7.1 Speed 0.8 to 1.05 aimed at 88 % of each window, 0.25 s pause between sentences (Kokoro's own silence cut), word times from the transcriber; Property 7 rewritten for the new rule
+    - _Requirements: 9.3, 9.4_
+  - [x] 7.2 Vertical_Cut rebuilt (`src/vertical.ts`, `src/vertical-cut.tsx`), its loudness check (`scripts/vertical-loudness.ts`); Property 9 rewritten for it
+    - _Requirements: 9.9_
 - [ ] 4. Final (after Tushar's review)
   - [ ] 4.1 Final Main_Cut, `.srt`, Vertical_Cut
     - _Requirements: 2.6, 7.2_
@@ -51,5 +56,5 @@ All 9 correctness properties have their own property test task. Every property t
 ## Task Dependency Graph
 
 ```json
-{ "waves": [ { "id": 0, "tasks": ["1.1", "1.2", "1.3", "1.4", "1.5"] }, { "id": 1, "tasks": ["2.1", "2.2", "2.3"] }, { "id": 2, "tasks": ["3.1", "3.2"] }, { "id": 3, "tasks": ["5.1", "5.2", "5.3", "5.4", "5.5"] }, { "id": 4, "tasks": ["6.1", "6.2", "6.3", "6.4", "6.5", "6.6"] }, { "id": 5, "tasks": ["4.1", "4.2"] } ] }
+{ "waves": [ { "id": 0, "tasks": ["1.1", "1.2", "1.3", "1.4", "1.5"] }, { "id": 1, "tasks": ["2.1", "2.2", "2.3"] }, { "id": 2, "tasks": ["3.1", "3.2"] }, { "id": 3, "tasks": ["5.1", "5.2", "5.3", "5.4", "5.5"] }, { "id": 4, "tasks": ["6.1", "6.2", "6.3", "6.4", "6.5", "6.6"] }, { "id": 5, "tasks": ["7.1", "7.2"] }, { "id": 6, "tasks": ["4.1", "4.2"] } ] }
 ```

@@ -10,15 +10,23 @@ export const CHOSEN_VOICE = "af_heart";
 export const SAMPLE_VOICES: readonly string[] = ["af_heart", "af_bella", "am_michael", "bm_george"];
 export const SAMPLE_LINES: readonly number[] = [1, 7, 18, 21];
 
-/** Kokoro's speed for a line at its natural pace, and the allowed range (Requirement 9.4). */
+/** Kokoro's speed for a line's first take, and the allowed range (Requirement 9.3). */
 export const BASE_SPEED = 1;
-export const MIN_SPEED = 0.9;
+export const MIN_SPEED = 0.8;
 export const MAX_SPEED = 1.05;
 /**
- * Silence added between two sentences of a line, seconds. Kokoro already ends and starts each
- * sentence with about 0.75 s of silence between them; 0.35 s more made 1.1 s pauses [decision].
+ * How much of its window a line's speech should fill (Requirement 9.3, Tushar's final review):
+ * 85 to 95 %, aiming at 88 %. The windows are planned at 140 wpm, so 88 % is about 159 wpm.
  */
-export const SENTENCE_PAUSE = 0;
+export const FILL_MIN = 0.85;
+export const FILL_MAX = 0.95;
+export const FILL_TARGET = 0.88;
+/**
+ * Silence between two sentences of a line, seconds, besides the 0.04 s that voice/tts/tts.py keeps
+ * on each side of a sentence's speech (it cuts Kokoro's own 0.3 s before and 0.45 s after). The
+ * pause heard is about 0.33 s, inside the 0.25 to 0.4 s asked for [decision].
+ */
+export const SENTENCE_PAUSE = 0.25;
 
 export interface Override {
   /** Matched on whole words, in the script text. */
@@ -61,10 +69,6 @@ export function speechSentences(text: string, line: number, overrides: readonly 
   return splitSentences(text).map((sentence) => speechText(sentence, line, overrides));
 }
 
-/** A line spoken faster than this sounds rushed; it is slowed towards SETTLED_WPM [decision]. */
-export const RUSHED_WPM = 170;
-export const SETTLED_WPM = 160;
-
 /** Kokoro's seed for a line's first take. */
 export function lineSeed(line: number): number {
   return line;
@@ -85,19 +89,20 @@ export function retryTakes(line: number, speed: number): { readonly speed: numbe
 
 const clampSpeed = (value: number): number => Math.max(MIN_SPEED, Math.min(MAX_SPEED, Math.round(value * 1000) / 1000));
 
+/** Whether a line's speech fills its window as Requirement 9.3 asks. */
+export function fills(speech: number, window: number): boolean {
+  const fill = speech / window;
+  return fill >= FILL_MIN && fill <= FILL_MAX;
+}
+
 /**
- * Speed for a line of `words` words whose speech lasted `speech` seconds at `speed`. Natural pace
- * when it fits. Longer than its window: just fast enough to fit, at most MAX_SPEED. Rushed (over
- * RUSHED_WPM): slowed towards SETTLED_WPM, at least MIN_SPEED, but never past what fits its window.
- * A line is never slowed only to fill its window.
+ * Speed for the next take of a line whose speech lasted `speech` seconds at `speed`: the speed
+ * that would make it fill FILL_TARGET of its window, if speech time goes as 1 / speed, inside
+ * MIN_SPEED to MAX_SPEED. A take that already fills 85 to 95 % keeps its speed.
  */
-export function chooseSpeed(speech: number, window: number, words: number, speed: number = BASE_SPEED): number {
-  if (speech > window) return clampSpeed(Math.ceil(((speed * speech) / window) * 1000) / 1000);
-  const wpm = (words / speech) * 60;
-  if (wpm <= RUSHED_WPM) return clampSpeed(speed);
-  const settled = (speed * SETTLED_WPM) / wpm;
-  const fits = (speed * speech) / window;
-  return clampSpeed(Math.max(settled, fits));
+export function chooseSpeed(speech: number, window: number, speed: number = BASE_SPEED): number {
+  if (fills(speech, window)) return clampSpeed(speed);
+  return clampSpeed((speed * speech) / (FILL_TARGET * window));
 }
 
 const ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];

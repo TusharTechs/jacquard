@@ -1,14 +1,13 @@
 // Synthetic narration (demo-video Requirement 9): the overrides, the speed, the transcript check,
-// the captions timed to the voice and the Vertical_Cut. Properties 7 to 9. No speech model runs here.
+// the captions timed to the voice. Properties 7 and 8 (Property 9, the Vertical_Cut, is in
+// vertical.property.test.ts). No speech model runs here.
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { CAPTION_HOLD, cuesForTimedParts, normalise, splitSentences } from "../src/cues.ts";
-import type { LineTiming } from "../src/cues.ts";
-import { VERTICAL_LEAD, VERTICAL_LINES, VERTICAL_MAX, VERTICAL_PARTS, VERTICAL_TAIL, MERGE_GAP, verticalParts } from "../src/edit.ts";
-import type { Span } from "../src/edit.ts";
-import { DURATION, NARRATION_CREDIT, SCENES } from "../src/script.ts";
-import { BASE_SPEED, MAX_SPEED, MIN_SPEED, RUSHED_WPM, checkLine, checkTranscript, chooseSpeed, heardWords, retryTakes, speechSentences } from "../src/tts.ts";
+import { SCENES } from "../src/script.ts";
+import { FILL_MAX, FILL_MIN, FILL_TARGET, MAX_SPEED, MIN_SPEED, checkLine, checkTranscript, chooseSpeed, fills, heardWords, retryTakes, speechSentences } from "../src/tts.ts";
 import { VOICE_TIMING } from "../src/voice-timing.ts";
+import { timingArbitrary } from "./timing.ts";
 
 const PARTS = SCENES.flatMap((scene) => scene.parts);
 
@@ -37,20 +36,28 @@ describe("pronunciation overrides", () => {
   });
 });
 
-describe("Property 7: the speed stays in range and never slows a line only to fill time", () => {
-  it("holds for any speech length, window and word count", () => {
+describe("Property 7: the speed stays in range and aims each line at 88 % of its window", () => {
+  it("holds for any speech length, window and current speed", () => {
     fc.assert(
-      fc.property(fc.double({ min: 0.5, max: 20, noNaN: true }), fc.double({ min: 0.5, max: 20, noNaN: true }), fc.integer({ min: 1, max: 40 }), (speech, window, words) => {
-        const speed = chooseSpeed(speech, window, words);
+      fc.property(fc.double({ min: 0.5, max: 20, noNaN: true }), fc.double({ min: 0.5, max: 20, noNaN: true }), fc.double({ min: MIN_SPEED, max: MAX_SPEED, noNaN: true }), (speech, window, current) => {
+        const speed = chooseSpeed(speech, window, current);
         expect(speed).toBeGreaterThanOrEqual(MIN_SPEED);
         expect(speed).toBeLessThanOrEqual(MAX_SPEED);
-        const wpm = (words / speech) * 60;
-        if (speech <= window && wpm <= RUSHED_WPM) expect(speed).toBe(BASE_SPEED);
-        if (speech > window) expect(speed).toBeGreaterThanOrEqual(BASE_SPEED);
-        // A rushed line is slowed, but never so far that it no longer fits.
-        if (speech <= window && wpm > RUSHED_WPM) expect((BASE_SPEED * speech) / speed).toBeLessThanOrEqual(window + 0.02);
+        // A take that fills 85 to 95 % keeps its speed (to the rounding of 0.001).
+        if (fills(speech, window)) expect(Math.abs(speed - current)).toBeLessThanOrEqual(0.0005);
+        else {
+          // If speech time goes as 1 / speed, the next take fills 88 %, or is as close as the range allows.
+          const predicted = (speech * current) / speed / window;
+          if (speed > MIN_SPEED && speed < MAX_SPEED) expect(Math.abs(predicted - FILL_TARGET)).toBeLessThan(0.002);
+          if (speed === MIN_SPEED) expect(predicted).toBeLessThanOrEqual(FILL_TARGET + 0.002);
+          if (speed === MAX_SPEED) expect(predicted).toBeGreaterThanOrEqual(FILL_TARGET - 0.002);
+        }
       }),
     );
+  });
+
+  it("calls 85 to 95 % filled, and nothing else", () => {
+    expect([0.84, FILL_MIN, 0.9, FILL_MAX, 0.96].map((fill) => fills(fill * 10, 10))).toEqual([false, true, true, true, false]);
   });
 
   it("tries new seeds at the same speed before other speeds, all in range", () => {
@@ -87,25 +94,6 @@ describe("transcript check", () => {
   });
 });
 
-/** A voice timing for every part: each line inside its planned window, sentences in order. */
-const timingArbitrary = fc
-  .array(fc.tuple(fc.double({ min: 0, max: 0.3, noNaN: true }), fc.double({ min: 0.55, max: 0.95, noNaN: true }), fc.double({ min: 0.05, max: 0.3, noNaN: true })), {
-    minLength: PARTS.length,
-    maxLength: PARTS.length,
-  })
-  .map((shapes) =>
-    PARTS.map((part, index): LineTiming => {
-      const [lead, share, pause] = shapes[index]!;
-      const window = part.end - part.start;
-      const start = part.start + lead * 0.3;
-      const end = start + window * share * 0.95;
-      const count = splitSentences(part.text).length;
-      const step = (end - start) / count;
-      const sentences = Array.from({ length: count }, (_, k) => ({ start: start + k * step + (k === 0 ? 0 : pause * step * 0.5), end: start + (k + 1) * step }));
-      return { start, end, sentences };
-    }),
-  );
-
 describe("Property 8: captions follow the voice and keep the narration", () => {
   it("holds for any voice timing of the 26 lines", () => {
     fc.assert(
@@ -130,33 +118,5 @@ describe("Property 8: captions follow the voice and keep the narration", () => {
 
   it("keeps the planned windows until there is a voice timing for every line", () => {
     expect(cuesForTimedParts(SCENES, [])).toEqual(cuesForTimedParts(SCENES, VOICE_TIMING.slice(0, 3)));
-  });
-});
-
-describe("Property 9: the Vertical_Cut holds the chosen lines in 45 s", () => {
-  it("holds for any voice timing whose chosen lines fit", () => {
-    fc.assert(
-      fc.property(timingArbitrary, (timing) => {
-        const lines: Span[] = timing.map((line) => ({ from: line.start, to: line.end }));
-        const parts = verticalParts(lines, DURATION);
-        for (let index = 1; index < parts.length; index += 1) expect(parts[index]!.from).toBeGreaterThanOrEqual(parts[index - 1]!.to);
-        for (const number of VERTICAL_LINES) {
-          const line = lines[number - 1]!;
-          expect(parts.some((part) => part.from <= line.from && part.to >= line.to)).toBe(true);
-        }
-        // The least the cut could be: each chosen line with its lead and tail, merged as close lines are.
-        const least = VERTICAL_LINES.reduce((sum, number) => sum + Math.min(lines[number - 1]!.to - lines[number - 1]!.from + VERTICAL_LEAD + VERTICAL_TAIL, Infinity), 0);
-        const total = parts.reduce((sum, part) => sum + (part.to - part.from), 0);
-        if (least <= VERTICAL_MAX - MERGE_GAP * VERTICAL_LINES.length) expect(total).toBeLessThanOrEqual(VERTICAL_MAX + 1e-6);
-      }),
-      { numRuns: 100 },
-    );
-  });
-
-  it("is 45 s or less with the real voice timing, ending on the end card", () => {
-    const total = VERTICAL_PARTS.reduce((sum, part) => sum + (part.to - part.from), 0);
-    expect(total).toBeLessThanOrEqual(VERTICAL_MAX);
-    expect(VERTICAL_PARTS[VERTICAL_PARTS.length - 1]!.to).toBe(DURATION);
-    expect(NARRATION_CREDIT).toBe("Narration: synthetic voice (Kokoro-82M)");
   });
 });

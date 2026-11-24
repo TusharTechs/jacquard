@@ -6,99 +6,737 @@ import type { LineTiming } from "./cues.ts";
 export const VOICE_TIMING: readonly LineTiming[] = [
   {
     "start": 0.6,
-    "end": 5.05,
+    "end": 5.7,
     "sentences": [
       {
         "start": 0.6,
-        "end": 2.99
+        "end": 3.64
       },
       {
-        "start": 3.74,
-        "end": 5.05
+        "start": 3.97,
+        "end": 5.67
+      }
+    ],
+    "words": [
+      {
+        "word": "Punch",
+        "start": 0.6,
+        "end": 0.92
+      },
+      {
+        "word": "cards",
+        "start": 0.92,
+        "end": 1.32
+      },
+      {
+        "word": "are",
+        "start": 1.32,
+        "end": 1.58
+      },
+      {
+        "word": "dead",
+        "start": 1.58,
+        "end": 1.96
+      },
+      {
+        "word": "as",
+        "start": 1.96,
+        "end": 2.42
+      },
+      {
+        "word": "a",
+        "start": 2.42,
+        "end": 2.58
+      },
+      {
+        "word": "computing",
+        "start": 2.58,
+        "end": 3.02
+      },
+      {
+        "word": "medium.",
+        "start": 3.02,
+        "end": 3.58
+      },
+      {
+        "word": "Hand",
+        "start": 4.12,
+        "end": 4.34
+      },
+      {
+        "word": "looms",
+        "start": 4.34,
+        "end": 4.58
+      },
+      {
+        "word": "still",
+        "start": 4.58,
+        "end": 4.96
+      },
+      {
+        "word": "use",
+        "start": 4.96,
+        "end": 5.36
+      },
+      {
+        "word": "them.",
+        "start": 5.36,
+        "end": 5.62
       }
     ]
   },
   {
     "start": 6.4,
-    "end": 13.92,
+    "end": 15.38,
     "sentences": [
       {
         "start": 6.4,
-        "end": 13.92
+        "end": 15.37
+      }
+    ],
+    "words": [
+      {
+        "word": "On",
+        "start": 6.4,
+        "end": 6.54
+      },
+      {
+        "word": "a",
+        "start": 6.54,
+        "end": 6.68
+      },
+      {
+        "word": "Jacquard",
+        "start": 6.68,
+        "end": 7.12
+      },
+      {
+        "word": "handloom,",
+        "start": 7.12,
+        "end": 7.78
+      },
+      {
+        "word": "each",
+        "start": 8.24,
+        "end": 8.4
+      },
+      {
+        "word": "card",
+        "start": 8.4,
+        "end": 8.82
+      },
+      {
+        "word": "is",
+        "start": 8.82,
+        "end": 9.04
+      },
+      {
+        "word": "one",
+        "start": 9.04,
+        "end": 9.38
+      },
+      {
+        "word": "row",
+        "start": 9.38,
+        "end": 9.66
+      },
+      {
+        "word": "of",
+        "start": 9.66,
+        "end": 9.88
+      },
+      {
+        "word": "the",
+        "start": 9.88,
+        "end": 10
+      },
+      {
+        "word": "design",
+        "start": 10,
+        "end": 10.52
+      },
+      {
+        "word": "drawn",
+        "start": 10.52,
+        "end": 11.24
+      },
+      {
+        "word": "first",
+        "start": 11.24,
+        "end": 11.74
+      },
+      {
+        "word": "on",
+        "start": 11.74,
+        "end": 11.98
+      },
+      {
+        "word": "point",
+        "start": 11.98,
+        "end": 12.3
+      },
+      {
+        "word": "paper,",
+        "start": 12.3,
+        "end": 12.82
+      },
+      {
+        "word": "then",
+        "start": 13.24,
+        "end": 13.44
+      },
+      {
+        "word": "punched",
+        "start": 13.44,
+        "end": 13.94
+      },
+      {
+        "word": "by",
+        "start": 13.94,
+        "end": 14.24
+      },
+      {
+        "word": "a",
+        "start": 14.24,
+        "end": 14.46
+      },
+      {
+        "word": "card",
+        "start": 14.46,
+        "end": 14.76
+      },
+      {
+        "word": "puncher.",
+        "start": 14.76,
+        "end": 15.28
       }
     ]
   },
   {
     "start": 16.9,
-    "end": 20.19,
+    "end": 20.8,
     "sentences": [
       {
+        "start": 16.91,
+        "end": 20.76
+      }
+    ],
+    "words": [
+      {
+        "word": "a",
         "start": 16.9,
-        "end": 20.19
+        "end": 17.03
+      },
+      {
+        "word": "float",
+        "start": 17.03,
+        "end": 17.39
+      },
+      {
+        "word": "that",
+        "start": 17.39,
+        "end": 17.59
+      },
+      {
+        "word": "runs",
+        "start": 17.59,
+        "end": 17.83
+      },
+      {
+        "word": "two",
+        "start": 17.83,
+        "end": 18.15
+      },
+      {
+        "word": "long",
+        "start": 18.15,
+        "end": 18.43
+      },
+      {
+        "word": "snags",
+        "start": 18.43,
+        "end": 19.19
+      },
+      {
+        "word": "and",
+        "start": 19.19,
+        "end": 19.67
+      },
+      {
+        "word": "weakens",
+        "start": 19.67,
+        "end": 20.15
+      },
+      {
+        "word": "the",
+        "start": 20.15,
+        "end": 20.29
+      },
+      {
+        "word": "cloth.",
+        "start": 20.29,
+        "end": 20.69
       }
     ]
   },
   {
     "start": 22,
-    "end": 25.9,
+    "end": 26.31,
     "sentences": [
       {
+        "start": 22.01,
+        "end": 26.29
+      }
+    ],
+    "words": [
+      {
+        "word": "Jacquard",
         "start": 22,
-        "end": 25.9
+        "end": 22.51
+      },
+      {
+        "word": "catches",
+        "start": 22.51,
+        "end": 22.87
+      },
+      {
+        "word": "it",
+        "start": 22.87,
+        "end": 23.09
+      },
+      {
+        "word": "on",
+        "start": 23.09,
+        "end": 23.31
+      },
+      {
+        "word": "point",
+        "start": 23.31,
+        "end": 23.55
+      },
+      {
+        "word": "paper",
+        "start": 23.55,
+        "end": 24.05
+      },
+      {
+        "word": "before",
+        "start": 24.05,
+        "end": 24.71
+      },
+      {
+        "word": "a",
+        "start": 24.71,
+        "end": 25.01
+      },
+      {
+        "word": "single",
+        "start": 25.01,
+        "end": 25.29
+      },
+      {
+        "word": "card",
+        "start": 25.29,
+        "end": 25.57
+      },
+      {
+        "word": "is",
+        "start": 25.57,
+        "end": 25.75
+      },
+      {
+        "word": "punched.",
+        "start": 25.75,
+        "end": 26.23
       }
     ]
   },
   {
     "start": 27.6,
-    "end": 30.97,
+    "end": 31.52,
     "sentences": [
       {
+        "start": 27.61,
+        "end": 31.5
+      }
+    ],
+    "words": [
+      {
+        "word": "So",
         "start": 27.6,
-        "end": 30.97
+        "end": 27.83
+      },
+      {
+        "word": "I",
+        "start": 27.83,
+        "end": 28.03
+      },
+      {
+        "word": "built",
+        "start": 28.03,
+        "end": 28.27
+      },
+      {
+        "word": "Jacquard",
+        "start": 28.27,
+        "end": 28.95
+      },
+      {
+        "word": "for",
+        "start": 28.95,
+        "end": 29.47
+      },
+      {
+        "word": "the",
+        "start": 29.47,
+        "end": 29.59
+      },
+      {
+        "word": "designer",
+        "start": 29.59,
+        "end": 30.09
+      },
+      {
+        "word": "and",
+        "start": 30.09,
+        "end": 30.39
+      },
+      {
+        "word": "the",
+        "start": 30.39,
+        "end": 30.61
+      },
+      {
+        "word": "card",
+        "start": 30.61,
+        "end": 30.87
+      },
+      {
+        "word": "puncher.",
+        "start": 30.87,
+        "end": 31.41
       }
     ]
   },
   {
     "start": 32.5,
-    "end": 38,
+    "end": 38.31,
     "sentences": [
       {
         "start": 32.5,
-        "end": 33.77
+        "end": 33.95
       },
       {
-        "start": 34.56,
-        "end": 38
+        "start": 34.31,
+        "end": 38.3
+      }
+    ],
+    "words": [
+      {
+        "word": "This",
+        "start": 32.5,
+        "end": 32.76
+      },
+      {
+        "word": "is",
+        "start": 32.76,
+        "end": 33.04
+      },
+      {
+        "word": "the",
+        "start": 33.04,
+        "end": 33.2
+      },
+      {
+        "word": "live",
+        "start": 33.2,
+        "end": 33.46
+      },
+      {
+        "word": "site.",
+        "start": 33.46,
+        "end": 33.9
+      },
+      {
+        "word": "I",
+        "start": 34.26,
+        "end": 34.48
+      },
+      {
+        "word": "describe",
+        "start": 34.48,
+        "end": 34.86
+      },
+      {
+        "word": "a",
+        "start": 34.86,
+        "end": 35.1
+      },
+      {
+        "word": "peacock",
+        "start": 35.1,
+        "end": 35.56
+      },
+      {
+        "word": "in",
+        "start": 35.56,
+        "end": 35.8
+      },
+      {
+        "word": "gold",
+        "start": 35.8,
+        "end": 36.24
+      },
+      {
+        "word": "and",
+        "start": 36.24,
+        "end": 36.64
+      },
+      {
+        "word": "maroon",
+        "start": 36.64,
+        "end": 37.12
+      },
+      {
+        "word": "on",
+        "start": 37.12,
+        "end": 37.32
+      },
+      {
+        "word": "a",
+        "start": 37.32,
+        "end": 37.48
+      },
+      {
+        "word": "cream",
+        "start": 37.48,
+        "end": 37.68
+      },
+      {
+        "word": "ground.",
+        "start": 37.68,
+        "end": 38.14
       }
     ]
   },
   {
     "start": 40,
-    "end": 46.87,
+    "end": 48.04,
     "sentences": [
       {
+        "start": 40.01,
+        "end": 48.03
+      }
+    ],
+    "words": [
+      {
+        "word": "The",
         "start": 40,
-        "end": 46.87
+        "end": 40.15
+      },
+      {
+        "word": "motif",
+        "start": 40.15,
+        "end": 40.61
+      },
+      {
+        "word": "builder",
+        "start": 40.61,
+        "end": 41.11
+      },
+      {
+        "word": "reads",
+        "start": 41.11,
+        "end": 41.65
+      },
+      {
+        "word": "my",
+        "start": 41.65,
+        "end": 41.93
+      },
+      {
+        "word": "words,",
+        "start": 41.93,
+        "end": 42.41
+      },
+      {
+        "word": "shows",
+        "start": 42.99,
+        "end": 43.21
+      },
+      {
+        "word": "what",
+        "start": 43.21,
+        "end": 43.45
+      },
+      {
+        "word": "it",
+        "start": 43.45,
+        "end": 43.59
+      },
+      {
+        "word": "understood",
+        "start": 43.59,
+        "end": 44.03
+      },
+      {
+        "word": "as",
+        "start": 44.03,
+        "end": 44.43
+      },
+      {
+        "word": "chips",
+        "start": 44.43,
+        "end": 44.81
+      },
+      {
+        "word": "I",
+        "start": 44.81,
+        "end": 45.01
+      },
+      {
+        "word": "can",
+        "start": 45.01,
+        "end": 45.21
+      },
+      {
+        "word": "change,",
+        "start": 45.21,
+        "end": 45.73
+      },
+      {
+        "word": "and",
+        "start": 46.27,
+        "end": 46.39
+      },
+      {
+        "word": "draws",
+        "start": 46.39,
+        "end": 46.73
+      },
+      {
+        "word": "it",
+        "start": 46.73,
+        "end": 46.95
+      },
+      {
+        "word": "on",
+        "start": 46.95,
+        "end": 47.15
+      },
+      {
+        "word": "point",
+        "start": 47.15,
+        "end": 47.49
+      },
+      {
+        "word": "paper.",
+        "start": 47.49,
+        "end": 47.89
       }
     ]
   },
   {
     "start": 49.2,
-    "end": 50.91,
+    "end": 51.16,
     "sentences": [
       {
+        "start": 49.21,
+        "end": 51.13
+      }
+    ],
+    "words": [
+      {
+        "word": "It",
         "start": 49.2,
-        "end": 50.91
+        "end": 49.39
+      },
+      {
+        "word": "is",
+        "start": 49.39,
+        "end": 49.51
+      },
+      {
+        "word": "a",
+        "start": 49.51,
+        "end": 49.71
+      },
+      {
+        "word": "builder,",
+        "start": 49.71,
+        "end": 50.01
+      },
+      {
+        "word": "not",
+        "start": 50.39,
+        "end": 50.49
+      },
+      {
+        "word": "AI.",
+        "start": 50.49,
+        "end": 50.85
       }
     ]
   },
   {
     "start": 51.9,
-    "end": 54.97,
+    "end": 55.61,
     "sentences": [
       {
+        "start": 51.91,
+        "end": 55.58
+      }
+    ],
+    "words": [
+      {
+        "word": "The",
         "start": 51.9,
-        "end": 54.97
+        "end": 52.05
+      },
+      {
+        "word": "check",
+        "start": 52.05,
+        "end": 52.37
+      },
+      {
+        "word": "marks",
+        "start": 52.37,
+        "end": 52.77
+      },
+      {
+        "word": "every",
+        "start": 52.77,
+        "end": 53.17
+      },
+      {
+        "word": "float",
+        "start": 53.17,
+        "end": 53.61
+      },
+      {
+        "word": "over",
+        "start": 53.61,
+        "end": 53.91
+      },
+      {
+        "word": "the",
+        "start": 53.91,
+        "end": 54.09
+      },
+      {
+        "word": "loom",
+        "start": 54.09,
+        "end": 54.47
+      },
+      {
+        "word": "profile's",
+        "start": 54.47,
+        "end": 55.21
+      },
+      {
+        "word": "limit.",
+        "start": 55.21,
+        "end": 55.39
       }
     ]
   },
@@ -108,179 +746,1418 @@ export const VOICE_TIMING: readonly LineTiming[] = [
     "sentences": [
       {
         "start": 56.3,
-        "end": 61.37
+        "end": 61.35
+      }
+    ],
+    "words": [
+      {
+        "word": "AutoFix",
+        "start": 56.3,
+        "end": 56.74
+      },
+      {
+        "word": "changes",
+        "start": 56.74,
+        "end": 57.24
+      },
+      {
+        "word": "only",
+        "start": 57.24,
+        "end": 57.6
+      },
+      {
+        "word": "the",
+        "start": 57.6,
+        "end": 57.8
+      },
+      {
+        "word": "lift",
+        "start": 57.8,
+        "end": 57.96
+      },
+      {
+        "word": "plan,",
+        "start": 57.96,
+        "end": 58.36
+      },
+      {
+        "word": "never",
+        "start": 58.82,
+        "end": 58.88
+      },
+      {
+        "word": "my",
+        "start": 58.88,
+        "end": 59.1
+      },
+      {
+        "word": "regions,",
+        "start": 59.1,
+        "end": 59.52
+      },
+      {
+        "word": "until",
+        "start": 59.94,
+        "end": 60.18
+      },
+      {
+        "word": "every",
+        "start": 60.18,
+        "end": 60.56
+      },
+      {
+        "word": "float",
+        "start": 60.56,
+        "end": 60.86
+      },
+      {
+        "word": "fits.",
+        "start": 60.86,
+        "end": 61.24
       }
     ]
   },
   {
     "start": 62,
-    "end": 69.49,
+    "end": 70.88,
     "sentences": [
       {
+        "start": 62.02,
+        "end": 70.86
+      }
+    ],
+    "words": [
+      {
+        "word": "Now",
         "start": 62,
-        "end": 69.49
+        "end": 62.3
+      },
+      {
+        "word": "a",
+        "start": 62.3,
+        "end": 62.56
+      },
+      {
+        "word": "stylized",
+        "start": 62.56,
+        "end": 63.2
+      },
+      {
+        "word": "loom",
+        "start": 63.2,
+        "end": 63.62
+      },
+      {
+        "word": "lifts",
+        "start": 63.62,
+        "end": 63.92
+      },
+      {
+        "word": "exactly",
+        "start": 63.92,
+        "end": 64.6
+      },
+      {
+        "word": "the",
+        "start": 64.6,
+        "end": 64.86
+      },
+      {
+        "word": "hooks",
+        "start": 64.86,
+        "end": 65.12
+      },
+      {
+        "word": "each",
+        "start": 65.12,
+        "end": 65.42
+      },
+      {
+        "word": "card",
+        "start": 65.42,
+        "end": 65.8
+      },
+      {
+        "word": "says,",
+        "start": 65.8,
+        "end": 66.24
+      },
+      {
+        "word": "and",
+        "start": 66.66,
+        "end": 66.92
+      },
+      {
+        "word": "the",
+        "start": 66.92,
+        "end": 67.04
+      },
+      {
+        "word": "cloth",
+        "start": 67.04,
+        "end": 67.42
+      },
+      {
+        "word": "grows",
+        "start": 67.42,
+        "end": 67.9
+      },
+      {
+        "word": "pick",
+        "start": 67.9,
+        "end": 68.2
+      },
+      {
+        "word": "by",
+        "start": 68.2,
+        "end": 68.44
+      },
+      {
+        "word": "pick",
+        "start": 68.44,
+        "end": 68.9
+      },
+      {
+        "word": "with",
+        "start": 68.9,
+        "end": 69.48
+      },
+      {
+        "word": "the",
+        "start": 69.48,
+        "end": 69.64
+      },
+      {
+        "word": "app's",
+        "start": 69.64,
+        "end": 70.04
+      },
+      {
+        "word": "own",
+        "start": 70.04,
+        "end": 70.3
+      },
+      {
+        "word": "sound.",
+        "start": 70.3,
+        "end": 70.78
       }
     ]
   },
   {
     "start": 72,
-    "end": 75.39,
+    "end": 75.87,
     "sentences": [
       {
+        "start": 72.01,
+        "end": 75.83
+      }
+    ],
+    "words": [
+      {
+        "word": "The",
         "start": 72,
-        "end": 75.39
+        "end": 72.17
+      },
+      {
+        "word": "cloth",
+        "start": 72.17,
+        "end": 72.55
+      },
+      {
+        "word": "view",
+        "start": 72.55,
+        "end": 72.93
+      },
+      {
+        "word": "shows",
+        "start": 72.93,
+        "end": 73.65
+      },
+      {
+        "word": "the",
+        "start": 73.65,
+        "end": 73.87
+      },
+      {
+        "word": "peacocks",
+        "start": 73.87,
+        "end": 74.37
+      },
+      {
+        "word": "repeated",
+        "start": 74.37,
+        "end": 74.81
+      },
+      {
+        "word": "across",
+        "start": 74.81,
+        "end": 75.21
+      },
+      {
+        "word": "the",
+        "start": 75.21,
+        "end": 75.45
+      },
+      {
+        "word": "width.",
+        "start": 75.45,
+        "end": 75.79
       }
     ]
   },
   {
     "start": 76.4,
-    "end": 83.51,
+    "end": 84.12,
     "sentences": [
       {
+        "start": 76.41,
+        "end": 84.11
+      }
+    ],
+    "words": [
+      {
+        "word": "Last,",
         "start": 76.4,
-        "end": 83.51
+        "end": 76.82
+      },
+      {
+        "word": "the",
+        "start": 77.02,
+        "end": 77.06
+      },
+      {
+        "word": "cards.",
+        "start": 77.06,
+        "end": 77.52
+      },
+      {
+        "word": "One",
+        "start": 78.24,
+        "end": 78.38
+      },
+      {
+        "word": "per",
+        "start": 78.38,
+        "end": 78.58
+      },
+      {
+        "word": "pick,",
+        "start": 78.58,
+        "end": 78.98
+      },
+      {
+        "word": "punched",
+        "start": 79.3,
+        "end": 79.56
+      },
+      {
+        "word": "and",
+        "start": 79.56,
+        "end": 79.86
+      },
+      {
+        "word": "laced",
+        "start": 79.86,
+        "end": 80.14
+      },
+      {
+        "word": "in",
+        "start": 80.14,
+        "end": 80.34
+      },
+      {
+        "word": "order",
+        "start": 80.34,
+        "end": 80.62
+      },
+      {
+        "word": "ready",
+        "start": 80.62,
+        "end": 80.94
+      },
+      {
+        "word": "to",
+        "start": 80.94,
+        "end": 81.14
+      },
+      {
+        "word": "print",
+        "start": 81.14,
+        "end": 81.44
+      },
+      {
+        "word": "with",
+        "start": 81.44,
+        "end": 81.94
+      },
+      {
+        "word": "a",
+        "start": 81.94,
+        "end": 82.12
+      },
+      {
+        "word": "WIF",
+        "start": 82.12,
+        "end": 82.3
+      },
+      {
+        "word": "file",
+        "start": 82.3,
+        "end": 82.76
+      },
+      {
+        "word": "for",
+        "start": 82.76,
+        "end": 83
+      },
+      {
+        "word": "weaving",
+        "start": 83,
+        "end": 83.34
+      },
+      {
+        "word": "software.",
+        "start": 83.34,
+        "end": 83.94
       }
     ]
   },
   {
     "start": 86.4,
-    "end": 95.11,
+    "end": 94.71,
     "sentences": [
       {
         "start": 86.4,
-        "end": 88.25
+        "end": 88.22
       },
       {
-        "start": 88.965,
-        "end": 95.11
+        "start": 88.56,
+        "end": 94.7
+      }
+    ],
+    "words": [
+      {
+        "word": "I",
+        "start": 86.4,
+        "end": 86.52
+      },
+      {
+        "word": "built",
+        "start": 86.52,
+        "end": 86.74
+      },
+      {
+        "word": "it",
+        "start": 86.74,
+        "end": 86.88
+      },
+      {
+        "word": "with",
+        "start": 86.88,
+        "end": 87.06
+      },
+      {
+        "word": "Kiro,",
+        "start": 87.06,
+        "end": 87.34
+      },
+      {
+        "word": "spec",
+        "start": 87.58,
+        "end": 87.76
+      },
+      {
+        "word": "first.",
+        "start": 87.76,
+        "end": 88.16
+      },
+      {
+        "word": "Each",
+        "start": 88.58,
+        "end": 88.72
+      },
+      {
+        "word": "feature",
+        "start": 88.72,
+        "end": 89.06
+      },
+      {
+        "word": "went",
+        "start": 89.06,
+        "end": 89.28
+      },
+      {
+        "word": "from",
+        "start": 89.28,
+        "end": 89.48
+      },
+      {
+        "word": "requirements",
+        "start": 89.48,
+        "end": 89.9
+      },
+      {
+        "word": "to",
+        "start": 89.9,
+        "end": 90.18
+      },
+      {
+        "word": "properties",
+        "start": 90.18,
+        "end": 90.54
+      },
+      {
+        "word": "to",
+        "start": 90.54,
+        "end": 90.78
+      },
+      {
+        "word": "tasks.",
+        "start": 90.78,
+        "end": 91.28
+      },
+      {
+        "word": "Nine",
+        "start": 91.88,
+        "end": 92.08
+      },
+      {
+        "word": "specs,",
+        "start": 92.08,
+        "end": 92.58
+      },
+      {
+        "word": "99",
+        "start": 93.04,
+        "end": 93.38
+      },
+      {
+        "word": "property",
+        "start": 93.38,
+        "end": 93.9
+      },
+      {
+        "word": "-based",
+        "start": 93.9,
+        "end": 94.2
+      },
+      {
+        "word": "tests.",
+        "start": 94.2,
+        "end": 94.64
       }
     ]
   },
   {
     "start": 96.4,
-    "end": 98.6,
+    "end": 99.22,
     "sentences": [
       {
         "start": 96.4,
-        "end": 98.6
+        "end": 99.2
+      }
+    ],
+    "words": [
+      {
+        "word": "Steering",
+        "start": 96.4,
+        "end": 96.92
+      },
+      {
+        "word": "kept",
+        "start": 96.92,
+        "end": 97.26
+      },
+      {
+        "word": "every",
+        "start": 97.26,
+        "end": 97.7
+      },
+      {
+        "word": "weaving",
+        "start": 97.7,
+        "end": 98.06
+      },
+      {
+        "word": "fact",
+        "start": 98.06,
+        "end": 98.5
+      },
+      {
+        "word": "labeled.",
+        "start": 98.5,
+        "end": 98.96
       }
     ]
   },
   {
     "start": 100.6,
-    "end": 103.58,
+    "end": 104.14,
     "sentences": [
       {
+        "start": 100.61,
+        "end": 104.12
+      }
+    ],
+    "words": [
+      {
+        "word": "Three",
         "start": 100.6,
-        "end": 103.58
+        "end": 100.97
+      },
+      {
+        "word": "hooks",
+        "start": 100.97,
+        "end": 101.33
+      },
+      {
+        "word": "guarded",
+        "start": 101.33,
+        "end": 101.75
+      },
+      {
+        "word": "the",
+        "start": 101.75,
+        "end": 101.95
+      },
+      {
+        "word": "work,",
+        "start": 101.95,
+        "end": 102.23
+      },
+      {
+        "word": "and",
+        "start": 102.63,
+        "end": 102.71
+      },
+      {
+        "word": "Kiro",
+        "start": 102.71,
+        "end": 103.07
+      },
+      {
+        "word": "surprised",
+        "start": 103.07,
+        "end": 103.75
+      },
+      {
+        "word": "me.",
+        "start": 103.75,
+        "end": 104.07
       }
     ]
   },
   {
     "start": 104.8,
-    "end": 107.63,
+    "end": 108.12,
     "sentences": [
       {
+        "start": 104.81,
+        "end": 108.11
+      }
+    ],
+    "words": [
+      {
+        "word": "None",
         "start": 104.8,
-        "end": 107.63
+        "end": 105.09
+      },
+      {
+        "word": "of",
+        "start": 105.09,
+        "end": 105.25
+      },
+      {
+        "word": "them",
+        "start": 105.25,
+        "end": 105.39
+      },
+      {
+        "word": "fired",
+        "start": 105.39,
+        "end": 105.97
+      },
+      {
+        "word": "until",
+        "start": 105.97,
+        "end": 106.53
+      },
+      {
+        "word": "I",
+        "start": 106.53,
+        "end": 106.71
+      },
+      {
+        "word": "trusted",
+        "start": 106.71,
+        "end": 107.17
+      },
+      {
+        "word": "the",
+        "start": 107.17,
+        "end": 107.39
+      },
+      {
+        "word": "workspace.",
+        "start": 107.39,
+        "end": 107.77
       }
     ]
   },
   {
     "start": 109.1,
-    "end": 115.43,
+    "end": 115.53,
     "sentences": [
       {
-        "start": 109.1,
-        "end": 110.41
+        "start": 109.11,
+        "end": 110.49
       },
       {
-        "start": 111.11,
-        "end": 115.43
+        "start": 110.85,
+        "end": 115.51
+      }
+    ],
+    "words": [
+      {
+        "word": "Then",
+        "start": 109.1,
+        "end": 109.27
+      },
+      {
+        "word": "the",
+        "start": 109.27,
+        "end": 109.41
+      },
+      {
+        "word": "test",
+        "start": 109.41,
+        "end": 109.63
+      },
+      {
+        "word": "surprised",
+        "start": 109.63,
+        "end": 110.09
+      },
+      {
+        "word": "me.",
+        "start": 110.09,
+        "end": 110.49
+      },
+      {
+        "word": "A",
+        "start": 110.87,
+        "end": 111.03
+      },
+      {
+        "word": "lattice",
+        "start": 111.03,
+        "end": 111.41
+      },
+      {
+        "word": "test",
+        "start": 111.41,
+        "end": 111.75
+      },
+      {
+        "word": "proved",
+        "start": 111.75,
+        "end": 112.15
+      },
+      {
+        "word": "the",
+        "start": 112.15,
+        "end": 112.37
+      },
+      {
+        "word": "design",
+        "start": 112.37,
+        "end": 112.73
+      },
+      {
+        "word": "document's",
+        "start": 112.73,
+        "end": 113.45
+      },
+      {
+        "word": "arithmetic",
+        "start": 113.45,
+        "end": 113.79
+      },
+      {
+        "word": "wrong,",
+        "start": 113.79,
+        "end": 114.27
+      },
+      {
+        "word": "not",
+        "start": 114.71,
+        "end": 114.97
+      },
+      {
+        "word": "the",
+        "start": 114.97,
+        "end": 115.11
+      },
+      {
+        "word": "code.",
+        "start": 115.11,
+        "end": 115.45
       }
     ]
   },
   {
     "start": 116.7,
-    "end": 119.54,
+    "end": 119.69,
     "sentences": [
       {
         "start": 116.7,
-        "end": 119.54
+        "end": 119.66
+      }
+    ],
+    "words": [
+      {
+        "word": "A",
+        "start": 116.7,
+        "end": 116.82
+      },
+      {
+        "word": "planted",
+        "start": 116.82,
+        "end": 117.14
+      },
+      {
+        "word": "bug",
+        "start": 117.14,
+        "end": 117.54
+      },
+      {
+        "word": "shrank",
+        "start": 117.54,
+        "end": 118.06
+      },
+      {
+        "word": "to",
+        "start": 118.06,
+        "end": 118.2
+      },
+      {
+        "word": "a",
+        "start": 118.2,
+        "end": 118.36
+      },
+      {
+        "word": "two",
+        "start": 118.36,
+        "end": 118.54
+      },
+      {
+        "word": "-pick",
+        "start": 118.54,
+        "end": 118.72
+      },
+      {
+        "word": "counterexample.",
+        "start": 118.72,
+        "end": 119.6
       }
     ]
   },
   {
     "start": 120.5,
-    "end": 125.69,
+    "end": 126.76,
     "sentences": [
       {
         "start": 120.5,
-        "end": 125.69
+        "end": 126.74
+      }
+    ],
+    "words": [
+      {
+        "word": "A",
+        "start": 120.5,
+        "end": 120.6
+      },
+      {
+        "word": "property",
+        "start": 120.6,
+        "end": 121.18
+      },
+      {
+        "word": "caught",
+        "start": 121.18,
+        "end": 121.62
+      },
+      {
+        "word": "a",
+        "start": 121.62,
+        "end": 121.9
+      },
+      {
+        "word": "mirrored",
+        "start": 121.9,
+        "end": 122.38
+      },
+      {
+        "word": "Paisley",
+        "start": 122.38,
+        "end": 123.1
+      },
+      {
+        "word": "border",
+        "start": 123.1,
+        "end": 123.46
+      },
+      {
+        "word": "that",
+        "start": 123.46,
+        "end": 123.78
+      },
+      {
+        "word": "had",
+        "start": 123.78,
+        "end": 123.94
+      },
+      {
+        "word": "lost",
+        "start": 123.94,
+        "end": 124.24
+      },
+      {
+        "word": "every",
+        "start": 124.24,
+        "end": 124.66
+      },
+      {
+        "word": "figure",
+        "start": 124.66,
+        "end": 125.14
+      },
+      {
+        "word": "on",
+        "start": 125.14,
+        "end": 125.8
+      },
+      {
+        "word": "its",
+        "start": 125.8,
+        "end": 125.96
+      },
+      {
+        "word": "first",
+        "start": 125.96,
+        "end": 126.28
+      },
+      {
+        "word": "run.",
+        "start": 126.28,
+        "end": 126.64
       }
     ]
   },
   {
     "start": 127.7,
-    "end": 139.8,
+    "end": 139.37,
     "sentences": [
       {
         "start": 127.7,
-        "end": 131.25
+        "end": 131.22
       },
       {
-        "start": 131.995,
-        "end": 139.795
+        "start": 131.57,
+        "end": 139.36
+      }
+    ],
+    "words": [
+      {
+        "word": "Custom",
+        "start": 127.7,
+        "end": 128.02
+      },
+      {
+        "word": "agents",
+        "start": 128.02,
+        "end": 128.42
+      },
+      {
+        "word": "audited",
+        "start": 128.42,
+        "end": 128.92
+      },
+      {
+        "word": "the",
+        "start": 128.92,
+        "end": 129.06
+      },
+      {
+        "word": "work",
+        "start": 129.06,
+        "end": 129.28
+      },
+      {
+        "word": "through",
+        "start": 129.28,
+        "end": 129.52
+      },
+      {
+        "word": "our",
+        "start": 129.52,
+        "end": 129.72
+      },
+      {
+        "word": "own",
+        "start": 129.72,
+        "end": 130
+      },
+      {
+        "word": "MCP",
+        "start": 130,
+        "end": 130.72
+      },
+      {
+        "word": "server.",
+        "start": 130.72,
+        "end": 131.18
+      },
+      {
+        "word": "Chrome",
+        "start": 131.64,
+        "end": 131.86
+      },
+      {
+        "word": "DevTools",
+        "start": 131.86,
+        "end": 132.54
+      },
+      {
+        "word": "and",
+        "start": 132.54,
+        "end": 132.88
+      },
+      {
+        "word": "AWS",
+        "start": 132.88,
+        "end": 133.58
+      },
+      {
+        "word": "documentation",
+        "start": 133.58,
+        "end": 134.36
+      },
+      {
+        "word": "MCP",
+        "start": 134.36,
+        "end": 135.4
+      },
+      {
+        "word": "servers",
+        "start": 135.4,
+        "end": 135.9
+      },
+      {
+        "word": "helped",
+        "start": 135.9,
+        "end": 136.64
+      },
+      {
+        "word": "Kiro",
+        "start": 136.64,
+        "end": 137.02
+      },
+      {
+        "word": "check",
+        "start": 137.02,
+        "end": 137.36
+      },
+      {
+        "word": "the",
+        "start": 137.36,
+        "end": 137.58
+      },
+      {
+        "word": "app",
+        "start": 137.58,
+        "end": 137.8
+      },
+      {
+        "word": "and",
+        "start": 137.8,
+        "end": 138.18
+      },
+      {
+        "word": "deploy",
+        "start": 138.18,
+        "end": 138.46
+      },
+      {
+        "word": "it",
+        "start": 138.46,
+        "end": 138.66
+      },
+      {
+        "word": "to",
+        "start": 138.66,
+        "end": 138.82
+      },
+      {
+        "word": "Amplify.",
+        "start": 138.82,
+        "end": 139.3
       }
     ]
   },
   {
     "start": 140.5,
-    "end": 143.91,
+    "end": 144.49,
     "sentences": [
       {
+        "start": 140.51,
+        "end": 144.46
+      }
+    ],
+    "words": [
+      {
+        "word": "I",
         "start": 140.5,
-        "end": 143.91
+        "end": 140.63
+      },
+      {
+        "word": "shipped",
+        "start": 140.63,
+        "end": 140.91
+      },
+      {
+        "word": "a",
+        "start": 140.91,
+        "end": 141.05
+      },
+      {
+        "word": "power",
+        "start": 141.05,
+        "end": 141.37
+      },
+      {
+        "word": "and",
+        "start": 141.37,
+        "end": 141.73
+      },
+      {
+        "word": "ran",
+        "start": 141.73,
+        "end": 141.97
+      },
+      {
+        "word": "Kiro",
+        "start": 141.97,
+        "end": 142.43
+      },
+      {
+        "word": "CLI",
+        "start": 142.43,
+        "end": 143.11
+      },
+      {
+        "word": "headless",
+        "start": 143.11,
+        "end": 143.61
+      },
+      {
+        "word": "on",
+        "start": 143.61,
+        "end": 143.77
+      },
+      {
+        "word": "my",
+        "start": 143.77,
+        "end": 143.93
+      },
+      {
+        "word": "machine.",
+        "start": 143.93,
+        "end": 144.35
       }
     ]
   },
   {
     "start": 146,
-    "end": 150.76,
+    "end": 151.57,
     "sentences": [
       {
         "start": 146,
-        "end": 150.76
+        "end": 151.56
+      }
+    ],
+    "words": [
+      {
+        "word": "One",
+        "start": 146,
+        "end": 146.26
+      },
+      {
+        "word": "thing",
+        "start": 146.26,
+        "end": 146.6
+      },
+      {
+        "word": "Kiro",
+        "start": 146.6,
+        "end": 147.04
+      },
+      {
+        "word": "missed.",
+        "start": 147.04,
+        "end": 147.58
+      },
+      {
+        "word": "The",
+        "start": 148.16,
+        "end": 148.3
+      },
+      {
+        "word": "woven",
+        "start": 148.3,
+        "end": 148.68
+      },
+      {
+        "word": "cloth",
+        "start": 148.68,
+        "end": 149.18
+      },
+      {
+        "word": "did",
+        "start": 149.18,
+        "end": 149.42
+      },
+      {
+        "word": "not",
+        "start": 149.42,
+        "end": 149.64
+      },
+      {
+        "word": "show",
+        "start": 149.64,
+        "end": 149.9
+      },
+      {
+        "word": "the",
+        "start": 149.9,
+        "end": 150.1
+      },
+      {
+        "word": "design",
+        "start": 150.1,
+        "end": 150.54
+      },
+      {
+        "word": "until",
+        "start": 150.54,
+        "end": 150.88
+      },
+      {
+        "word": "I",
+        "start": 150.88,
+        "end": 151.08
+      },
+      {
+        "word": "looked.",
+        "start": 151.08,
+        "end": 151.42
       }
     ]
   },
   {
     "start": 153.3,
-    "end": 158.19,
+    "end": 159.1,
     "sentences": [
       {
+        "start": 153.31,
+        "end": 159.09
+      }
+    ],
+    "words": [
+      {
+        "word": "The",
         "start": 153.3,
-        "end": 158.19
+        "end": 153.47
+      },
+      {
+        "word": "card",
+        "start": 153.47,
+        "end": 153.77
+      },
+      {
+        "word": "format",
+        "start": 153.77,
+        "end": 154.25
+      },
+      {
+        "word": "is",
+        "start": 154.25,
+        "end": 154.65
+      },
+      {
+        "word": "a",
+        "start": 154.65,
+        "end": 154.87
+      },
+      {
+        "word": "configurable",
+        "start": 154.87,
+        "end": 155.65
+      },
+      {
+        "word": "profile,",
+        "start": 155.65,
+        "end": 156.39
+      },
+      {
+        "word": "not",
+        "start": 156.87,
+        "end": 157.19
+      },
+      {
+        "word": "yet",
+        "start": 157.19,
+        "end": 157.41
+      },
+      {
+        "word": "tested",
+        "start": 157.41,
+        "end": 157.89
+      },
+      {
+        "word": "on",
+        "start": 157.89,
+        "end": 158.17
+      },
+      {
+        "word": "a",
+        "start": 158.17,
+        "end": 158.33
+      },
+      {
+        "word": "working",
+        "start": 158.33,
+        "end": 158.65
+      },
+      {
+        "word": "loom.",
+        "start": 158.65,
+        "end": 159.07
       }
     ]
   },
   {
     "start": 159.9,
-    "end": 163.89,
+    "end": 164.78,
     "sentences": [
       {
+        "start": 159.91,
+        "end": 164.76
+      }
+    ],
+    "words": [
+      {
+        "word": "The",
         "start": 159.9,
-        "end": 163.89
+        "end": 160.05
+      },
+      {
+        "word": "site",
+        "start": 160.05,
+        "end": 160.37
+      },
+      {
+        "word": "is",
+        "start": 160.37,
+        "end": 160.55
+      },
+      {
+        "word": "live",
+        "start": 160.55,
+        "end": 160.95
+      },
+      {
+        "word": "and",
+        "start": 160.95,
+        "end": 161.19
+      },
+      {
+        "word": "the",
+        "start": 161.19,
+        "end": 161.31
+      },
+      {
+        "word": "code",
+        "start": 161.31,
+        "end": 161.65
+      },
+      {
+        "word": "is",
+        "start": 161.65,
+        "end": 161.91
+      },
+      {
+        "word": "open",
+        "start": 161.91,
+        "end": 162.23
+      },
+      {
+        "word": "source.",
+        "start": 162.23,
+        "end": 162.67
+      },
+      {
+        "word": "The",
+        "start": 163.35,
+        "end": 163.45
+      },
+      {
+        "word": "links",
+        "start": 163.45,
+        "end": 163.75
+      },
+      {
+        "word": "are",
+        "start": 163.75,
+        "end": 163.95
+      },
+      {
+        "word": "on",
+        "start": 163.95,
+        "end": 164.17
+      },
+      {
+        "word": "screen.",
+        "start": 164.17,
+        "end": 164.57
       }
     ]
   },
   {
     "start": 166.8,
-    "end": 167.82,
+    "end": 167.98,
     "sentences": [
       {
         "start": 166.8,
-        "end": 167.82
+        "end": 167.93
+      }
+    ],
+    "words": [
+      {
+        "word": "Built",
+        "start": 166.8,
+        "end": 167.08
+      },
+      {
+        "word": "with",
+        "start": 167.08,
+        "end": 167.36
+      },
+      {
+        "word": "Kiro",
+        "start": 167.36,
+        "end": 167.74
       }
     ]
   }

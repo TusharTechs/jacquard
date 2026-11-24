@@ -12,7 +12,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { wordCount } from "../src/script.ts";
 import { splitSentences } from "../src/cues.ts";
-import { BASE_SPEED, CHOSEN_VOICE, SAMPLE_LINES, SAMPLE_VOICES, SENTENCE_PAUSE, checkLine, chooseSpeed, lineSeed, retryTakes, speechSentences } from "../src/tts.ts";
+import { BASE_SPEED, CHOSEN_VOICE, SAMPLE_LINES, SAMPLE_VOICES, SENTENCE_PAUSE, checkLine, chooseSpeed, fills, lineSeed, retryTakes, speechSentences } from "../src/tts.ts";
 import { VOICE_RATE, trimBounds, voiceLines } from "../src/voice.ts";
 import type { VoiceLine } from "../src/voice.ts";
 
@@ -71,17 +71,22 @@ const jobs: Job[] = samples
 
 // 1. Natural pace.
 run("synth", { jobs: jobs.map((item) => job(item.line, item.voice, item.out, item.speed, item.seed)) });
-// 2. Lines over their window, again, just fast enough (at most 1.05). Samples stay at natural pace.
+// 2. Each line again at the speed that makes it fill about 88 % of its window (85 to 95 %, speed
+// 0.8 to 1.05), up to three more takes, since speech time is only roughly 1 / speed. Samples stay
+// at speed 1.
 if (!samples) {
-  const again = jobs.filter((item) => {
-    const speech = speechSeconds(item.out);
-    const speed = chooseSpeed(speech, item.line.window, wordCount(item.line.text), item.speed);
-    if (speed === item.speed) return false;
-    console.log(`${item.line.name}: ${speech.toFixed(2)} s (${Math.round((wordCount(item.line.text) / speech) * 60)} wpm) at speed ${item.speed} in a ${item.line.window.toFixed(2)} s window; again at ${speed}`);
-    item.speed = speed;
-    return true;
-  });
-  if (again.length > 0) run("synth", { jobs: again.map((item) => job(item.line, item.voice, item.out, item.speed, item.seed)) });
+  for (let pass = 1; pass <= 3; pass += 1) {
+    const again = jobs.filter((item) => {
+      const speech = speechSeconds(item.out);
+      const speed = chooseSpeed(speech, item.line.window, item.speed);
+      if (speed === item.speed) return false;
+      console.log(`${item.line.name}: ${speech.toFixed(2)} s (${Math.round((wordCount(item.line.text) / speech) * 60)} wpm, ${Math.round((speech / item.line.window) * 100)} % of ${item.line.window.toFixed(2)} s) at speed ${item.speed}; again at ${speed}`);
+      item.speed = speed;
+      return true;
+    });
+    if (again.length === 0) break;
+    run("synth", { jobs: again.map((item) => job(item.line, item.voice, item.out, item.speed, item.seed)) });
+  }
 }
 // 3. Transcribe and compare (checkLine: the whole line, or each sentence on its own). A line that
 // fails is made again, with new seeds at the same speed and then at nearby speeds, until a take
@@ -146,6 +151,8 @@ const report = jobs.map((item, index) => {
     window: Number(item.line.window.toFixed(2)),
     wpm: Math.round((wordCount(item.line.text) / speech) * 60),
     fits: speech <= item.line.window,
+    fill: Number((speech / item.line.window).toFixed(3)),
+    fillsWindow: fills(speech, item.line.window),
     match: check.match,
     by: check.by,
     script: item.line.text,
@@ -157,6 +164,15 @@ const report = jobs.map((item, index) => {
     takes: attempts.get(item) ?? [`speed ${item.speed} seed ${item.seed}`],
   };
 });
+// 4. Word times of each kept take (for cutting the Vertical_Cut on a phrase, 9.9), into its sidecar.
+if (!samples) {
+  run("asr", { files: jobs.map((item) => item.out), out: asrOut, words: true });
+  const timed = JSON.parse(readFileSync(asrOut, "utf8")) as { words: { word: string; start: number; end: number }[] }[];
+  jobs.forEach((item, index) => {
+    const side = item.out.replace(/\.wav$/, ".json");
+    writeFileSync(side, JSON.stringify({ ...(JSON.parse(readFileSync(side, "utf8")) as object), words: timed[index]!.words }, null, 1));
+  });
+}
 const reportFile = samples ? join("out", "voice-samples", "report.json") : join("out", "tts-report.json");
 mkdirSync(join("out", samples ? "voice-samples" : ""), { recursive: true });
 // With --only, the other lines' rows are kept from the last full run.
@@ -164,7 +180,7 @@ const previous = only !== undefined && existsSync(reportFile) ? (JSON.parse(read
 const merged = [...previous.filter((row) => !report.some((item) => item.line === row.line)), ...report].sort((a, b) => a.line.localeCompare(b.line));
 writeFileSync(reportFile, JSON.stringify(merged, null, 1));
 for (const row of report) {
-  console.log(`${row.voice} ${row.line}: ${row.match ? `transcript matches${row.by === "sentences" ? " sentence by sentence" : ""}${row.sameSound.length > 0 ? ` (same sound: ${row.sameSound.join(", ")})` : ""}` : `TRANSCRIPT DIFFERS (missing: ${row.missing.join(" ")}; extra: ${row.extra.join(" ")})`} · ${row.speech} s in ${row.window} s${row.fits ? "" : " (over)"} · speed ${row.speed} · ${row.wpm} wpm`);
+  console.log(`${row.voice} ${row.line}: ${row.match ? `transcript matches${row.by === "sentences" ? " sentence by sentence" : ""}${row.sameSound.length > 0 ? ` (same sound: ${row.sameSound.join(", ")})` : ""}` : `TRANSCRIPT DIFFERS (missing: ${row.missing.join(" ")}; extra: ${row.extra.join(" ")})`} · ${row.speech} s in ${row.window} s (${Math.round(row.fill * 100)} %${row.fillsWindow ? "" : ", outside 85 to 95 %"}) · speed ${row.speed} · ${row.wpm} wpm`);
 }
 const bad = merged.filter((row) => !row.match);
 console.log(`${reportFile}: ${merged.length - bad.length} of ${merged.length} transcripts match`);

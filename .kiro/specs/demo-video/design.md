@@ -83,14 +83,14 @@ For any set of tone lines (0.2 to 1.5 s of silence each side, 30 to 100 % of the
 **Validates: Requirements 8.3, 8.6**
 ## Synthetic narration (`tts.ts`, `scripts/tts.ts`, `voice/tts/tts.py`)
 `scripts/tts.ts` gives `tts.py synth` one job per line: the voice, a speed, a seed and the line's sentences (`splitSentences`, the captions' own splitter), each marked up with the overrides as misaki phonemes (`[JACQUARD](/ʤəkˈɑɹd/)`). `tts.py` calls Kokoro once per sentence and joins them, writing `NN.wav` (24 kHz) and `NN.json` (each sentence's sample range). Each line is measured with the voice assembly's own `trimBounds`; `chooseSpeed` picks the speed for a second take. `tts.py asr` transcribes every line (faster-whisper, no prompt); `checkLine` compares the transcript with the script, or each sentence's transcript with its sentence; failing lines get new takes (`retryTakes`). The report is `out/tts-report.json`. `scripts/voice.ts` then writes `src/voice-timing.ts`; `cuesForTimedParts` starts each sentence's cues where it is spoken, and `verticalParts` cuts the Vertical_Cut around the chosen lines' speech. `scripts/sync-check.ts` renders at 960x540 with only the voice, finds each line's onset in the render's audio and the caption band's change in its picture, and logs the offsets.
-### Property 7: The speed stays in range and never slows a line only to fill time
-For any speech length, window and word count, `chooseSpeed` is between 0.9 and 1.05; when the line fits and is not rushed it is the natural speed; when it does not fit it is not slower than natural.
+### Property 7: The speed stays in range and aims each line at 88 % of its window
+For any speech length, window and current speed, `chooseSpeed` is between 0.8 and 1.05; a take that fills 85 to 95 % keeps its speed; otherwise, if speech time goes as 1 / speed, the next take fills 88 %, or as close as the range allows.
 **Validates: Requirements 9.3**
 ### Property 8: Captions follow the voice and keep the narration
 For any voice timing of the 26 lines (each sentence in order inside its line, lines in order), the timed cues' texts joined equal the narration, cues are in order and do not overlap, and each line's first cue starts where its speech starts.
 **Validates: Requirements 9.6**
-### Property 9: The Vertical_Cut holds the chosen lines in 45 s
-For any voice timing, the Vertical_Cut's parts are in order, do not overlap, last 45 s or less, and each chosen line's speech lies inside a part.
+### Property 9: The Vertical_Cut holds the chosen lines, captioned, in 45 s
+For any voice timing (with line 07's words), the Vertical_Cut's shots follow each other with no gap in Main_Cut order, every moment of each chosen line's speech is in a shot with a caption up, the cut lasts 45 s or less when the lines fit, and the cut to the drawn peacock comes before "draws".
 **Validates: Requirements 9.9**
 ## Capture
 

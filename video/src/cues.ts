@@ -21,13 +21,13 @@ function words(text: string): string[] {
   return clean === "" ? [] : clean.split(" ");
 }
 
-/** Greedy lines of at most MAX_LINE characters; a longer word stands alone on its line. */
-function linesOf(sentence: readonly string[]): string[] {
+/** Greedy lines of at most `maxLine` characters; a longer word stands alone on its line. */
+function linesOf(sentence: readonly string[], maxLine: number = MAX_LINE): string[] {
   const lines: string[] = [];
   let current = "";
   for (const word of sentence) {
     if (current === "") current = word;
-    else if (current.length + 1 + word.length <= MAX_LINE) current += ` ${word}`;
+    else if (current.length + 1 + word.length <= maxLine) current += ` ${word}`;
     else {
       lines.push(current);
       current = word;
@@ -57,13 +57,18 @@ export function splitSentences(text: string): string[] {
   return sentences(words(text)).map((sentence) => sentence.join(" "));
 }
 
+/** Caption shape: characters per line (MAX_LINE for the Main_Cut, fewer for the phone cut). */
+export interface CueOptions {
+  readonly maxLine?: number;
+}
+
 /** Cues for one narration window, contiguous from `start` to `end`. */
-export function cuesFor(text: string, start: number, end: number): Cue[] {
+export function cuesFor(text: string, start: number, end: number, options: CueOptions = {}): Cue[] {
   const all = words(text);
   if (all.length === 0) return [];
   const groups: string[][] = [];
   for (const sentence of sentences(all)) {
-    const lines = linesOf(sentence);
+    const lines = linesOf(sentence, options.maxLine);
     for (let index = 0; index < lines.length; index += MAX_LINES) groups.push(lines.slice(index, index + MAX_LINES));
   }
   const counts = groups.map((lines) => lines.join(" ").split(" ").length);
@@ -113,8 +118,8 @@ export function fromSrt(text: string): Cue[] {
 }
 
 /** Cues for every part of every scene, in order (the captions and the .srt use exactly these). */
-export function cuesForParts(scenes: readonly { readonly parts: readonly { readonly text: string; readonly start: number; readonly end: number }[] }[]): Cue[] {
-  return scenes.flatMap((scene) => scene.parts.flatMap((part) => cuesFor(part.text, part.start, part.end)));
+export function cuesForParts(scenes: readonly { readonly parts: readonly { readonly text: string; readonly start: number; readonly end: number }[] }[], options: CueOptions = {}): Cue[] {
+  return scenes.flatMap((scene) => scene.parts.flatMap((part) => cuesFor(part.text, part.start, part.end, options)));
 }
 
 /** Where one narration line's speech is in the video (scripts/voice.ts writes these). */
@@ -122,6 +127,8 @@ export interface LineTiming {
   readonly start: number;
   readonly end: number;
   readonly sentences: readonly { readonly start: number; readonly end: number }[];
+  /** Words as the transcriber heard them, with their times (for cutting on a phrase). */
+  readonly words?: readonly { readonly word: string; readonly start: number; readonly end: number }[];
 }
 
 /** How long a caption stays after its line's speech ends, at most (it never overlaps the next line). */
@@ -136,19 +143,20 @@ export const CAPTION_HOLD = 0.5;
 export function cuesForTimedParts(
   scenes: readonly { readonly parts: readonly { readonly text: string; readonly start: number; readonly end: number }[] }[],
   timing: readonly LineTiming[],
+  options: CueOptions = {},
 ): Cue[] {
   const parts = scenes.flatMap((scene) => scene.parts);
-  if (timing.length !== parts.length) return cuesForParts(scenes);
+  if (timing.length !== parts.length) return cuesForParts(scenes, options);
   return parts.flatMap((part, index) => {
     const line = timing[index]!;
     const said = splitSentences(part.text);
-    if (line.sentences.length !== said.length) return cuesFor(part.text, part.start, part.end);
+    if (line.sentences.length !== said.length) return cuesFor(part.text, part.start, part.end, options);
     const next = index + 1 < parts.length ? timing[index + 1]!.start : Infinity;
     const lineEnd = Math.min(line.end + CAPTION_HOLD, next - 0.04, Math.max(part.end, line.end));
     return said.flatMap((sentence, k) => {
       const start = line.sentences[k]!.start;
       const end = k + 1 < said.length ? line.sentences[k + 1]!.start : Math.max(lineEnd, line.sentences[k]!.end);
-      return cuesFor(sentence, start, end);
+      return cuesFor(sentence, start, end, options);
     });
   });
 }
