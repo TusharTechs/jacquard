@@ -62,6 +62,13 @@ Code location: `video/`, a new workspace package `@jacquard/video` (Remotion com
 1. BEFORE the Review_Stop: `video/script.md`, one storyboard still per scene (`video/out/storyboard/*.png`) and a low-resolution draft render. Then work stops until Tushar has reviewed them.
 2. AFTER the review: the final Main_Cut, the `.srt`, the Vertical_Cut, a journal entry with a "Surprise" heading, commit (source only), push, tag `phase-video`.
 
+### Requirement 8: Voice assembly from recorded lines
+1. Tushar SHALL record one file per narration part: `video/voice/lines/NN.wav`, where NN is the part's number in order through the whole video (01 to the last), at any sample rate, mono or stereo. These files SHALL be gitignored.
+2. `video/voice/RECORDING.md` SHALL be generated from Script_Data: a numbered list of every part with its exact text and target seconds, and recording tips (quiet room, phone or laptop mic about 20 cm away, an easy pace, 1 s of silence before and after, re-record a line by overwriting its file).
+3. `pnpm --filter @jacquard/video voice` SHALL trim leading and trailing silence from each line, normalise the voice to −16 LUFS, place each line so its speech starts at its part's start, and write `public/audio/voice.wav` at 48 kHz.
+4. IF a line is longer than its part's window, THEN it SHALL be sped up by at most 5 % without a change of pitch; IF it still does not fit, THEN the script SHALL fail, list every such line's number, length and window, and write nothing. Words SHALL never be cut (Properties 4 and 5).
+5. AFTER assembly, the script SHALL set `assets.voice` to true and run the loudness check against the real voice track: in every part, the rest of the mix at least 18 dB under the voice.
+6. Tests SHALL cover the placement (Property 6) and the overrun report, with synthetic tones as input. No text-to-speech anywhere.
 ## Decision log
 
 | Q | Answer | Label |
@@ -76,3 +83,9 @@ Code location: `video/`, a new workspace package `@jacquard/video` (Remotion com
 | Music level | The voice is mixed to about −16 LUFS; the score under narration is at most −34 LUFS (18 dB lower), checked with ffmpeg's EBU R128 meter on the rendered music stem. Until the voice exists, the check uses the −16 LUFS target. | [decision] |
 | Narration voice | First person (Tushar records it). The builder is not a weaver; no line implies weaving expertise or loom testing. | [decision] |
 | Vertical_Cut content | A 40-second edit: the problem line, the peacock built and woven, the Cloth view, the close; captions from the same Script_Data cues. | [decision] |
+| The agents line (second review) | "Custom agents audited the work through our own MCP server. Chrome DevTools and AWS Documentation MCP servers helped Kiro check the app and deploy it to Amplify." (Tushar's wording, 27 words, 11.6 s at 140 wpm). The 1.6 s comes from the Kiro scene's spare: gaps after it are 0.3 s and the last part ends at 151.6 s; the Kiro narration is 140 words. | [decision] |
+| Why one file per part? | A single continuous take does not line up with the timed captions or the ducking windows (Tushar's second review). Each part is its own file, placed at its part's start. | [decision] |
+| Silence trimming | 10 ms frames; speech is above the noise floor (10th-percentile frame) + 10 dB, capped at the loudest frame − 30 dB and never below the loudest − 50 dB; 0.15 s kept around the speech; the speech starts at the part's start and the pads fall in the gaps. The cap came from Property 5's first run: without it a line with little silence was judged silent. | [decision] |
+| Normalising and stretching | Each line to −16 LUFS (ffmpeg `ebur128`, then a gain and a −1 dBFS look-ahead limiter with delay compensation), so separately recorded lines match. Time-stretch with ffmpeg `atempo` (pitch kept). | [decision] |
+| Loudness check with the real voice | Per part: the voice track's loudness in the part's window against a render of the Main_Cut with the voice muted (`--props={"voice":false}`, `--codec=wav`), which holds the score, the effects and the app's sound. | [decision] |
+| Music margin under narration | 3 dB (the score at −21 dB under narration; it was 2 dB). With tone lines the 2 dB margin left line 01 at 16.5 dB and line 11 at 17.9 dB: the score stem is about 1 dB over −16 LUFS there, plus the card clack and the app's loom sound. The clack is now at 0.3 and the app's sound at 0.35; every part is then at least 19.2 dB under. | [decision] |

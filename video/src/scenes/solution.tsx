@@ -23,7 +23,7 @@ function Footage({ segment }: { readonly segment: Segment }) {
 }
 
 /** `origin` is the Main time where this scene's Sequence starts. */
-export function SolutionScene({ origin, appVolume = 0.55 }: { readonly origin: number; readonly appVolume?: number }) {
+export function SolutionScene({ origin, appVolume = 0.35 }: { readonly origin: number; readonly appVolume?: number }) {
   return (
     <Stock>
       {SOLUTION_EDIT.map((segment) => (

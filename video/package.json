@@ -10,6 +10,7 @@
     "srt": "node scripts/make-srt.ts",
     "assets": "esbuild scripts/prepare-assets.ts --bundle --platform=node --format=esm --outfile=out/.tmp/prepare-assets.mjs --log-level=warning && node out/.tmp/prepare-assets.mjs",
     "audio": "node audio/render-audio.ts",
+    "voice": "node scripts/voice.ts",
     "loudness": "node scripts/loudness.ts",
     "capture": "playwright test -c capture/playwright.config.ts && node capture/assemble.ts",
     "studio": "remotion studio src/index.ts",

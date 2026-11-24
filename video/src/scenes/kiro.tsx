@@ -8,7 +8,7 @@ import { Chip, Code, Enter, Heading, Panel, Stock } from "../parts";
 import { COLOURS, FONTS, FPS } from "../theme";
 
 /** KIRO_JOURNEY.md, "Running tally", 2026-11-24 (demo-video wave 0). */
-export const TALLY = { specs: 9, properties: 93, hooks: 3, agents: 5, mcp: 4 } as const;
+export const TALLY = { specs: 9, properties: 96, hooks: 3, agents: 5, mcp: 4 } as const;
 
 function Label({ children }: { readonly children: ReactNode }) {
   return <div style={{ fontFamily: FONTS.mono, fontSize: 26, color: COLOURS.inkMuted, letterSpacing: 0.2 }}>{children}</div>;
@@ -114,7 +114,7 @@ function Trust() {
   );
 }
 
-/** 109.0 to 116.8: the lattice test that proved the design document wrong. */
+/** 109.0 to 116.5: the lattice test that proved the design document wrong. */
 function Lattice() {
   return (
     <Stock>
@@ -131,7 +131,7 @@ function Lattice() {
   );
 }
 
-/** 116.8 to 120.8: the planted bug's shrunk counterexample. */
+/** 116.5 to 120.4: the planted bug's shrunk counterexample. */
 function Planted({ excerpts }: { readonly excerpts: Excerpts }) {
   const counterexample = excerpts.planted.find((line) => line.startsWith("- Counterexample")) ?? "";
   const lifts = /"lifts":\[\[true\],\[false\]\]/.exec(counterexample)?.[0] ?? "";
@@ -152,7 +152,7 @@ function Planted({ excerpts }: { readonly excerpts: Excerpts }) {
   );
 }
 
-/** 120.8 to 128.1: the mirrored paisley border that lost its figures, and the fixed one. */
+/** 120.4 to 127.6: the mirrored paisley border that lost its figures, and the fixed one. */
 function Paisley({ excerpts }: { readonly excerpts: Excerpts }) {
   const counterexample = (excerpts.paisley.find((line) => line.startsWith("Counterexample")) ?? "").replace(/^Counterexample:\s*/, "").replace(/`/g, "");
   const error = (excerpts.paisley.find((line) => line.startsWith("Error")) ?? "").replace(/^Error:\s*/, "").replace(/`/g, "");
@@ -175,7 +175,10 @@ function Paisley({ excerpts }: { readonly excerpts: Excerpts }) {
   );
 }
 
-/** 128.1 to 138.4: custom agents and the MCP servers; Kiro driving Chrome through DevTools. */
+/** The agents that ran the phase audits (KIRO_JOURNEY.md, Running tally: Custom agents). */
+const AUDITORS: readonly string[] = ["weave-auditor", "design-reviewer"];
+
+/** 127.6 to 139.5: custom agents audited through our own MCP server; Kiro driving Chrome through DevTools. */
 function AgentsMcp({ excerpts }: { readonly excerpts: Excerpts }) {
   return (
     <Stock>
@@ -189,10 +192,15 @@ function AgentsMcp({ excerpts }: { readonly excerpts: Excerpts }) {
         <Label>custom agents</Label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
           {excerpts.agents.map((name) => (
-            <Chip key={name}>{name}</Chip>
+            <Chip key={name} strong={AUDITORS.includes(name)}>
+              {name}
+            </Chip>
           ))}
         </div>
-        <div style={{ height: 40 }} />
+        <div style={{ marginTop: 16 }}>
+          <Label>weave-auditor and design-reviewer audited through jacquard-weave</Label>
+        </div>
+        <div style={{ height: 26 }} />
         <Label>MCP servers</Label>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
           {excerpts.mcp.map((name) => (
@@ -204,17 +212,17 @@ function AgentsMcp({ excerpts }: { readonly excerpts: Excerpts }) {
         <div style={{ marginTop: 16 }}>
           <Label>jacquard-weave is ours</Label>
         </div>
-        <div style={{ height: 40 }} />
-        <Label>deployed by Kiro</Label>
+        <div style={{ height: 26 }} />
+        <Label>deployed by Kiro with scripts/deploy-web.sh</Label>
         <div style={{ marginTop: 12 }}>
-          <Chip>AWS Amplify Hosting · scripts/deploy-web.sh</Chip>
+          <Chip>AWS Amplify Hosting</Chip>
         </div>
       </div>
     </Stock>
   );
 }
 
-/** 138.4 to 144.2: the Power and the local Kiro CLI run. */
+/** 139.5 to 145.0: the Power and the local Kiro CLI run. */
 function PowerCli({ excerpts }: { readonly excerpts: Excerpts }) {
   return (
     <Stock>
@@ -239,7 +247,7 @@ function PowerCli({ excerpts }: { readonly excerpts: Excerpts }) {
   );
 }
 
-/** 144.2 to 152: what Kiro missed. The cloth before and after the review. */
+/** 145.0 to 152: what Kiro missed. The cloth before and after the review. */
 function ClothBeforeAfter() {
   return (
     <Stock>
@@ -266,12 +274,12 @@ const PARTS: readonly { readonly at: number; readonly until: number; readonly re
   { at: 100.4, until: 104.7, render: (excerpts) => <Hooks excerpts={excerpts} /> },
   // Cut in on "none of them fired until I trusted the workspace" (part 4 starts at 104.8).
   { at: 104.7, until: 109.0, render: () => <Trust /> },
-  { at: 109.0, until: 116.8, render: () => <Lattice /> },
-  { at: 116.8, until: 120.8, render: (excerpts) => <Planted excerpts={excerpts} /> },
-  { at: 120.8, until: 128.1, render: (excerpts) => <Paisley excerpts={excerpts} /> },
-  { at: 128.1, until: 138.4, render: (excerpts) => <AgentsMcp excerpts={excerpts} /> },
-  { at: 138.4, until: 144.2, render: (excerpts) => <PowerCli excerpts={excerpts} /> },
-  { at: 144.2, until: 152, render: () => <ClothBeforeAfter /> },
+  { at: 109.0, until: 116.5, render: () => <Lattice /> },
+  { at: 116.5, until: 120.4, render: (excerpts) => <Planted excerpts={excerpts} /> },
+  { at: 120.4, until: 127.6, render: (excerpts) => <Paisley excerpts={excerpts} /> },
+  { at: 127.6, until: 139.5, render: (excerpts) => <AgentsMcp excerpts={excerpts} /> },
+  { at: 139.5, until: 145.0, render: (excerpts) => <PowerCli excerpts={excerpts} /> },
+  { at: 145.0, until: 152, render: () => <ClothBeforeAfter /> },
 ];
 
 export function KiroScene({ origin, excerpts }: { readonly origin: number; readonly excerpts: Excerpts }) {

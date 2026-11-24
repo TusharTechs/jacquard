@@ -1,6 +1,6 @@
 // Compositions (demo-video design, "Remotion"): Main (1920x1080, 30 fps) and Vertical (1080x1920,
 // at most 45 s, parts of Main with its own captions).
-import { AbsoluteFill, Audio, Composition, Sequence, Series, staticFile } from "remotion";
+import { AbsoluteFill, Audio, Composition, Sequence, Series, getInputProps, staticFile } from "remotion";
 import { useData } from "./data";
 import { VERTICAL_DURATION, VERTICAL_PARTS } from "./edit";
 import { cuesForParts } from "./cues";
@@ -44,8 +44,9 @@ function MainContent({ captions = true }: { readonly captions?: boolean }) {
       {captions ? <Captions cues={CUES} /> : null}
       {/* The score, ducked under every narration window (Property 3). */}
       <Audio src={staticFile("audio/score.wav")} volume={(frame) => dbToGain(musicGainDb(frame / FPS, WINDOWS))} />
-      {/* Tushar's recording, once it exists (demo-video 2.7); until then the voice is silent. */}
-      {data.assets.voice ? <Audio src={staticFile("audio/voice.wav")} /> : null}
+      {/* Tushar's recording, once it exists (demo-video 2.7, 8.3); until then the voice is silent.
+          `--props='{"voice":false}'` mutes it for the loudness check's render (8.5). */}
+      {data.assets.voice && getInputProps()["voice"] !== false ? <Audio src={staticFile("audio/voice.wav")} /> : null}
     </AbsoluteFill>
   );
 }

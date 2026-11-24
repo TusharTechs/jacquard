@@ -61,7 +61,8 @@ function CardChain({ data }: { readonly data: ProblemData }) {
       </div>
       {cards.map((card, index) => (
         <Sequence key={card.number} from={index * every} durationInFrames={Math.round(1.2 * fps)}>
-          <Audio src={staticFile("audio/clack.wav")} volume={0.8} />
+          {/* 0.3: under line 01 the rest of the mix must stay 18 dB under the voice (8.5). */}
+          <Audio src={staticFile("audio/clack.wav")} volume={0.3} />
         </Sequence>
       ))}
     </Stock>

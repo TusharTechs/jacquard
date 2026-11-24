@@ -48,6 +48,8 @@ media/**/*.mkv
 .deploy/
 # Demo video (demo-video 1.2): copied media, capture, audio stems and renders are generated
 video/public/
+# Tushar's recorded narration lines (demo-video 8.1); voice/RECORDING.md is committed
+video/voice/lines/*.wav
 video/capture/frames/
 video/test-results/
 video/playwright-report/

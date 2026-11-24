@@ -4,8 +4,12 @@
 
 export const VOICE_LUFS = -16;
 export const SCORE_REF_LUFS = -16;
-/** Under narration: 18 dB below the voice, plus a 2 dB margin [decision]. */
-export const UNDER_VOICE_DB = VOICE_LUFS - 18 - SCORE_REF_LUFS - 2;
+/**
+ * Under narration: 18 dB below the voice, plus a 3 dB margin [decision]. The margin was 2 dB; the
+ * check against an assembled voice track (8.5) measured the score stem about 1 dB over its −16 LUFS
+ * reference under line 01, so it is 3 dB.
+ */
+export const UNDER_VOICE_DB = VOICE_LUFS - 18 - SCORE_REF_LUFS - 3;
 /** Between narration windows [decision]. */
 export const GAP_DB = -10;
 /** Ramp length in seconds on each side of a narration window. */
