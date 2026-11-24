@@ -22,12 +22,12 @@ All 4 correctness properties have their own property test task. Every property t
   - [x] 2.3 Write property test: **Property 4: Saved design round trip** — **Validates: Requirements 5.3, 5.4, 5.6**
   - [x] 2.4 Component tests: chips, labels, no "model" in the static panel, builder placement and Undo, persistence in `App`
     - _Requirements: 3.2 to 3.5, 4.1, 5.1, 5.5_
-- [ ] 3. Headers, deploy and record
-  - [ ] 3.1 CSP check against the built app with the header served locally; `scripts/amplify-custom-headers.yml`; `deploy-web.sh` applies it
+- [x] 3. Headers, deploy and record
+  - [x] 3.1 CSP check against the built app with the header served locally; `scripts/amplify-custom-headers.yml`; `deploy-web.sh` applies it
     - _Requirements: 6.1 to 6.4_
-  - [ ] 3.2 Redeploy; six descriptions at 1440x900 and 390x844 on the Live_URL; console; `curl -I`; Lighthouse; `media/motif-builder/`
+  - [x] 3.2 Redeploy; six descriptions at 1440x900 and 390x844 on the Live_URL; console; `curl -I`; Lighthouse; `media/motif-builder/`
     - _Requirements: 7.1 to 7.5_
-  - [ ] 3.3 `product.md`, `README.md`, `docs/kiro-writeup-draft.md`; journal with "Surprise"; tally; status
+  - [x] 3.3 `product.md`, `README.md`, `docs/kiro-writeup-draft.md`; journal with "Surprise"; tally; status
     - _Requirements: 8.1, 8.2_
 
 ## Task Dependency Graph

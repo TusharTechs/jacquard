@@ -1,0 +1,28 @@
+# curl -sI on the Live_URL after deployment job 4 (2026-11-24T07:50Z)
+
+## /
+HTTP/2 200 
+permissions-policy: camera=(), microphone=(), geolocation=()
+cache-control: no-cache
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+
+## /index.html
+HTTP/2 200 
+permissions-policy: camera=(), microphone=(), geolocation=()
+cache-control: no-cache
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin
+
+## /assets/index-BG95pvzp.js
+HTTP/2 200 
+permissions-policy: camera=(), microphone=(), geolocation=()
+cache-control: public, max-age=31536000, immutable
+content-security-policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+referrer-policy: strict-origin-when-cross-origin

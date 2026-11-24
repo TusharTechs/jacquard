@@ -6,6 +6,9 @@
 # Idempotent: the app id is kept in .deploy/amplify-app-id (gitignored); a rerun reuses the app
 # named "jacquard" and its "main" branch and only adds a deployment. It creates nothing else.
 #
+# Headers (motif-builder Requirement 6): scripts/amplify-custom-headers.yml is applied to the app
+# before each deployment.
+#
 # Privacy (Requirement 5): every AWS call selects only the fields it needs with --query, so no ARN
 # or account id is printed. The zip upload URL is a presigned URL and is never printed.
 set -euo pipefail
@@ -62,6 +65,11 @@ if ! aws_q amplify get-branch --app-id "$APP_ID" --branch-name "$BRANCH" --query
   aws_q amplify create-branch --app-id "$APP_ID" --branch-name "$BRANCH" --stage PRODUCTION --query 'branch.branchName' >/dev/null
 fi
 
+# Security and cache headers (motif-builder Requirement 6) on this app only; a deployment after
+# the change carries them. Only the app name is read back.
+HEADERS_FILE="$ROOT/scripts/amplify-custom-headers.yml"
+say "applying custom headers from scripts/amplify-custom-headers.yml"
+aws_q amplify update-app --app-id "$APP_ID" --custom-headers "$(cat "$HEADERS_FILE")" --query 'app.name' >/dev/null
 # A job can only start when the branch has none pending or running.
 PENDING="$(aws_q amplify list-jobs --app-id "$APP_ID" --branch-name "$BRANCH" --max-items 5 --query "jobSummaries[?status=='PENDING' || status=='RUNNING'].jobId | join(' ', @)" | head -1)"
 if [[ -n "$PENDING" && "$PENDING" != "None" ]]; then

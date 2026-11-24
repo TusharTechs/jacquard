@@ -1,0 +1,35 @@
+# Custom headers for the Amplify app (motif-builder Requirement 6), applied by scripts/deploy-web.sh
+# with `aws amplify update-app --custom-headers` before each deployment.
+#
+# The Content-Security-Policy allows only this origin, plus what a check of the built app with the
+# same header served locally showed it needs (motif-builder design, "Headers"):
+# - worker-src blob:   Tone.js (the loom sounds) starts its clock in a worker made from a blob URL.
+# - style-src 'unsafe-inline'   sonner (toasts) and react-remove-scroll (Radix dialogs) add <style>
+#   elements at run time; the dialog one holds the scrollbar width, so a hash cannot cover it.
+#   Scripts stay 'self' only: no inline script, no eval, no 'wasm-unsafe-eval' (nothing uses wasm).
+# - img-src blob:      the sketch preview shows the chosen file through a blob URL.
+customHeaders:
+  - pattern: '**'
+    headers:
+      - key: 'Content-Security-Policy'
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob:; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+      - key: 'Strict-Transport-Security'
+        value: 'max-age=31536000; includeSubDomains'
+      - key: 'X-Content-Type-Options'
+        value: 'nosniff'
+      - key: 'Referrer-Policy'
+        value: 'strict-origin-when-cross-origin'
+      - key: 'Permissions-Policy'
+        value: 'camera=(), microphone=(), geolocation=()'
+  - pattern: '/'
+    headers:
+      - key: 'Cache-Control'
+        value: 'no-cache'
+  - pattern: '/index.html'
+    headers:
+      - key: 'Cache-Control'
+        value: 'no-cache'
+  - pattern: '/assets/*'
+    headers:
+      - key: 'Cache-Control'
+        value: 'public, max-age=31536000, immutable'

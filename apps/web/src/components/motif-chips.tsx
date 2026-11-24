@@ -163,6 +163,7 @@ export function MotifChips({ description, overrides, onChange, maxColours, disab
             ) : null}
             <select
               className="chip"
+              name={`motif-${chip.key}`}
               aria-label={chip.label}
               value={chip.value}
               disabled={disabled}

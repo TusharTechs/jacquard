@@ -98,9 +98,15 @@ No Power was used. One was shipped: `power/` (the `loom` Power), with `plugin.js
 
 The Power has not been installed in a fresh workspace yet. That is my manual step. The server also still names itself `jacquard-weave` while `mcp.json` calls it `loom`.
 
+## 9. The motif step on the live site
+
+Amazon Bedrock needs a paid plan on the AWS account used, so the live site has no model. Until the `motif-builder` spec, "Describe a motif" there gave a stand-in pattern picked from a hash of the words, so "a lotus with four petals" came out as stripes. The motif builder (spec `motif-builder`, tag `phase-motif`) reads the description with a fixed grammar, shows what it understood as editable chips and draws polygons that go through the same rasterize, speck and symmetry steps as before. It is labelled "Motif builder, not AI". The Bedrock path in `backend/` is built and tested but off.
+
+Four properties cover it: the description reader is total and deterministic; builder output is valid motif SVG with every palette colour still present after the pipeline; every builder motif passes the float check after auto-fix on the default profile; and the saved design round-trips through localStorage. Property 2 found a bug on its first run: a paisley border mirrored top to bottom lost all its figures. The first peacock (a front view with a fanned tail) passed every test and still did not read as a peacock on the live site; it was redrawn as a side view.
+
 ## Not yet done
 
 - The `release-check` workflow has not run, because workflows are off by default.
 - The WIF export has not been opened in an independent weaving tool.
-- The app is not deployed. AWS resources need my approval.
+- The model path is not deployed: Bedrock model access is not available on the account. The live site (AWS Amplify Hosting) uses the motif builder.
 - The card format has not been tested on a working loom.

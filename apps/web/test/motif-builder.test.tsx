@@ -116,16 +116,16 @@ describe("placing a builder motif (3.4, 3.5, 4.1)", () => {
 describe("saving the design (5.1, 5.5, 5.7)", () => {
   it("brings the design back after a remount, and Start from a blank grid forgets it", async () => {
     const first = render(<App persist />);
-    await describeMotif("a peacock");
+    await describeMotif("a lotus with four petals");
     generate();
     await waitFor(() => expect(textOf(section("Motif"))).toContain("Motif builder, not AI"));
     await waitFor(() => expect(window.localStorage.getItem(SAVED_DESIGN_KEY)).not.toBeNull(), { timeout: 2000 });
     first.unmount();
 
     render(<App persist />);
-    // Restored: the palette and the setup, but no undo history (5.2).
+    // Restored: the palette and the setup the lotus set (four-way), but no undo history (5.2).
     expect(within(section("Motif")).getByRole("list", { name: "Motif palette" }).querySelectorAll("li")).toHaveLength(3);
-    expect(setupSymmetry()).toBe("mirrorEnds");
+    expect(setupSymmetry()).toBe("mirrorBoth");
     expect((screen.getByRole("button", { name: "Undo" }) as HTMLButtonElement).disabled).toBe(true);
 
     act(() => (screen.getAllByRole("button", { name: "Start from a blank grid" })[0] as HTMLButtonElement).click());

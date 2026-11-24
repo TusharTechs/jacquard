@@ -50,7 +50,7 @@ describe("the lotus example (2.8)", () => {
 describe("the six descriptions checked on the live site", () => {
   const cases: readonly { text: string; plan: Record<string, unknown>; understood: readonly string[] }[] = [
     { text: "a lotus with four petals on a plain ground", plan: { subject: "lotus", count: 4, symmetry: "mirrorBoth", layout: "single" }, understood: ["lotus", "four petals", "plain ground"] },
-    { text: "a peacock", plan: { subject: "peacock", count: null, symmetry: "mirrorEnds", layout: "single" }, understood: ["peacock"] },
+    { text: "a peacock", plan: { subject: "peacock", count: null, symmetry: "none", layout: "single" }, understood: ["peacock"] },
     { text: "an eight-point star", plan: { subject: "star", count: 8, symmetry: "mirrorBoth" }, understood: ["eight point", "star"] },
     { text: "a paisley border", plan: { subject: "paisley", layout: "border", symmetry: "none" }, understood: ["paisley", "border"] },
     { text: "small diamond all-over", plan: { subject: "diamond", size: "small", layout: "allOver", symmetry: "mirrorBoth" }, understood: ["small", "diamond", "all over"] },

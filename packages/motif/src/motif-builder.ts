@@ -33,7 +33,7 @@ const EDGE_WIDTH = 5;
 
 /** True when a figure is mirror-symmetric left to right about its own centre. */
 function endsSymmetric(subject: BuilderSubject): boolean {
-  return subject !== "paisley" && subject !== "elephant";
+  return subject !== "paisley" && subject !== "elephant" && subject !== "peacock";
 }
 
 function mirrorsEnds(symmetry: Symmetry): boolean {

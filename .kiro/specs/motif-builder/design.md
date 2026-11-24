@@ -62,7 +62,7 @@ Figures (unit box):
 - diamond: |u|+|v| ≤ 0.98 (role 1), ≤ 0.62 (role 2), ≤ 0.28 (role 3).
 - paisley: a union of discs along a quadratic curve from (−0.05, 0.3) through (−0.3, −0.6) to (0.45, −0.85), radius 0.55·(1−t)^1.3 + 0.03 (role 1); the same at 0.62 of the radius (role 2); a drop at 0.28 for t ≤ 0.55 (role 3).
 - tree: canopy of six discs (role 1), trunk (role 3), pot and fruit (role 2).
-- peacock: tail fan, an elliptic sector (role 1); eyes on two arcs (role 2) with centres (role 3); body, neck and head (role 2); legs and crest (role 3).
+- peacock: side view facing +x: the train behind and below (role 1) with five eyes (role 2, centres role 3 or ground); body, curved neck, head and beak (role 2); wing, crest and legs (role 3).
 - elephant: body, head, legs, trunk and tail (role 1); ear and saddle cloth (role 2); cloth band and eye (role 3); tusk in the ground colour.
 
 Pattern_Subjects fill the repeat, symmetric about both centre lines:

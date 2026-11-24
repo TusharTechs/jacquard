@@ -164,7 +164,8 @@ function paisley(): Layer[] {
   return [
     { role: 1, polygons: stroke(p0, p1, p2, radius, 12) },
     { role: 2, polygons: stroke(p0, p1, p2, (t) => 0.62 * radius(t) - 0.02, 10, 0.8) },
-    { role: 3, polygons: stroke(p0, p1, p2, (t) => 0.26 - 0.3 * t, 4, 0.4) },
+    // A ground-coloured core inside the inner drop, so the three layers read as outlines.
+    { role: 3, fallback: 0, polygons: stroke(p0, p1, p2, (t) => 0.18 - 0.2 * t, 4, 0.4) },
   ];
 }
 
@@ -203,41 +204,60 @@ function tree(): Layer[] {
   ];
 }
 
-/** Front view with the tail fanned out. */
+/** Side view, facing +x: crested head on a curved neck, the train sweeping behind and down. */
 function peacock(): Layer[] {
-  const cy = 0.62;
-  const rx = 0.98;
-  const ry = 1.55;
-  const fan: Pt[] = [[0, cy]];
-  for (let index = 0; index <= 20; index += 1) {
-    const angle = (-170 + (160 * index) / 20) * (Math.PI / 180);
-    fan.push([rx * Math.cos(angle), cy + ry * Math.sin(angle)]);
-  }
-  const eyeAt = (degrees: number, fraction: number): Pt => {
-    const angle = degrees * (Math.PI / 180);
-    return [fraction * rx * Math.cos(angle), cy + fraction * ry * Math.sin(angle)];
-  };
-  const outer = [-150, -120, -90, -60, -30].map((degrees) => eyeAt(degrees, 0.74));
-  const eyes = outer.map(([x, y]) => disc(x, y, 0.18));
-  const centres = outer.map(([x, y]) => disc(x, y, 0.08, 12));
+  const neck = stroke([0.24, 0], [0.46, -0.12], [0.38, -0.36], (t) => 0.14 - 0.05 * t, 6);
+  const train: Pt[] = [
+    [-0.12, -0.12],
+    [-0.5, -0.12],
+    [-0.82, 0.04],
+    [-0.98, 0.32],
+    [-0.96, 0.62],
+    [-0.8, 0.8],
+    [-0.52, 0.72],
+    [-0.28, 0.5],
+    [-0.08, 0.3],
+  ];
+  const eyes: Pt[] = [
+    [-0.42, 0.06],
+    [-0.72, 0.2],
+    [-0.84, 0.5],
+    [-0.6, 0.48],
+    [-0.36, 0.34],
+  ];
   return [
-    { role: 1, polygons: [fan] },
-    { role: 2, polygons: eyes },
-    { role: 3, fallback: 1, polygons: centres },
+    { role: 1, polygons: [train] },
+    { role: 2, polygons: eyes.map(([x, y]) => disc(x, y, 0.12)) },
+    { role: 3, fallback: 0, polygons: eyes.map(([x, y]) => disc(x, y, 0.05, 10)) },
+    // Body, neck and head; the beak.
     {
-      role: 3,
-      fallback: 2,
-      polygons: [ellipse(0, 0.5, 0.17, 0.3), ellipse(0, 0.12, 0.08, 0.2, 16), disc(0, -0.12, 0.12)],
-    },
-    {
-      role: 3,
-      fallback: 2,
+      role: 2,
+      fallback: 1,
       polygons: [
-        disc(-0.08, -0.33, 0.04, 8),
-        disc(0, -0.37, 0.04, 8),
-        disc(0.08, -0.33, 0.04, 8),
-        box(-0.08, 0.76, -0.03, 0.96),
-        box(0.03, 0.76, 0.08, 0.96),
+        ellipse(0.04, 0.12, 0.38, 0.26, 24),
+        ...neck,
+        disc(0.4, -0.46, 0.14),
+        [
+          [0.5, -0.52],
+          [0.68, -0.44],
+          [0.5, -0.38],
+        ],
+      ],
+    },
+    // The wing on the body, the crest and the legs.
+    {
+      role: 3,
+      fallback: 1,
+      polygons: [
+        ellipse(-0.02, 0.12, 0.2, 0.13, 20),
+        disc(0.28, -0.72, 0.06, 10),
+        disc(0.4, -0.78, 0.06, 10),
+        disc(0.52, -0.72, 0.06, 10),
+        box(0.37, -0.74, 0.43, -0.58),
+        box(0, 0.32, 0.06, 0.9),
+        box(0.16, 0.32, 0.22, 0.9),
+        box(0, 0.86, 0.14, 0.92),
+        box(0.16, 0.86, 0.3, 0.92),
       ],
     },
   ];

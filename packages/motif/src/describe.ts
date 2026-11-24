@@ -103,12 +103,12 @@ export const FIGURE_SUBJECTS: ReadonlySet<BuilderSubject> = new Set<BuilderSubje
 ]);
 
 /** Subjects not symmetric about their own centre (glossary, Asymmetric_Subject). */
-export const ASYMMETRIC_SUBJECTS: ReadonlySet<BuilderSubject> = new Set<BuilderSubject>(["paisley", "elephant"]);
+export const ASYMMETRIC_SUBJECTS: ReadonlySet<BuilderSubject> = new Set<BuilderSubject>(["paisley", "elephant", "peacock"]);
 
 /** The symmetry a subject gets when the text names none (1.5) [decision]. */
 export const SUBJECT_SYMMETRY: Readonly<Record<BuilderSubject, Symmetry>> = {
   lotus: "mirrorBoth",
-  peacock: "mirrorEnds",
+  peacock: "none",
   star: "mirrorBoth",
   diamond: "mirrorBoth",
   paisley: "none",
