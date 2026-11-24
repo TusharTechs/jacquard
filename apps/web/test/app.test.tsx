@@ -3,7 +3,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "../src/app";
-import { accessibleName, installDom, openStep, stubGalleryFetch, textOf } from "./dom-setup";
+import { accessibleName, installDom, openStep, openView, stubGalleryFetch, textOf } from "./dom-setup";
 
 function readout(): string {
   const node = document.querySelector(".readout");
@@ -172,6 +172,7 @@ describe("app", () => {
     };
     // Region 1, so a painted cell differs from the blank grid and makes an undoable edit.
     fireEvent.keyDown(canvas, { key: "2" });
+    openView();
     fireEvent.click(button("Scroll"));
     expect(button("Scroll").getAttribute("aria-pressed")).toBe("true");
     expect(canvas.style.touchAction).toBe("pan-x pan-y pinch-zoom");
@@ -288,6 +289,7 @@ describe("app", () => {
     expect(regionText()).toContain("Painting region 0");
     fireEvent.keyDown(screen.getByRole("heading", { name: "Float check" }), { key: "2" });
     expect(regionText()).toContain("Painting region 0");
+    openView();
     fireEvent.keyDown(button("Shortcuts"), { key: "2" });
     expect(regionText()).toContain("Painting region 1");
     fireEvent.keyDown(canvas, { key: "3" });
@@ -298,6 +300,7 @@ describe("app", () => {
     render(<App />);
     const canvas = screen.getByRole("application");
     act(() => canvas.focus());
+    openView();
     fireEvent.click(button("Shortcuts"));
     const dialog = [...document.querySelectorAll("dialog")].find((node) => node.hasAttribute("open"));
     expect(dialog).toBeDefined();

@@ -49,7 +49,7 @@
       "ends": 24,
       "picks": 32
     },
-    "repeatAcross": false,
+    "repeatAcross": true,
     "symmetry": "none"
   },
   "source": "standIn",

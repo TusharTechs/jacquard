@@ -1,7 +1,7 @@
 // Loom setup (11.1 to 11.3): profile, colour count, repeat, minimum feature, symmetry and
 // "repeat across". Every limit comes from the engine's profiles through setup-state.ts.
-// The settings sit in a <details> whose summary repeats the main values, so on a narrow screen the
-// panel can fold to one line; the app opens it by default on wide screens.
+// The settings sit in a <details> whose summary shows the main values and an Edit button; it is
+// folded by default at every width (studio-experience 19.3).
 import { useId } from "react";
 import type { RefObject } from "react";
 import type { Symmetry } from "@jacquard/motif";
@@ -25,7 +25,7 @@ export interface LoomSetupPanelProps {
   readonly onChange: (action: SetupAction) => void;
   /** The engine's REPEAT_NOT_DIVISIBLE message, when the current check returned it. */
   readonly repeatAcrossMessage: string | null;
-  /** Whether the settings are shown; defaults to open. */
+  /** Whether the settings are shown; folded by default. */
   readonly open?: boolean;
   readonly onOpenChange?: (open: boolean) => void;
   /** Lets the app focus the profile select (DESIGN_TOO_WIDE). */
@@ -37,7 +37,7 @@ export function setupSummary(setup: SetupState): string {
   return `${setup.profile} hooks · ${setup.colourCount} colours · ${setup.repeat.ends}×${setup.repeat.picks}`;
 }
 
-export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = true, onOpenChange, profileRef }: LoomSetupPanelProps) {
+export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = false, onOpenChange, profileRef }: LoomSetupPanelProps) {
   const limits = setupLimits(setup.profile);
   const profile = resolveProfile(setup.profile);
   const switchId = useId();
@@ -62,8 +62,11 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = tr
         }}
       >
         <summary className="setup-summary">
-          <span className="mono">{setupSummary(setup)}</span>
-          {setup.repeatAcross ? " · repeat across" : ""}
+          <span className="setup-summary-text">
+            <span className="mono">{setupSummary(setup)}</span>
+            {setup.repeatAcross ? " · repeat across" : ""}
+          </span>
+          <span className="setup-edit">{open ? "Done" : "Edit"}</span>
         </summary>
       <div className="stack">
         <Field label="Loom profile" hint={<>Up to <span className="mono">{profile.regionLimit}</span> regions on this profile.</>}>

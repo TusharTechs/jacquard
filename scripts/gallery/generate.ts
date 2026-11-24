@@ -60,25 +60,25 @@ export const GALLERY_INPUTS: readonly GalleryInput[] = [
     id: "lotus-border",
     title: "Lotus border",
     prompt: "lotus border",
-    setup: { profile: "240", colourCount: 3, repeat: { ends: 48, picks: 48 }, minFeature: 2, symmetry: "mirrorEnds", repeatAcross: false },
+    setup: { profile: "240", colourCount: 3, repeat: { ends: 48, picks: 48 }, minFeature: 2, symmetry: "mirrorEnds", repeatAcross: true },
   },
   {
     id: "peacock-butta",
     title: "Peacock butta",
     prompt: "peacock butta",
-    setup: { profile: "240", colourCount: 4, repeat: { ends: 40, picks: 40 }, minFeature: 2, symmetry: "mirrorEnds", repeatAcross: false },
+    setup: { profile: "240", colourCount: 4, repeat: { ends: 40, picks: 40 }, minFeature: 2, symmetry: "mirrorEnds", repeatAcross: true },
   },
   {
     id: "temple-stripe",
     title: "Temple stripe",
     prompt: "temple stripe",
-    setup: { profile: "120", colourCount: 2, repeat: { ends: 24, picks: 32 }, minFeature: 2, symmetry: "none", repeatAcross: false },
+    setup: { profile: "120", colourCount: 2, repeat: { ends: 24, picks: 32 }, minFeature: 2, symmetry: "none", repeatAcross: true },
   },
   {
     id: "star-lattice",
     title: "Star lattice",
     prompt: "star lattice",
-    setup: { profile: "400", colourCount: 4, repeat: { ends: 50, picks: 50 }, minFeature: 3, symmetry: "mirrorBoth", repeatAcross: false },
+    setup: { profile: "400", colourCount: 4, repeat: { ends: 50, picks: 50 }, minFeature: 3, symmetry: "mirrorBoth", repeatAcross: true },
   },
 ];
 

@@ -32,6 +32,8 @@ import { setupSummary } from "./components/loom-setup-panel";
 import { STEPS, currentStep, parseStep, pushStep } from "./lib/route";
 import type { Step } from "./lib/route";
 import { changeView } from "./lib/view-transition";
+import { repeatFits, repeatPolicy } from "./lib/repeat-policy";
+import type { RepeatPolicy } from "./lib/repeat-policy";
 import { OPENING_EVENT } from "./opening";
 import { WeavePanel } from "./components/weave-panel";
 import { CardsStep } from "./components/cards/cards-step";
@@ -119,7 +121,12 @@ function whenIdle(run: () => void): IdleHandle {
 }
 
 export function App({ deferHiddenSteps = false }: AppProps = {}) {
-  const [setup, dispatchSetup] = useReducer(setupReducer, DEFAULT_SETUP);
+  // The first blank grid is an arriving design: repeat across starts on when it fits (17.1).
+  const [setup, dispatchSetup] = useReducer(setupReducer, DEFAULT_SETUP, (initial) => ({
+    ...initial,
+    repeatAcross: repeatFits(initial.repeat.ends, resolveProfile(initial.profile).hookCount),
+  }));
+  const repeatState = useRef<RepeatPolicy>({ repeatAcross: setup.repeatAcross, chosen: false });
   const [editor, dispatchEditor] = useReducer(editorReducer, DEFAULT_SETUP.repeat, (repeat) => initialEditorState(blankDesign(repeat)));
   const [weaves, setWeaves] = useState<WeaveAssignment>(() => defaultWeaves(WEAVE_SLOTS));
   const [palette, setPalette] = useState<string[] | null>(null);
@@ -159,7 +166,8 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
   const [regionNumbers, setRegionNumbers] = useState(false);
   const [layer, setLayer] = useState<PaperLayer>("violations");
   // The loom setup is open on wide screens and folded to its summary below 768px.
-  const [setupOpen, setSetupOpen] = useState(() => mediaMatches("(min-width: 768px)", true));
+  // The loom setup is a one-line summary with Edit at every width (19.3); Edit opens it.
+  const [setupOpen, setSetupOpen] = useState(false);
   // Yarn colours (2.3). A null weft follows region 0's display colour until the user picks one.
   const [yarnChoice, setYarnChoice] = useState<{ readonly warp: string; readonly weft: string | null }>({ warp: DEFAULT_WARP, weft: null });
   const [motifFocus, setMotifFocus] = useState<{ kind: "text" | "sketch"; id: number } | null>(null);
@@ -220,6 +228,9 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
     changeView(() => setStep(next), after ?? (() => window.scrollTo?.({ top: 0 })));
   }, []);
   const menuTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const viewTriggerRef = useRef<HTMLButtonElement | null>(null);
+  // Where focus goes when the shortcuts dialog closes: the button that opened it (menu or View).
+  const shortcutsReturn = useRef<HTMLButtonElement | null>(null);
   const railLinks = useRef(new Map<Step, HTMLAnchorElement>());
   const railLinkRef = useCallback((item: Step, node: HTMLAnchorElement | null): void => {
     if (node === null) railLinks.current.delete(item);
@@ -252,6 +263,10 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
   );
   const badCell = check.ok ? null : errorCell(check.error);
   const repeatAcrossMessage = !check.ok && check.error.code === "REPEAT_NOT_DIVISIBLE" ? check.error.message : null;
+  // The repeat-across message sits in the loom setup: open it so the message is seen and heard.
+  useEffect(() => {
+    if (repeatAcrossMessage !== null) setSetupOpen(true);
+  }, [repeatAcrossMessage]);
 
   // ---- Regions and colours (display only). ----
   const usedRegions = useMemo(() => {
@@ -327,8 +342,22 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
 
   // ---- Setup changes. A new repeat size resizes the grid as one undoable edit. ----
   const changeSetup = (action: SetupAction): void => {
-    const next = setupReducer(setup, action);
+    let next = setupReducer(setup, action);
     dispatchSetup(action);
+    // Repeat across follows the design until the user chooses (17.1). If the setup was put back by
+    // Undo or Redo since the policy last ran, it is the user's: keep it.
+    const before =
+      repeatState.current.repeatAcross === setup.repeatAcross ? repeatState.current : { repeatAcross: setup.repeatAcross, chosen: true };
+    repeatState.current =
+      action.type === "setRepeatAcross"
+        ? repeatPolicy(before, { type: "choose", repeatAcross: action.repeatAcross })
+        : action.type === "setProfile" || action.type === "setRepeatEnds"
+          ? repeatPolicy(before, { type: "reshape", ends: next.repeat.ends, hookCount: resolveProfile(next.profile).hookCount })
+          : before;
+    if (repeatState.current.repeatAcross !== next.repeatAcross) {
+      next = { ...next, repeatAcross: repeatState.current.repeatAcross };
+      dispatchSetup({ type: "setRepeatAcross", repeatAcross: next.repeatAcross });
+    }
     if (next.repeat.ends !== size.ends || next.repeat.picks !== size.picks) {
       if (next.repeat.ends !== setup.repeat.ends || next.repeat.picks !== setup.repeat.picks) {
         dispatchEditor({ type: "replace", design: resizeDesign(design, next.repeat) });
@@ -372,6 +401,7 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
   // ---- Undo and redo. A gallery open also brings back (or re-applies) its setup, palette and weaves. ----
   const applySurroundings = useCallback((wanted: Surroundings, region: number): void => {
     dispatchSetup({ type: "replace", setup: wanted.setup });
+    repeatState.current = { repeatAcross: wanted.setup.repeatAcross, chosen: true };
     setPalette(wanted.palette === null ? null : [...wanted.palette]);
     setWeaves(wanted.weaves);
     setGalleryOpen(wanted.galleryOpen);
@@ -405,10 +435,13 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
       { type: "setRepeatPicks", picks: wanted.repeat.picks },
       { type: "setMinFeature", minFeature: wanted.minFeature },
       { type: "setSymmetry", symmetry: wanted.symmetry },
-      { type: "setRepeatAcross", repeatAcross: wanted.repeatAcross },
+      // Repeat across follows the example's width (17.1), whatever the file says.
+      { type: "setRepeatAcross", repeatAcross: repeatFits(wanted.repeat.ends, resolveProfile(wanted.profile).hookCount) },
     ];
     const next = actions.reduce(setupReducer, setup);
     for (const action of actions) dispatchSetup(action);
+    // An example arrives with its own setup; the user has not chosen repeat for it yet.
+    repeatState.current = { repeatAcross: next.repeatAcross, chosen: false };
     // The motif panel's label and state belong to the last motif request, not to this example.
     motif.reset();
     const before = editorReducer(editorRef.current, { type: "endStroke" });
@@ -439,8 +472,17 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
     goTo("design", () => setMotifFocus((current) => ({ kind, id: (current?.id ?? 0) + 1 })));
   };
 
+  /** A design arrives: repeat across turns on exactly when its width fits the hooks (17.1). */
+  const arrive = (ends: number, profileName: SetupState["profile"], current: boolean): void => {
+    repeatState.current = repeatPolicy(repeatState.current, { type: "arrive", ends, hookCount: resolveProfile(profileName).hookCount });
+    if (repeatState.current.repeatAcross !== current) dispatchSetup({ type: "setRepeatAcross", repeatAcross: repeatState.current.repeatAcross });
+  };
+  const arriveRef = useRef(arrive);
+  arriveRef.current = arrive;
+
   const startBlank = (): void => {
     setStarted(true);
+    arrive(setup.repeat.ends, setup.profile, setup.repeatAcross);
     if (!(size.ends === setup.repeat.ends && size.picks === setup.repeat.picks && allZero(design))) {
       dispatchEditor({ type: "replace", design: blankDesign(setup.repeat) });
       setGalleryOpen(null);
@@ -466,6 +508,7 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
         };
       }
       dispatchEditor({ type: "replace", design: result.value.design });
+      arriveRef.current(result.value.design[0]?.length ?? request.repeat.ends, setup.profile, setup.repeatAcross);
       setRevealKey((value) => value + 1);
       setGalleryOpen(null);
       setPalette(result.value.palette);
@@ -688,7 +731,12 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
         setupSummary={setupSummary(setup)}
         onOpenSetup={focusProfile}
         menu={
-          <StudioMenu triggerRef={menuTriggerRef} onShortcuts={() => setShortcutsOpen(true)} onOpening={() => window.dispatchEvent(new CustomEvent(OPENING_EVENT))} />
+          <StudioMenu
+            triggerRef={menuTriggerRef}
+            onShortcuts={() => {
+              shortcutsReturn.current = menuTriggerRef.current;
+              setShortcutsOpen(true);
+            }} onOpening={() => window.dispatchEvent(new CustomEvent(OPENING_EVENT))} />
         }
       />
       <StepRail step={step} status={railStatus} statusText={railStatusText} onSelect={(next) => goTo(next)} next={railNext} linkRef={railLinkRef} onPrefetch={(item) => {
@@ -797,7 +845,11 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
               onFit={fit}
               region={editor.region}
               regionColour={colours[editor.region] ?? "transparent"}
-              onShowShortcuts={() => setShortcutsOpen(true)}
+              onShowShortcuts={() => {
+                shortcutsReturn.current = viewTriggerRef.current;
+                setShortcutsOpen(true);
+              }}
+              viewTriggerRef={viewTriggerRef}
               touchMode={touchMode}
               onTouchMode={setTouchMode}
               regionNumbers={regionNumbers}
@@ -966,7 +1018,7 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
       </main>
 
       <Toaster />
-      <Dialog open={shortcutsOpen} title="Point paper shortcuts" onClose={() => setShortcutsOpen(false)} fallbackFocus={menuTriggerRef}>
+      <Dialog open={shortcutsOpen} title="Point paper shortcuts" onClose={() => setShortcutsOpen(false)} fallbackFocus={shortcutsReturn}>
         <dl className="shortcut-list">
           <dt>
             <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd>

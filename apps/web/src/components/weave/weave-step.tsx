@@ -5,7 +5,7 @@
 // about twice a second. The three.js scene is a lazy chunk that stays mounted after the first
 // visit; without WebGL the Step still plays.
 import * as Slider from "@radix-ui/react-slider";
-import { Pause, Play, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
+import { Focus, Pause, Play, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
 import { Component, Suspense, lazy, useCallback, useEffect, useId, useMemo, useReducer, useRef, useState } from "react";
 import type { ErrorInfo, ReactNode } from "react";
 import type { LiftPlan, LoomProfile } from "@jacquard/engine";
@@ -16,6 +16,8 @@ import type { LoomModel, PhaseName } from "../../lib/loom-model";
 import { OPEN_SHED, SPEEDS, initialTransport, transportReducer } from "../../lib/loom-transport";
 import type { Speed } from "../../lib/loom-transport";
 import type { LoomSound } from "../../lib/loom-sound";
+import type { LoomView } from "./loom-scene";
+import { clothShortened } from "../../lib/loom-layout";
 import { useReducedMotion } from "../../lib/reduced-motion";
 import { CardFace } from "../cards/card-face";
 import { Term } from "../term";
@@ -57,6 +59,7 @@ function isChunkError(error: unknown): boolean {
 interface BoundaryProps {
   readonly children: ReactNode;
   readonly render: (kind: "chunk" | "webgl") => ReactNode;
+  readonly onFail?: () => void;
 }
 
 class SceneBoundary extends Component<BoundaryProps, { readonly failed: "chunk" | "webgl" | null }> {
@@ -65,7 +68,8 @@ class SceneBoundary extends Component<BoundaryProps, { readonly failed: "chunk" 
     return { failed: isChunkError(error) ? "chunk" : "webgl" };
   }
   override componentDidCatch(_error: unknown, _info: ErrorInfo): void {
-    // The fallback says what happened; nothing to log for the user.
+    // The fallback says what happened; the Step stops offering the 3D-only controls.
+    this.props.onFail?.();
   }
   override render(): ReactNode {
     return this.state.failed === null ? this.props.children : this.props.render(this.state.failed);
@@ -106,6 +110,10 @@ export function WeaveStep({ plan, planSource, profile, yarns, violationCount, vi
   const timeRef = useRef(state.t);
   const [canUse3d] = useState(() => webgl ?? webglAvailable());
   const [sceneReady, setSceneReady] = useState(false);
+  const [sceneFailed, setSceneFailed] = useState(false);
+  const has3d = canUse3d && !sceneFailed;
+  const has3dRef = useRef(has3d && sceneReady);
+  has3dRef.current = has3d && sceneReady;
   const [attempt, setAttempt] = useState(0);
   const LoomScene = useMemo(() => lazy(loadScene), [attempt]);
   const [soundOn, setSoundOn] = useState(false);
@@ -115,6 +123,11 @@ export function WeaveStep({ plan, planSource, profile, yarns, violationCount, vi
   const lastPhase = useRef<{ pick: number; phase: PhaseName } | null>(null);
   const autoplayed = useRef(false);
   const [announcement, setAnnouncement] = useState("");
+  // The camera: the whole loom, or close on the woven cloth (18.2). The end of a weave moves to
+  // the cloth view by itself, a Moment that reduced motion leaves out (18.3).
+  const [view, setView] = useState<LoomView>("loom");
+  const reducedRef = useRef(reduced);
+  reducedRef.current = reduced;
   const labelId = useId();
   const speedLabelId = useId();
 
@@ -130,6 +143,7 @@ export function WeaveStep({ plan, planSource, profile, yarns, violationCount, vi
   useEffect(() => {
     lastPhase.current = null;
     const play = visible && !reduced && autoplayed.current;
+    setView("loom");
     const next = initialTransport(pickCount, play);
     timeRef.current = next.t;
     dispatch({ type: "reset", pickCount, playing: play });
@@ -197,6 +211,10 @@ export function WeaveStep({ plan, planSource, profile, yarns, violationCount, vi
         timeRef.current = model.pickCount;
         dispatch({ type: "seek", t: model.pickCount });
         dispatch({ type: "pause" });
+        // The weave is finished: look at the cloth (18.3), where there is a 3D view to move.
+        const moves = has3dRef.current && !reducedRef.current;
+        if (moves) setView("cloth");
+        setAnnouncement(`Woven: all ${model.pickCount} picks.${moves ? " The camera moved to the cloth view." : ""}`);
         return;
       }
       if (Math.floor(t) !== before) dispatch({ type: "seek", t });
@@ -240,7 +258,12 @@ export function WeaveStep({ plan, planSource, profile, yarns, violationCount, vi
       pause();
       return;
     }
-    if (timeRef.current >= pickCount) timeRef.current = 0;
+    setAnnouncement("");
+    if (timeRef.current >= pickCount) {
+      // Weaving again from pick 0: back to the loom, where the weaving shows.
+      timeRef.current = 0;
+      setView("loom");
+    }
     dispatch({ type: "play" });
   };
   const toggleSound = async (): Promise<void> => {
@@ -345,7 +368,7 @@ export function WeaveStep({ plan, planSource, profile, yarns, violationCount, vi
         <div className="weave-layout">
           <div className="loom-frame">
             {canUse3d && opened ? (
-              <SceneBoundary key={attempt} render={fallback}>
+              <SceneBoundary key={attempt} render={fallback} onFail={() => setSceneFailed(true)}>
                 <Suspense
                   fallback={
                     <div className="loom-stage loom-stage-loading" role="status">
@@ -361,6 +384,7 @@ export function WeaveStep({ plan, planSource, profile, yarns, violationCount, vi
                     playing={state.playing}
                     t={state.t}
                     active={visible}
+                    view={view}
                     onReady={() => setSceneReady(true)}
                   />
                 </Suspense>
@@ -368,7 +392,15 @@ export function WeaveStep({ plan, planSource, profile, yarns, violationCount, vi
             ) : (
               fallback("webgl")
             )}
-            <p className="loom-note">{LOOM_NOTE}</p>
+            <p className="loom-note">
+              {LOOM_NOTE}
+              {view === "cloth" && has3d
+                ? model.repeatAcross
+                  ? ` Cloth view: the design repeats ${Math.round(model.hookCount / Math.max(1, model.designWidth))} times across the cloth; the view may show part of the width.`
+                  : ` Cloth view: the design's ${model.designWidth} ends; hooks ${model.designWidth} to ${model.hookCount - 1} stay down.`
+                : ""}
+              {has3d && clothShortened(model.hookCount, model.pickCount) ? " The cloth is shortened to fit the loom, so its cells are not square." : ""}
+            </p>
           </div>
 
           <div className="loom-side">
@@ -387,6 +419,16 @@ export function WeaveStep({ plan, planSource, profile, yarns, violationCount, vi
                   aria-busy={soundLoading ? true : undefined}
                   onClick={() => void toggleSound()}
                 />
+                {has3d ? (
+                  <Button
+                    className="loom-view"
+                    aria-pressed={view === "cloth"}
+                    onClick={() => setView((current) => (current === "cloth" ? "loom" : "cloth"))}
+                  >
+                    <Focus aria-hidden="true" size={18} />
+                    Cloth view
+                  </Button>
+                ) : null}
               </div>
 
               {pickCount < 2 ? null : (

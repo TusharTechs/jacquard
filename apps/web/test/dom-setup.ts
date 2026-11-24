@@ -131,3 +131,15 @@ export function openStep(name: "Design" | "Check" | "Weave" | "Cards"): void {
     fireEvent.click(link);
   });
 }
+
+/**
+ * Opens the point paper's View popover (studio-experience 19.4: cell size, Paint/Scroll, region
+ * numbers and Shortcuts moved there; tests open it before using them, assertions unchanged).
+ */
+export function openView(): void {
+  const trigger = screen.getByRole("button", { name: "View" });
+  if (trigger.getAttribute("aria-expanded") === "true") return;
+  act(() => {
+    fireEvent.click(trigger);
+  });
+}

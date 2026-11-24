@@ -175,6 +175,32 @@ For the engine's `autoFix` output on random plans: one schedule entry per flip i
 For every Step, `parseStep(stepHref(step))` is that Step; any other hash gives Design.
 **Validates: Requirements 2.3**
 
+## Wave 5: the woven result shows the design
+
+- `lib/repeat-policy.ts`: `repeatFits(ends, hookCount)`, and a reducer over `{ repeatAcross, chosen }` with actions `arrive(ends, hookCount)`, `reshape(ends, hookCount)` (profile or width changed) and `choose(on)`. `app.tsx` keeps this state next to the setup and dispatches `setRepeatAcross` when it changes (Property 8).
+- `scripts/gallery/generate.ts`: every input sets `repeatAcross: true`; `pnpm gallery` rewrites `apps/web/public/gallery/`. The gallery panel's claims already come from `checkDesign` with the example's own setup, so they are recomputed with repeat on.
+- `lib/loom-layout.ts`: the scene's layout constants (warp width, fell, breast beam, warp height) and `clothDepth(hookCount, pickCount)`, shared by the scene and the camera.
+- `lib/loom-camera.ts`: `loomViewCamera(aspect)` and `clothViewCamera({ aspect, fov, hookCount, pickCount, designWidth, repeatAcross })`, pure numbers (`position`, `target`), and `easeCamera(from, to, progress)`. The cloth view frames the whole cloth when the stage is wide, else at least 2.5 repeats or the design width, centred on the design's left edge, from above and slightly in front (Property 9).
+- `weave/loom-scene.tsx`: a `CameraRig` holds the view ("loom" or "cloth"), eases position and target over 1.2 s with `easeCamera`, and moves the OrbitControls target with it; controls are off while it eases. The cloth plane takes `clothDepth`.
+- `weave/weave-step.tsx`: a "Cloth view" toggle in the transport; when playback reaches the end it switches to the cloth view (an eased Moment; under reduced motion the switch is instant and only by the button).
+- `editor-toolbar.tsx`: Undo, Redo, Fit and the region readout stay; a "View" button opens a Radix Popover holding Zoom out, the cell-size slider, Zoom in, the one-finger Paint and Scroll buttons, Show region numbers and Shortcuts. The popover content carries `data-region-keys`, so region keys keep working there.
+- `loom-setup-panel.tsx`: the summary line reads "<summary> · Edit" (or "Done" when open), folded by default.
+
+### Property 8: Repeat follows the design until the user chooses
+
+For any sequence of arrivals, reshapes (profile or width) and user choices: while no choice has been made since the last arrival, `repeatAcross` equals `repeatFits(ends, hookCount)` for the latest shape; after a choice it equals that choice until the next arrival, whatever the reshapes.
+**Validates: Requirements 17.1, 17.2**
+
+### Property 9: The cloth view frames the woven design
+
+For any stage aspect from 0.4 to 2.6, field of view from 30 to 50 degrees, hook count, pick count and design width (with repeat on or off): with a three.js perspective camera placed by `clothViewCamera`, the four corners of the framed cloth region project inside the view, and the region fills at least 60 % of the view's width or height.
+**Validates: Requirements 18.2, 18.4**
+
+### Property 10: With repeat on, the cards span the card
+
+For random designs whose width divides the hook count and the engine's plan with repeat across on: every card's lift (read back through the engine's `decodeCards`) is periodic in the design width across all figuring hooks, so every column of holes in the first repeat is punched again in the last one.
+**Validates: Requirements 17.3**
+
 ## Error Handling
 
 - `buildLoomModel` returns the engine or export error unchanged; the Weave Step shows the simulator's engine-error state with "Go to the float check".

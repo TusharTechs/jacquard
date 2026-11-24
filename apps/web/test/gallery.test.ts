@@ -5,6 +5,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { buildGallery } from "../../../scripts/gallery/generate";
+import { repeatFits } from "../src/lib/repeat-policy";
+import { resolveProfile } from "../src/state/setup-state";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const galleryDir = join(here, "..", "public", "gallery");
@@ -16,6 +18,7 @@ interface Example {
   readonly id: string;
   readonly source: string;
   readonly check: { readonly violationsBefore: number; readonly flips: number; readonly violationsAfter: number };
+  readonly setup: { readonly profile: "120" | "240" | "400"; readonly repeat: { readonly ends: number }; readonly repeatAcross: boolean };
 }
 
 describe("gallery", () => {
@@ -44,6 +47,8 @@ describe("gallery", () => {
       expect(example.source).toBe("standIn");
       expect(example.check.violationsAfter).toBe(0);
       if (example.check.violationsBefore === 0) expect(example.check.flips).toBe(0);
+      // studio-experience 17.1, 17.2: the stored flag is the app's repeat rule.
+      expect(example.setup.repeatAcross).toBe(repeatFits(example.setup.repeat.ends, resolveProfile(example.setup.profile).hookCount));
     });
   }
 });

@@ -4,7 +4,7 @@
 
 One clear flow and one showpiece: tokens and look, the Step shell with labels instead of paragraphs, the 3D loom driven by the engine's cards, a one-screen Opening, purposeful Moments, and realistic cards with a print stylesheet. Follows `requirements.md` and `design.md` (rewritten after the user's second brief; see the Decision log).
 
-All 7 correctness properties have their own property test task. Every property test task is required. There are no optional tasks.
+All 10 correctness properties have their own property test task. Every property test task is required. There are no optional tasks.
 
 ## Task rules
 
@@ -60,6 +60,21 @@ All 7 correctness properties have their own property test task. Every property t
   - [x] 5.2 Final screenshots to `media/polish/` (each Step and the Opening, 1440x900 and 390x844); no change under `packages/` or `backend/` in this phase (`git diff 45acd49 -- packages backend` is empty; `45acd49` is the last commit before the phase and the only one after `phase-H` that touched them)
     - _Requirements: 15.1, 16.1_
 
+- [x] 6. Wave 5: the woven result shows the design
+  - [x] 6.1 `lib/repeat-policy.ts` and its wiring in `app.tsx`; gallery inputs with repeat on, regenerate with `pnpm gallery`; gallery claim test with repeat on
+    - _Requirements: 17.1 to 17.3_
+  - [x] 6.2 Write property test: **Property 8: Repeat follows the design until the user chooses** — **Validates: Requirements 17.1, 17.2**
+  - [x] 6.3 Write property test: **Property 10: With repeat on, the cards span the card** — **Validates: Requirements 17.3**
+  - [x] 6.4 `lib/loom-layout.ts`, `lib/loom-camera.ts`, square cloth cells, `CameraRig`, the Cloth view toggle and the end-of-weave Moment
+    - _Requirements: 18.1 to 18.3_
+  - [x] 6.5 Write property test: **Property 9: The cloth view frames the woven design** — **Validates: Requirements 18.2, 18.4**
+  - [x] 6.6 View popover in the toolbar; Loom setup folded with Edit; test updates limited to opening them
+    - _Requirements: 19.1 to 19.4_
+  - [x] 6.7 Opening line; pressed-toggle style for speeds and other toggles
+    - _Requirements: 20.1, 20.2_
+  - [x] 6.8 Cloth view screenshots (Peacock butta, Lotus border, 1440x900 and 390x844) through the Chrome DevTools MCP server; Lighthouse; refreshed `media/polish/`; weave-auditor and design-reviewer
+    - _Requirements: 18.5, 14.2, 16.1, 16.2_
+
 ## Task Dependency Graph
 
 ```json
@@ -69,12 +84,13 @@ All 7 correctness properties have their own property test task. Every property t
     { "id": 1, "tasks": ["2.1", "2.2", "2.3", "2.4"] },
     { "id": 2, "tasks": ["3.1", "3.2", "3.3", "3.4", "3.5", "3.6", "3.7", "3.8"] },
     { "id": 3, "tasks": ["4.1", "4.2", "4.3", "4.4", "4.5"] },
-    { "id": 4, "tasks": ["5.1", "5.2"] }
+    { "id": 4, "tasks": ["5.1", "5.2"] },
+    { "id": 5, "tasks": ["6.1", "6.2", "6.3", "6.4", "6.5", "6.6", "6.7", "6.8"] }
   ]
 }
 ```
 
 ## Notes
 
-- Property-to-task mapping: P1 3.2, P2 3.3, P3 3.4, P4 3.5, P5 4.3, P6 4.4, P7 1.3.
+- Property-to-task mapping: P1 3.2, P2 3.3, P3 3.4, P4 3.5, P5 4.3, P6 4.4, P7 1.3, P8 6.2, P9 6.5, P10 6.3.
 - Wave 0 ran under the first brief and was redone in place under the second (task 1.2); its commit is `279f8a0`.

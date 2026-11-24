@@ -8,9 +8,9 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { parseStep } from "./lib/route";
 import { useReducedMotion } from "./lib/reduced-motion";
 
-export const OPENING_LINE = "In 1804, punch cards were the first programs. Handlooms still run on them.";
+export const OPENING_LINE = "In 1804, a loom read punch cards. Computers borrowed the idea. Handlooms still use it.";
 export const OPENING_KEY = "jacquard.openingSeen";
-/** Total time on screen, ms (Decision log: dark 0.4 s, line to 2.6 s, lights up to 3.3 s, fade to 3.6 s). */
+/** Total time on screen, ms (Decision log: line in by 0.4 s, held to 2.8 s, lights up 3.0 to 3.4 s, gone at 3.6 s). */
 export const OPENING_MS = 3600;
 export const OPENING_EVENT = "jacquard:opening";
 
@@ -146,7 +146,7 @@ export function Opening() {
     : {
         initial: { backgroundColor: DARK, opacity: 1 },
         animate: { backgroundColor: [DARK, DARK, ROOM, ROOM], opacity: [1, 1, 1, 0] },
-        transition: { duration: SECONDS, times: [0, 2.6 / SECONDS, 3.3 / SECONDS, 1], ease: "easeInOut" as const },
+        transition: { duration: SECONDS, times: [0, 3.0 / SECONDS, 3.4 / SECONDS, 1], ease: "easeInOut" as const },
       };
   const ink = reduced
     ? {}
@@ -154,7 +154,8 @@ export function Opening() {
         initial: { opacity: 0, y: 8, color: LINE },
         // The line leaves just before the lights come up, so it is never mid-contrast.
         animate: { opacity: [0, 1, 1, 0], y: [8, 0, 0, -4] },
-        transition: { duration: 2.9, times: [0, 0.6 / 2.9, 2.5 / 2.9, 1], ease: "easeOut" as const },
+        // Readable for 2.4 s (0.4 to 2.8 s), then out before the lights come up.
+        transition: { duration: 3.0, times: [0, 0.4 / 3.0, 2.8 / 3.0, 1], ease: "easeOut" as const },
       };
 
   return (

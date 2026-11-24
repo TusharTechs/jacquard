@@ -67,7 +67,7 @@
       "ends": 50,
       "picks": 50
     },
-    "repeatAcross": false,
+    "repeatAcross": true,
     "symmetry": "mirrorBoth"
   },
   "source": "standIn",

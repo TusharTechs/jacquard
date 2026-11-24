@@ -18,16 +18,20 @@ import type { YarnColours } from "@jacquard/export";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import type { MutableRefObject } from "react";
 import * as THREE from "three";
+import { CAMERA_EASE_MS, clothViewCamera, easeCamera, loomViewCamera } from "../../lib/loom-camera";
+import type { CameraPlacement } from "../../lib/loom-camera";
+import { LAYOUT, clothDepth } from "../../lib/loom-layout";
 import { cardStrip, clothTexture, hookHeight, loomFrame } from "../../lib/loom-model";
+import { prefersReducedMotion } from "../../lib/reduced-motion";
 import type { LoomModel } from "../../lib/loom-model";
 
 // ---- Layout (scene units, stylised) ----
-const WARP_WIDTH = 3.2;
-const WARP_Y = 1.2;
-const BACK_Z = -1.5;
-const HEDDLE_Z = -0.6;
-const FELL_Z = 0.1;
-const FRONT_Z = 1.5;
+const WARP_WIDTH = LAYOUT.warpWidth;
+const WARP_Y = LAYOUT.warpY;
+const BACK_Z = LAYOUT.backZ;
+const HEDDLE_Z = LAYOUT.heddleZ;
+const FELL_Z = LAYOUT.fellZ;
+const FRONT_Z = LAYOUT.frontZ;
 const SHED = 0.32;
 const COMBER_Y = 2.5;
 const HEAD = { left: -1.3, right: 1.3, bottom: 3.2, top: 4.0, back: -1.0, front: -0.2 } as const;
@@ -268,15 +272,23 @@ function Loom({ model, yarns, timeRef, playing, t, active }: SceneProps) {
   const cloth = useMemo(() => {
     const data = new Uint8Array(Math.max(1, model.hookCount * model.pickCount) * 4);
     const texture = new THREE.DataTexture(data, Math.max(1, model.hookCount), Math.max(1, model.pickCount), THREE.RGBAFormat);
+    // Close up each crossing is a crisp cell; further away the threads average out to the tone
+    // of the cloth (mipmaps), as woven cloth does, instead of shimmering.
     texture.magFilter = THREE.NearestFilter;
-    texture.minFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.generateMipmaps = true;
+    texture.anisotropy = 8;
     texture.wrapT = THREE.RepeatWrapping;
     texture.colorSpace = THREE.SRGBColorSpace;
     texture.needsUpdate = true;
     return { data, texture };
   }, [model]);
-  useEffect(() => () => cloth.texture.dispose(), [cloth]);
   const wovenShown = useRef(-1);
+  // A new buffer starts empty: write it on the next frame even if the woven count is unchanged.
+  useEffect(() => {
+    wovenShown.current = -1;
+    return () => cloth.texture.dispose();
+  }, [cloth]);
 
   // ---- Card chain: a pool of planes around the current card, each with its own canvas. ----
   const cardHeight = Math.min(0.42, Math.max(0.14, (CARD_LENGTH * (slots + 1.4)) / (rowCount + 4.2)));
@@ -461,9 +473,9 @@ function Loom({ model, yarns, timeRef, playing, t, active }: SceneProps) {
         </mesh>
       </group>
 
-      {/* Cloth from the fell to the breast beam. */}
-      <mesh position={[0, WARP_Y + 0.004, (FELL_Z + FRONT_Z) / 2]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[WARP_WIDTH, FRONT_Z - FELL_Z]} />
+      {/* Cloth from the fell towards the breast beam, cells close to square (18.1). */}
+      <mesh position={[0, WARP_Y + 0.004, FELL_Z + clothDepth(model.hookCount, model.pickCount) / 2]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <planeGeometry args={[WARP_WIDTH, clothDepth(model.hookCount, model.pickCount)]} />
         <meshStandardMaterial map={cloth.texture} transparent alphaTest={0.5} roughness={0.92} side={THREE.DoubleSide} />
       </mesh>
 
@@ -486,21 +498,76 @@ function Loom({ model, yarns, timeRef, playing, t, active }: SceneProps) {
   );
 }
 
-const CAMERA_HOME = new THREE.Vector3(3.4, 3.1, 5.2);
-const CAMERA_TARGET = new THREE.Vector3(0.25, 2.3, -0.3);
+export type LoomView = "loom" | "cloth";
+type Controls = { target: THREE.Vector3; enabled: boolean; update: () => void } | null;
 
-/** Keeps the whole loom in view on narrow (portrait) stages by moving the camera back. */
-function Framing() {
+/**
+ * Places the camera for the view (18.2, 18.3): the loom view shows the machine, pulled back on
+ * portrait stages; the cloth view looks down on the woven design. A change of view eases over
+ * CAMERA_EASE_MS (a Moment), or jumps with reduced motion. Orbiting is off in the cloth view and
+ * while the camera moves.
+ */
+function CameraRig({ view, model, controls }: { readonly view: LoomView; readonly model: LoomModel; readonly controls: MutableRefObject<Controls> }) {
   const { camera, size, invalidate } = useThree();
+  const aspect = size.width / Math.max(1, size.height);
+  const fov = (camera as THREE.PerspectiveCamera).fov;
+  const goal = useMemo<CameraPlacement>(
+    () =>
+      view === "cloth"
+        ? clothViewCamera({ aspect, fov, hookCount: model.hookCount, pickCount: model.pickCount, designWidth: model.designWidth, repeatAcross: model.repeatAcross })
+        : loomViewCamera(aspect),
+    [view, aspect, fov, model.hookCount, model.pickCount, model.designWidth, model.repeatAcross],
+  );
+  const current = useRef<CameraPlacement | null>(null);
+  const move = useRef<{ from: CameraPlacement; to: CameraPlacement; start: number } | null>(null);
+  const lastView = useRef(view);
+  const apply = (placement: CameraPlacement): void => {
+    current.current = placement;
+    camera.position.set(...placement.position);
+    camera.lookAt(...placement.target);
+    const orbit = controls.current;
+    if (orbit !== null) orbit.target.set(...placement.target);
+  };
   useLayoutEffect(() => {
-    const aspect = size.width / Math.max(1, size.height);
-    const back = aspect >= 1.35 ? 1 : Math.min(1.9, 1.35 / aspect);
-    const offset = CAMERA_HOME.clone().sub(CAMERA_TARGET).multiplyScalar(back);
-    camera.position.copy(CAMERA_TARGET).add(offset);
-    camera.lookAt(CAMERA_TARGET);
-    camera.updateProjectionMatrix();
+    const changedView = lastView.current !== view;
+    lastView.current = view;
+    if (current.current === null || !changedView || prefersReducedMotion()) {
+      // First frame, a resize, or reduced motion: no movement.
+      move.current = null;
+      apply(goal);
+    } else {
+      // Start from where the camera is now (the user may have orbited), not the last placement.
+      const orbit = controls.current;
+      const from: CameraPlacement = {
+        position: [camera.position.x, camera.position.y, camera.position.z],
+        target: orbit !== null ? [orbit.target.x, orbit.target.y, orbit.target.z] : current.current.target,
+      };
+      move.current = { from, to: goal, start: performance.now() };
+    }
+    const orbit = controls.current;
+    if (orbit !== null) orbit.enabled = view === "loom" && move.current === null;
     invalidate();
-  }, [camera, size.width, size.height, invalidate]);
+  }, [goal]);
+  useFrame(() => {
+    const moving = move.current;
+    if (moving === null) {
+      // Keep the orbit centre on the view's target (the controls may mount after the first frame).
+      const orbit = controls.current;
+      if (orbit !== null && current.current !== null) {
+        orbit.enabled = view === "loom";
+        if (view === "cloth") orbit.target.set(...current.current.target);
+      }
+      return;
+    }
+    const progress = (performance.now() - moving.start) / CAMERA_EASE_MS;
+    apply(easeCamera(moving.from, moving.to, progress));
+    if (progress >= 1) {
+      move.current = null;
+      const orbit = controls.current;
+      if (orbit !== null) orbit.enabled = view === "loom";
+    }
+    invalidate();
+  });
   return null;
 }
 
@@ -518,22 +585,22 @@ export interface LoomSceneProps {
   readonly active: boolean;
   /** Called once the WebGL context exists, so weaving starts where the user can see it. */
   readonly onReady?: () => void;
+  /** The camera: the whole loom, or close on the woven cloth (18.2). */
+  readonly view?: LoomView;
 }
 
-export default function LoomScene({ model, yarns, timeRef, playing, t, active, onReady }: LoomSceneProps) {
+export default function LoomScene({ model, yarns, timeRef, playing, t, active, onReady, view = "loom" }: LoomSceneProps) {
   const fine = useFinePointer();
+  const controls = useRef<Controls>(null);
   return (
     <div className="loom-stage" aria-hidden="true">
       <Canvas
         dpr={[1, 2]}
         frameloop={!active ? "never" : playing ? "always" : "demand"}
         shadows
-        camera={{ position: [3.4, 3.1, 5.2], fov: 42, near: 0.1, far: 60 }}
+        camera={{ position: [3.4, 3.1, 5.2], fov: 42, near: 0.05, far: 60 }}
         gl={{ antialias: true, powerPreference: "high-performance" }}
-        onCreated={({ camera }) => {
-          camera.lookAt(0.25, 2.3, -0.3);
-          onReady?.();
-        }}
+        onCreated={() => onReady?.()}
       >
         <color attach="background" args={[COLOURS.room]} />
         <fog attach="fog" args={[COLOURS.room, 9, 20]} />
@@ -544,7 +611,7 @@ export default function LoomScene({ model, yarns, timeRef, playing, t, active, o
           <Lightformer form="rect" intensity={1.6} color="#fff0d0" position={[-3, 4, 4]} scale={[6, 3, 1]} />
           <Lightformer form="rect" intensity={0.7} color="#ffe2b8" position={[4, 2, -3]} scale={[4, 2, 1]} />
         </Environment>
-        <Framing />
+        <CameraRig view={view} model={model} controls={controls} />
         <Loom model={model} yarns={yarns} timeRef={timeRef} playing={playing} t={t} active={active} />
         <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
           <planeGeometry args={[30, 30]} />
@@ -553,6 +620,9 @@ export default function LoomScene({ model, yarns, timeRef, playing, t, active, o
         <ContactShadows position={[0, 0.005, 0]} opacity={0.35} scale={10} blur={2.4} far={4.5} frames={1} />
         {fine ? (
           <OrbitControls
+            ref={(node: unknown) => {
+              controls.current = (node as Controls) ?? null;
+            }}
             target={[0.25, 2.3, -0.3]}
             enablePan={false}
             enableZoom={false}

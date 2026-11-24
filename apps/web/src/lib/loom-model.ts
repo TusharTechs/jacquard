@@ -20,6 +20,9 @@ export interface LoomModel {
   /** Card positions: figuring hooks, then spare hooks. */
   readonly positionCount: number;
   readonly profile: LoomProfile;
+  /** The design's width in ends, and whether the plan repeats it across every hook. */
+  readonly designWidth: number;
+  readonly repeatAcross: boolean;
   /** One card per pick, in lacing order (engine buildCards). */
   readonly cards: readonly Card[];
   /** lifted[card][hook]: the figuring hooks that card lifts, read back through decodeCards. */
@@ -73,6 +76,8 @@ export function buildLoomModel(
     hookCount: plan.hookCount,
     positionCount: plan.hookCount + profile.spareHookCount,
     profile,
+    designWidth: plan.designWidth,
+    repeatAcross: plan.repeatAcross,
     cards: built.value.cards,
     lifted,
     cloth: cloth.value,
@@ -146,8 +151,9 @@ function hexBytes(colour: string): [number, number, number] {
 
 /**
  * RGBA texels of the cloth, `hookCount` wide and `pickCount` high, row r = pick r. Woven picks
- * (below `woven`) carry clothModel's colour at full alpha; the rest are transparent. Writes into
- * `target` when given (same size), so the 3D view can reuse one buffer.
+ * (below `woven`) carry clothModel's colour at full alpha; the rest are transparent (alpha 0) but
+ * keep the same colour, so a filtered (mipmapped) texture never darkens the edge of the woven part.
+ * Writes into `target` when given (same size), so the 3D view can reuse one buffer.
  */
 export function clothTexture(model: LoomModel, woven: number, target?: Uint8Array): Uint8Array {
   const size = model.hookCount * model.pickCount * 4;
@@ -157,18 +163,11 @@ export function clothTexture(model: LoomModel, woven: number, target?: Uint8Arra
     const row = model.cloth[pick] ?? [];
     for (let hook = 0; hook < model.hookCount; hook += 1) {
       const offset = (pick * model.hookCount + hook) * 4;
-      if (pick < shown) {
-        const [r, g, b] = hexBytes(row[hook]?.colour ?? "#000000");
-        data[offset] = r;
-        data[offset + 1] = g;
-        data[offset + 2] = b;
-        data[offset + 3] = 255;
-      } else {
-        data[offset] = 0;
-        data[offset + 1] = 0;
-        data[offset + 2] = 0;
-        data[offset + 3] = 0;
-      }
+      const [r, g, b] = hexBytes(row[hook]?.colour ?? "#000000");
+      data[offset] = r;
+      data[offset + 1] = g;
+      data[offset + 2] = b;
+      data[offset + 3] = pick < shown ? 255 : 0;
     }
   }
   return data;

@@ -150,7 +150,7 @@ Code locations: `apps/web` only, plus `.kiro/steering/design-language.md`. `pack
 
 #### Acceptance Criteria
 
-1. ON the first visit, THE app SHALL show the Opening over the Studio: the loom room in the dark, the line "In 1804, punch cards were the first programs. Handlooms still run on them.", then the lights come up into the Studio. It SHALL take under 4 seconds in total.
+1. ON the first visit, THE app SHALL show the Opening over the Studio: the loom room in the dark, the line "In 1804, a loom read punch cards. Computers borrowed the idea. Handlooms still use it." (wave 5; the first line was "In 1804, punch cards were the first programs. Handlooms still run on them."), then the lights come up into the Studio. It SHALL take under 4 seconds in total.
 2. THE Opening SHALL be skippable at any time with a visible "Skip" button, Escape, Enter or a click, and focus SHALL then go to the Studio's first heading or control.
 3. THE Opening SHALL be shown once per browser (`localStorage`), and never when the URL names a Step other than Design.
 4. WHEN reduced motion is requested, THE Opening SHALL show the line without movement or fades and leave after the same time or on skip.
@@ -218,6 +218,46 @@ Code locations: `apps/web` only, plus `.kiro/steering/design-language.md`. `pack
 1. Each wave that changes the UI SHALL be checked through the Chrome DevTools MCP server at 1440x900 and 390x844; the final screenshots SHALL be saved under `media/polish/`.
 2. THE `design-reviewer` agent SHALL review the UI after each wave, and its findings SHALL be fixed or answered in the journal.
 
+### Requirement 17: The woven result shows the design (wave 5)
+
+**User Story:** As a judge, I want the woven cloth and the cards to show the motif, not a plain sheet with a small patch at one edge.
+
+#### Acceptance Criteria
+
+1. Repeat across SHALL follow the design until the user chooses: WHEN a design arrives (the first blank grid, "Start from a blank grid", a generated motif, a gallery example), THE Studio SHALL set repeat across on exactly when the design's width divides the profile's hook count; WHILE the user has not toggled the switch since, a change of profile or repeat width SHALL apply the same rule again; once the user toggles the switch, THE choice SHALL stay until the next design arrives.
+2. THE gallery examples SHALL open with repeat across on (each one's width divides its hook count), and every gallery card's float claim ("No floats over the limit", "N float violations: auto-fix needed") SHALL be the engine's float check of that example as it opens, with repeat across on. Violations SHALL never be hidden.
+3. WITH repeat across on, THE lift plan and the cards SHALL repeat the design across every figuring hook, so a card's punched holes span the card.
+
+### Requirement 18: Cloth view (wave 5)
+
+**User Story:** As a judge watching the loom, I want to see the woven motif clearly.
+
+#### Acceptance Criteria
+
+1. THE 3D cloth SHALL keep end-pick cells close to square: its depth is the warp width times `pickCount / hookCount`, at most the space between the fell and the breast beam.
+2. THE Weave Step SHALL offer a "Cloth view" toggle button (`aria-pressed`), reachable by keyboard, that moves the camera to frame the woven design closely: the whole cloth on wide stages, at least two and a half repeats (or the whole design width with repeat off) on narrow ones.
+3. WHEN the weave finishes (t reaches pickCount while playing), THE camera SHALL ease to the Cloth view in at most 1.5 s, unless reduced motion is requested; with reduced motion the toggle moves the camera at once.
+4. THE framed region SHALL lie inside the view and fill at least 60 % of its width or height (Property 9).
+5. THE motif silhouette of Peacock butta and Lotus border SHALL be readable in Chrome DevTools MCP screenshots of the Cloth view at 1440x900 and 390x844.
+
+### Requirement 19: Simpler Design step (wave 5)
+
+**User Story:** As a first-time user, I want the point paper to come first and the settings out of the way.
+
+#### Acceptance Criteria
+
+1. THE point-paper toolbar SHALL keep Undo, Redo, Fit, the painting region and the region palette visible, and SHALL move cell size (zoom out, slider, zoom in), the one-finger mode (Paint, Scroll), region numbers and Shortcuts into one "View" popover.
+2. THE View popover SHALL open from a labelled button with `aria-expanded`, close on Escape and outside click, return focus to its button, and keep every control's name, role and state (`aria-pressed`, checkbox) and the region number keys.
+3. THE Loom setup SHALL show a one-line summary with an Edit button, folded by default at every width; Edit opens the full settings; "Choose a larger profile" and the setup chip still open it and focus the profile.
+4. Tests SHALL change only to open the View popover or the Loom setup before using a control that moved; no behaviour assertion changes.
+
+### Requirement 20: Opening line and speed state (wave 5)
+
+#### Acceptance Criteria
+
+1. THE Opening line SHALL read "In 1804, a loom read punch cards. Computers borrowed the idea. Handlooms still use it."
+2. THE selected loom speed SHALL be visibly distinct from the others (fill and weight, not only a border), and exposed with `aria-pressed`.
+
 ## Labels
 
 Same labels as the weave-engine spec. No new loom fact. The 3D loom is stylised; its hook layout follows the profile's card layout (`cardRows`), whose row placement stays `[to verify]`.
@@ -272,4 +312,13 @@ Gap analysis run by the agent under `.kiro/steering/autopilot.md`, using `PLAN.m
 | "Weave per region" versus the Weave Step (finding 19) | The heading stays: existing tests name it. The Step's own panel is titled "Loom". | [decision] |
 | Shorter gallery toast, focus after opening an example on a phone, empty-state actions in the float check and simulator, raw shadow colours, PAPER_COLOURS from tokens, teal focus ring (findings 10, 11, 14, 17, 18) | Left as they are this phase; listed for the user in the status. The texts are asserted by existing tests or belong to panels whose tests fix their empty states. | [decision] |
 | 3D card chain order and cloth side (weave-auditor) | The chain now takes its cards from `cardStrip` (engine `nextCard`) and shows a short set once; the cloth shows the side facing up on the loom (`back` when `wovenFaceDown`), so warp shows exactly where the raised hooks are. Stylised parts of the scene are labelled `[decision]`; the head mirrors the card layout a quarter turn from the card on the cylinder, row placement `[to verify]`; lacing holes are schematic `[decision]`. | [decision] |
+| Wave 5: what the review saw as "repeat adds a seam float violation" | Measured with the engine before any change: with repeat on, the four examples keep their float counts (Lotus border 0, Peacock butta 1 at pick 26, end 13, the same violation as with repeat off; Temple stripe 0; Star lattice 0) and auto-fix still clears Peacock butta with 1 flip. The seam on screen is the engine's `WEAVE_PERIOD_SEAM` warning (Lotus border region 2, period 5 in 48 ends; Star lattice region 1, period 4 in 50 ends), a warning shown in the weave panel, not a float violation. No example needed a new fixture. | [decision] |
+| Wave 5: gallery files with repeat on | The gallery is generated output (`scripts/gallery/generate.ts`, byte-checked by `gallery.test.ts`), not an engine golden fixture (the guard covers `packages/engine/test/fixtures`). The generator's inputs set repeat across on and the files are regenerated with `pnpm gallery`; the stored checks are recomputed by the same engine calls. | [decision] |
+| Wave 5: repeat policy | "Follows the design until the user chooses" (17.1): an auto flag in the Studio, not a new setup field, so `SetupState` and its tests stay as they are. The first blank grid counts as an arriving design, so the Studio opens with repeat on (48 ends on 240 hooks). | [decision] |
+| Wave 5: View popover | `@radix-ui/react-popover` 1.3.1 (2026-10-12) is added back. A popover, not a menu, because it holds a slider, toggle buttons and a checkbox, which a menu cannot. | [decision] |
+| Wave 5: speed buttons and other toggles | Pressed toggles get a brass fill with cream text and a check mark, so they read as selected and still differ from the walnut primary button. | [decision] |
+| Wave 5: cloth view framing (18.2) | First built as "always about 2.5 repeats"; the 1440 screenshot showed weave texture but no recognisable motif, so it went back to the spec's rule: the whole cloth on wide stages (six Peacock butta stars, five Lotus border diamonds read clearly), 2.5 repeats on narrow ones. The texture is mipmapped so distant threads average to the cloth's tone. | [decision] |
+| Wave 5: what the cloth view leaves out (weave-auditor) | A caption under the stage says how many times the design repeats and that the view may show part of the width, or which hooks stay down with repeat off; when the cloth has to be shortened to fit before the breast beam, it says the cells are not square. | [decision] |
+| Wave 5: seam warning wording (weave-auditor) | "a seam may show where the repeat joins if the region reaches the edge": the engine's warning does not know whether the region touches the edge; the engine is not changed. | [decision] |
+| Wave 5: Opening timing | Line in by 0.4 s and held to 2.8 s (2.4 s readable for 15 words), lights up 3.0 to 3.4 s, gone at 3.6 s (design-reviewer wave 5, finding 16). | [decision] |
 

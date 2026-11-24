@@ -14,7 +14,7 @@ export interface WeavePanelProps {
 }
 
 function warningText(warning: Warning): string {
-  return `Region ${warning.region}: the weave repeats every ${warning.period} ${warning.dimension}, which does not divide the ${warning.size} ${warning.dimension} of the repeat, so a seam shows where the repeat joins.`;
+  return `Region ${warning.region}: the weave repeats every ${warning.period} ${warning.dimension}, which does not divide the ${warning.size} ${warning.dimension} of the repeat, so a seam may show where the repeat joins if the region reaches the edge.`;
 }
 
 export function WeavePanel({ regions, colours, weaves, warnings, onChange }: WeavePanelProps) {
