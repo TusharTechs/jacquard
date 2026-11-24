@@ -19,6 +19,9 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 ---
 
 ## Status for Tushar
+Demo video, final review applied, 2026-11-24 (commit d7bcdcb): **not tagged `phase-video`, waiting for you.**
+- Narration: 157 wpm on average (it was 175), 138 s of speech in the 169 s cut, 0.33 to 0.36 s between sentences. Voice: af_heart. Nine short lines still fill only 74 to 83 % of their windows at the 0.8 floor; am_michael would fill them better, at a lower grade.
+- Files: `video/out/jacquard-demo.mp4` (168.9 s) and `video/out/jacquard-demo-vertical.mp4` (44.9 s, rebuilt for a phone).
 Demo video, synthetic narration, 2026-11-24 (commit bbda687): **final renders done; not tagged `phase-video`, waiting for you.** The voice is Kokoro-82M **af_heart**, run locally. All 26 lines' transcripts match the script: 22 word for word, 3 with a logged same-sound pair (too/two, stylised/stylized, labelled/labeled), and line 18 also sentence by sentence. Every caption is within 0.01 s of its voice. Files (local, gitignored): `video/out/jacquard-demo.mp4` (168.9 s, 1920x1080, −16.3 LUFS), `video/out/jacquard-demo-vertical.mp4` (44.4 s, 1080x1920), `video/out/jacquard-demo.srt`, `video/out/tts-report.json`, `video/out/voice-samples/` (4 voices). To try another voice: `node scripts/tts.ts --voice am_michael` in `video/`, then `pnpm voice` and the renders.
 Demo video, after your approval, 2026-11-24 (commit 1780c6a): **ready for your recording; no final render yet.** The agents line is yours. The narration is now recorded as **26 lines**, one file per part: `video/voice/lines/01.wav` to `26.wav`, any sample rate, mono or stereo. `video/voice/RECORDING.md` lists each line's exact text, its target seconds and recording tips. Then run `pnpm --filter @jacquard/video voice`. It trims each line, fits it (up to 5 % faster, pitch kept, or it stops and lists the lines to redo), normalises the voice to −16 LUFS, places each line at its part's start, writes `public/audio/voice.wav`, turns the voice on, and checks the music is at least 18 dB under it in every line. After that, the final render, .srt, vertical cut and tag `phase-video` wait for your go-ahead.
 Demo video, second review, 2026-11-24: **stopped for your review again** (commit 3244de4). All 8 items are applied: the hooks footage is re-cropped so no prompt, user name, host name or `/Users` path shows (every clip and still re-checked, see `video/privacy-log.md`); the hooks log, the Run Command Hook panels and the `hooks.v2.executionDisabledUntrustedWorkspace` card are large and readable; the steering beat holds one labelled line for 4.2 s; the Kiro narration is 136 words with your agents and Power sentences and the paid-plan note on screen; the Problem scene ends on the bridge line; the close uses your text (LICENSE is MIT); no 42,000 figure; `product.md` and `PLAN.md` have the new pitch. Please look at `video/script.md` (one note: "Five custom agents audited each phase through four MCP servers" is kept as you wrote it, but only two agents audited phases; an alternative line is offered there), `video/out/storyboard/` and `video/out/draft.mp4` (local, gitignored). The final render, .srt, vertical cut and tag `phase-video` wait for your go-ahead.
@@ -2020,6 +2023,63 @@ No property test failed in this session: Properties 7, 8 and 9 passed on their f
 - What failed or surprised: nothing new since the entry above. No property test failed in this session.
 - Spec versus vibe note: none for this entry.
 - Evidence: commits bbda687 and 5208d90 on `main`.
+### 2026-11-24 — demo-video final review: unhurried voice and a phone-first vertical cut (tasks 7.1 and 7.2); stopped before the tag
+- Surface: Kiro IDE, autopilot, working through Tushar's final review.
+- Goal: slow the narration to an unhurried pace that fills its windows, rebuild the 1080x1920 cut for a phone, re-run every check, and stop before tagging `phase-video`.
+- Kiro features used: spec `demo-video` (9.3 and 9.9 rewritten, four Decision log rows, tasks 7.1 and 7.2); steering `tech.md` (EXIT_CODE rule); property tests (Properties 7 and 9 rewritten for the new rules; 1 to 8 rerun). No custom agent or MCP tool.
+- Model / credits (start → end):
+- What worked:
+  - Pace: each line now aims at 88 % of its window, at a speed between 0.8 and 1.05 (up to four takes). Each sentence is cut to its speech plus 0.04 s either side, with 0.25 s between sentences; the pauses heard are 0.33 to 0.36 s (lines 01, 06, 14, 18, 21). Result: 362 words in 138.0 s of speech, 157 wpm on average (it was 175 wpm and 124 s). All 26 transcripts still match.
+  - Captions and sound: the sync check puts every caption within 0.03 s of its voice. The rest of the mix is at least 19.2 dB under the voice in every line. Main_Cut: 168.9 s, −16.2 LUFS.
+  - Vertical_Cut: its own composition (`src/vertical.ts`, `src/vertical-cut.tsx`), 44.9 s, −16.3 LUFS, with the rest of the mix at least 19.3 dB under the voice in every line (`scripts/vertical-loudness.ts`). Every shot is a crop scaled to the full 1080 width:
+    - the card chain, the long float on point paper, and the flagged row above the unpunched card;
+    - the Describe box typing, then its chips;
+    - the drawn peacock on point paper, cut 0.12 s before the transcriber's "and" of "and draws";
+    - the 3D loom with the app's sound, then the Cloth view;
+    - a vertical end card with JACQUARD, Built with Kiro, the live URL and the narration credit.
+  - Captions are 58 px with at most 26 characters a line, in the lower third. Property 9 checks that a caption is up at every moment of speech.
+- Per line (speed, speech, window, fill, wpm with pauses, transcript, caption offset):
+
+| Line | Speed | Words | Speech | Window | Fill | wpm | Transcript | Caption offset |
+|---|---|---|---|---|---|---|---|---|
+| 01 | 0.8 | 12 | 5.10 s | 5.40 s | 94 % | 141 | matches | +0.00 s |
+| 02 | 0.8 | 23 | 8.98 s | 10.10 s | 89 % | 154 | matches | +0.00 s |
+| 03 | 0.8 | 11 | 3.90 s | 4.80 s | 81 % | 169 | matches (too/two (homophone)) | +0.03 s |
+| 04 | 0.83 | 12 | 4.31 s | 5.20 s | 83 % | 167 | matches | +0.03 s |
+| 05 | 0.8 | 11 | 3.92 s | 4.80 s | 82 % | 168 | matches | +0.03 s |
+| 06 | 0.8 | 17 | 5.81 s | 7.40 s | 78 % | 176 | matches | +0.01 s |
+| 07 | 0.8 | 21 | 8.04 s | 9.10 s | 88 % | 157 | matches | +0.03 s |
+| 08 | 0.8 | 6 | 1.96 s | 2.60 s | 75 % | 184 | matches | +0.03 s |
+| 09 | 0.8 | 10 | 3.71 s | 4.30 s | 86 % | 162 | matches | +0.03 s |
+| 10 | 1 | 13 | 5.07 s | 5.60 s | 90 % | 154 | matches | +0.00 s |
+| 11 | 0.8 | 23 | 8.88 s | 9.90 s | 90 % | 155 | matches (stylised/stylized (spelling)) | +0.03 s |
+| 12 | 0.809 | 10 | 3.87 s | 4.30 s | 90 % | 155 | matches | +0.03 s |
+| 13 | 0.838 | 21 | 7.72 s | 9.00 s | 86 % | 163 | matches | +0.03 s |
+| 14 | 1 | 21 | 8.31 s | 9.60 s | 87 % | 152 | matches | +0.00 s |
+| 15 | 0.8 | 6 | 2.82 s | 3.00 s | 94 % | 128 | matches (labelled/labeled (spelling)) | +0.00 s |
+| 16 | 0.8 | 9 | 3.54 s | 4.00 s | 88 % | 153 | matches | +0.03 s |
+| 17 | 0.8 | 9 | 3.32 s | 4.00 s | 83 % | 163 | matches | +0.03 s |
+| 18 | 0.89 | 17 | 6.43 s | 7.30 s | 88 % | 159 | matches, by sentence | +0.03 s |
+| 19 | 0.877 | 8 | 2.99 s | 3.50 s | 85 % | 161 | matches | +0.00 s |
+| 20 | 0.8 | 16 | 6.26 s | 6.90 s | 91 % | 153 | matches | +0.01 s |
+| 21 | 1 | 27 | 11.67 s | 12.50 s | 93 % | 139 | matches | +0.00 s |
+| 22 | 0.8 | 12 | 3.99 s | 5.20 s | 77 % | 180 | matches | +0.03 s |
+| 23 | 0.801 | 15 | 5.57 s | 6.50 s | 86 % | 162 | matches | +0.00 s |
+| 24 | 0.8 | 14 | 5.80 s | 6.20 s | 94 % | 145 | matches | +0.03 s |
+| 25 | 0.8 | 15 | 4.88 s | 6.60 s | 74 % | 184 | matches | +0.03 s |
+| 26 | 0.8 | 3 | 1.18 s | 1.60 s | 74 % | 153 | matches | +0.01 s |
+
+AVG 362 words in 138.0 s = 157 wpm; in range 17 of 26; below ['03', '04', '05', '06', '08', '17', '22', '25', '26']; wpm range 128-184.
+- What failed or surprised:
+#### Surprise
+At 0.8, af_heart is still quicker than the windows on the short lines. Nine lines fill only 74 to 83 % of their windows at the floor: 03, 04, 05, 06, 08, 17, 22, 25 and 26, at 153 to 184 wpm. am_michael at 0.8 filled 83 to 100 % of the same lines. I kept af_heart because its grade is higher (A against C+) and nobody here can listen. Tushar may want to hear am_michael.
+Other failures:
+- At speed 0.8, line 04 came back from the transcriber as "G card catches it …" at three seeds. It matched at 0.83 with the first seed.
+- In the first vertical render, the loom shot began at capture 26.4 s, where the 3D canvas is still blank. I found it on the contact sheet and moved the shot to start at 27.2 s.
+- The old Vertical_Cut test ("45 s or less with the real voice timing") failed once the voice slowed down. The cut was rebuilt rather than the test loosened: shots are tighter (0.1 s before each line's speech, 0.15 s after), with no merged gaps.
+No property test failed in this session: rewritten Properties 7 and 9 passed on their first runs.
+- Spec versus vibe note: spec. Each review point became an acceptance criterion in 9.3 or 9.9 before the code changed. Property 9 checks the phone cut's caption and timing rules for any voice timing, not only today's.
+- Evidence: commit d7bcdcb; local (gitignored) `video/out/jacquard-demo.mp4` (168.9 s), `video/out/jacquard-demo-vertical.mp4` (44.9 s), `video/out/jacquard-demo.srt`, `video/out/tts-report.json`, `video/out/sync-check.json`; `pnpm typecheck` TC_EXIT_CODE=0; `pnpm test` TEST_EXIT_CODE=0 (727 tests: engine 148, mcp 110, export 52, motif 101, backend 45, web 231, video 40); `scripts/check-no-account-id.sh` 0, 0, 0.
 ### Template
 
 ```
@@ -2042,7 +2102,7 @@ No property test failed in this session: Properties 7, 8 and 9 passed on their f
 |---|---|---|
 | Specs (feature / bugfix) | 9 / 0 | weave-engine (34 properties), demo-video (9 properties; Requirement 8, voice assembly, added after the second review; Requirement 9, synthetic narration, after Tushar's change of plan), weave-mcp (16), motif-input (14), simulate-and-export (11), kiro-product (no properties; snapshot and config tests), deploy-static (1 property), motif-builder (4 properties; finding: 2.5 and 1.6 changed in wave 0), studio-experience (10 properties; rewritten once after the user's second brief; spec corrections: 7.5 open shed, and in wave 5 the cloth-view framing tried and reverted). All tasks checked. Spec findings fixed during tasks: weave-mcp design on SDK array arguments; motif-input speck performance, 1.3 and 4.6 wording, dev-script note; simulate-and-export profile-check order (Property 11), file table, WIF layout block; kiro-product gallery Decision log row. No bugfix spec yet (needs the user's WIF or swatch result) |
 | Property-based tests / bugs they caught | 99 / 3 | Engine 34, mcp 16, motif 14, export 11, web studio-experience 10, web deploy-static 1, motif-builder 4 (3 motif, 1 web), demo-video 9 (plus the web editor property from motif-input). Bugs caught: studio-experience Property 9 (wave 5) found the cloth-view camera framing a small design too loosely (a fixed minimum distance); motif-builder Property 2 (wave 0) found a mirrored paisley border with no figures; demo-video Property 5 (task 5.4) found the voice trimmer judging a line with little silence as silent. No property found a product bug. Failures on test mistakes: engine P32, P33; mcp P4 (`__proto__`), P6 (outcome label), P15 (null-prototype snapshot); motif P12 (over-long prompt generator was not over-long). Planted-bug checks (not counted): engine checkFloats off-by-one; mcp none; motif speck tie and orientation; backend secret leak (P13); web redo clearing (P14); export seven planted bugs, all caught |
-| Tests (files / tests) | engine 35 / 148; mcp 22 / 110; export 15 / 52; motif 20 / 101; backend 4 / 45; web 37 / 231; video 7 / 37 | 724 tests; last run after demo-video tasks 6.1 to 6.6 (synthetic narration), all `EXIT_CODE=0` |
+| Tests (files / tests) | engine 35 / 148; mcp 22 / 110; export 15 / 52; motif 20 / 101; backend 4 / 45; web 37 / 231; video 8 / 40 | 727 tests; last run after demo-video tasks 7.1 and 7.2 (final review), all `EXIT_CODE=0` |
 | Hooks | 3 | Earlier counts as before. Since 13:00Z on Nov 16 (autopilot), block-engine-fixture-edits checked 286 file-tool calls (149 `fs_write`, 136 `str_replace`, 1 `fs_append`) and blocked none; no engine file was edited in that time, so the save hook had nothing to run on. journey-entry-on-stop also fired inside a Kiro CLI headless run, and at the end of the studio-experience, wave 5, deploy-static, motif-builder, demo-video (review stop), demo-video (second review stop), demo-video (waiting for the recording) and demo-video (final renders, before the tag) sessions (all 2026-11-24) |
 | Steering files | 7 | 5 always-on (product, tech, structure, journey, autopilot), 2 file-matched (weaving-domain for `packages/engine/**`, design-language for `apps/web/**`) |
 | Custom agents | 5 | journey-scribe (named as the writer of the weave-mcp spec-phase entries; not invoked during the autopilot run); weave-auditor (8 runs, Phases B, C, D, F, G, studio-experience and its wave 5 (1 real bug: a stale repeat policy after Undo), motif-builder (0 float or round-trip errors on 2 hand-built designs; unsourced word tables labelled `[to verify]`): 12 unlabelled-loom-fact findings in total (C 2, D 1, F 2, polish 7), 0 float or round-trip errors; polish also 3 card-display findings, fixed); design-reviewer (10 runs: motif-builder 17 findings, 16 fixed; Phases C, D, F, G twice: 15 + 11 + 12 + 15 + 3 findings, all fixed; studio-experience waves 1 to 3, the phase end and wave 5: 33 + 26 + 21 + 19 + 18 findings, fixed or answered in the Decision log); release-runner (created, used only by the release-check workflow, not yet run); spec-checker (1 local headless run, VERDICT: PASS) |
