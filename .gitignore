@@ -46,3 +46,8 @@ media/**/*.mp4
 media/**/*.mkv
 # Deploy state: the Amplify app id (deploy-static 2.3). Never commit.
 .deploy/
+# Demo video (demo-video 1.2): copied media, capture, audio stems and renders are generated
+video/public/
+video/capture/frames/
+video/test-results/
+video/playwright-report/

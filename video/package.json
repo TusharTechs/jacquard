@@ -1,0 +1,43 @@
+{
+  "name": "@jacquard/video",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest --run",
+    "typecheck": "tsc -p tsconfig.json",
+    "script": "node scripts/make-script-md.ts",
+    "srt": "node scripts/make-srt.ts",
+    "assets": "node scripts/prepare-assets.ts",
+    "audio": "node audio/render-audio.ts",
+    "loudness": "node scripts/loudness.ts",
+    "capture": "playwright test -c capture/playwright.config.ts && node capture/assemble.ts",
+    "studio": "remotion studio src/index.ts",
+    "storyboard": "node scripts/storyboard.ts",
+    "draft": "remotion render src/index.ts Main out/draft.mp4 --scale=0.5 --crf=28",
+    "render": "remotion render src/index.ts Main out/jacquard-demo.mp4 --codec=h264 --crf=18 --pixel-format=yuv420p",
+    "render:vertical": "remotion render src/index.ts Vertical out/jacquard-demo-vertical.mp4 --codec=h264 --crf=18 --pixel-format=yuv420p"
+  },
+  "dependencies": {
+    "@fontsource-variable/fraunces": "5.3.0",
+    "@fontsource-variable/instrument-sans": "5.3.0",
+    "@fontsource/ibm-plex-mono": "5.3.0",
+    "@jacquard/engine": "workspace:*",
+    "@jacquard/export": "workspace:*",
+    "@remotion/cli": "4.0.542",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "remotion": "4.0.542",
+    "tone": "15.1.22"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "esbuild": "0.28.2",
+    "fast-check": "4.10.2",
+    "typescript": "7.0.2",
+    "vitest": "5.1.0"
+  }
+}
