@@ -46,6 +46,7 @@ import { exampleWeaves } from "./lib/gallery";
 import type { GalleryExample } from "./lib/gallery";
 import { blankDesign, resizeDesign, sizeOf } from "./lib/grid-size";
 import type { MotifFailure } from "./lib/motif-client";
+import { localMotifs, prefetchLocalMotifs } from "./lib/motif-client";
 import { designFromMotif } from "./lib/motif-design";
 import { regionColours } from "./lib/palette";
 import { useMotifRequest } from "./lib/use-motif-request";
@@ -196,6 +197,14 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
   }, [editor.design]);
   const [nextViolationRequest, setNextViolationRequest] = useState(0);
   const paperSummaryId = useId();
+  // The static deploy runs the stand-in in the browser (deploy-static 1.1, 1.6): load it on idle,
+  // so generating does not need the network after the first visit.
+  const [localMotif] = useState(localMotifs);
+  useEffect(() => {
+    if (!localMotif) return;
+    const handle = whenIdle(prefetchLocalMotifs);
+    return () => handle.cancel();
+  }, [localMotif]);
   const online = useOnline();
 
   const profile = resolveProfile(setup.profile);
@@ -749,7 +758,11 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
       {online ? null : (
         <div className="banner" role="status">
           <strong>You are offline.</strong>
-          <span>The editor and the float check keep working. Generating a motif needs the network.</span>
+          <span>
+            {localMotif
+              ? "The editor, the float check and the stand-in motifs keep working."
+              : "The editor and the float check keep working. Generating a motif needs the network."}
+          </span>
         </div>
       )}
 
@@ -760,7 +773,8 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
           <GalleryPanel onOpen={openExample} openId={galleryShown?.id ?? null} headingRef={galleryHeadingRef} />
           <MotifPanel
             setup={setup}
-            online={online}
+            online={online || localMotif}
+            localStandIn={localMotif}
             request={motif}
             paletteColours={palette === null ? null : regionColours(palette, palette.length)}
             paletteFromGallery={galleryShown !== null}

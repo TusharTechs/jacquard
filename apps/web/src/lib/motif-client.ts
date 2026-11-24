@@ -1,5 +1,7 @@
 // Client for the backend motif route (2.1, 3.6, 3.7). Requests go only to `/api/motif` on this
 // origin or on the configured backend base URL; the browser never calls a model provider.
+// The static deploy has no backend (deploy-static 1.1): a production build without VITE_API_BASE
+// runs the deterministic stand-in in the browser instead (lib/motif-local.ts, a lazy chunk).
 //
 // Every outcome is a value: a validated response, or a failure with a kind the UI can tell apart
 // and a plain message for a designer. Nothing here throws for an expected failure.
@@ -27,6 +29,21 @@ export interface MotifClientOptions {
   readonly baseUrl?: string;
   /** For tests; defaults to CLIENT_TIMEOUT_MS. */
   readonly timeoutMs?: number;
+  /** Run the stand-in in the browser instead of calling the backend; defaults to localMotifs(). */
+  readonly local?: boolean;
+}
+
+/** True in a production build with no backend base URL: the static deploy (deploy-static 1.1). */
+export function localMotifs(): boolean {
+  const base: unknown = import.meta.env.VITE_API_BASE;
+  return import.meta.env.PROD === true && (typeof base !== "string" || base.trim() === "");
+}
+
+const loadLocal = () => import("./motif-local");
+
+/** Loads the in-browser stand-in early (on idle), so generating works offline after the first visit. */
+export function prefetchLocalMotifs(): void {
+  void loadLocal().catch(() => undefined);
 }
 
 const KEEP_EDITING = "Your design is unchanged and you can keep editing it by hand.";
@@ -132,6 +149,20 @@ export async function requestMotif(request: MotifRequest, options: MotifClientOp
 
   const callerSignal = options.signal;
   if (callerSignal?.aborted) return fail("cancelled", MESSAGES.cancelled);
+  if (options.local ?? localMotifs()) {
+    let local: typeof import("./motif-local");
+    try {
+      const loaded = await untilAborted(loadLocal(), callerSignal ?? new AbortController().signal);
+      if (loaded === ABORTED) return fail("cancelled", MESSAGES.cancelled);
+      local = loaded;
+    } catch {
+      return isOffline() ? fail("offline", MESSAGES.offline) : fail("network", MESSAGES.network);
+    }
+    const result = local.localStandIn(validated.value);
+    if (callerSignal?.aborted) return fail("cancelled", MESSAGES.cancelled);
+    if (result.ok) return { ok: true, response: result.response };
+    return mapErrorBody(result.error.code === "REQUEST_INVALID" ? 400 : 502, result.error);
+  }
 
   const controller = new AbortController();
   let timedOut = false;

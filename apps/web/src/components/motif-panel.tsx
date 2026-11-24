@@ -69,6 +69,8 @@ export interface MotifPanelProps {
   readonly onStartBlank: () => void;
   /** Scrolls to the gallery and focuses its heading. */
   readonly onOpenGallery?: () => void;
+  /** True in the static deploy: motifs come from the in-browser stand-in (deploy-static 1.4). */
+  readonly localStandIn?: boolean;
   /** Set by the point paper's empty state: open the describe or upload tab and focus it. */
   readonly focusRequest?: { readonly kind: "text" | "sketch"; readonly id: number } | null;
 }
@@ -76,7 +78,7 @@ export interface MotifPanelProps {
 /** Failures where sending the same thing again will not help: the wording says "Generate again". */
 const GENERATE_AGAIN: ReadonlySet<MotifFailureKind> = new Set<MotifFailureKind>(["invalidMotif", "request"]);
 
-export function MotifPanel({ setup, online, request, paletteColours, paletteFromGallery = false, onStartBlank, onOpenGallery, focusRequest = null }: MotifPanelProps) {
+export function MotifPanel({ setup, online, request, paletteColours, paletteFromGallery = false, onStartBlank, onOpenGallery, focusRequest = null, localStandIn = false }: MotifPanelProps) {
   const [tab, setTab] = useState<"text" | "sketch">("text");
   const [prompt, setPrompt] = useState("");
   const [sketch, setSketch] = useState<Sketch | null>(null);
@@ -210,6 +212,11 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
 
   const sketchTab = (
     <div className="stack">
+      {localStandIn ? (
+        <p className="note">
+          Without the motif model, a sketch is not traced: the stand-in makes a pattern from the file instead.
+        </p>
+      ) : null}
       <Field label="Sketch image" hint="PNG or JPEG, at most 1.5 MB." error={fileError ?? undefined}>
         {(control) => (
           <input

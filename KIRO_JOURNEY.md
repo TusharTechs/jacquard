@@ -1688,6 +1688,23 @@ Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md
   - No other property failure happened in this session.
 - Spec versus vibe note: n/a (see the wave 5 entry).
 - Evidence: the wave 5 entry above; tag `phase-polish-2` at `098d6c7`.
+### 2026-11-24 — deploy-static spec and wave 0 (tasks 1.1 to 1.3): motifs without a backend
+- Surface: IDE
+- Goal: Write the `deploy-static` spec (Tushar approved a static site on AWS, us-west-2, and nothing else), and make Describe a motif and Upload a sketch work in a build with no backend.
+- Kiro features used: spec `deploy-static` (requirements, design, tasks; 1 property, required); property test Property 1; steering `autopilot.md`, `tech.md`, `product.md` (stand-in labelling).
+- Model / credits (start → end):
+- What worked:
+  - `apps/web/src/lib/motif-local.ts` runs the stand-in in the browser the way `backend/src/core.ts` does for its stand-in generator: validate, generate, check with `parseMotif`, answer `{ svg, palette, source: "standIn" }`. `requestMotif` uses it only when `import.meta.env.PROD` is true and `VITE_API_BASE` is empty, so dev (with its proxy to the local backend) and every existing motif-client test keep the fetch path unchanged.
+  - Property 1 (seed 7111, 100 runs) imports the backend's own `handleMotifRequest` and `createStandInGenerator` and compares them with `localStandIn` on valid text and sketch requests and five kinds of invalid ones. It passed first time. Planted-bug check, reverted (`git diff` clean): reversing the palette made it fail.
+  - The sketch tab of the static build now says, before generating: "Without the motif model, a sketch is not traced: the stand-in makes a pattern from the file instead." The labels after generating are unchanged. In the static build the offline banner no longer says generating needs the network, and the stand-in chunk is prefetched on idle.
+  - Entry chunk 189.69 → 189.92 kB gzip; `motif-local` is its own 1.25 kB gzip chunk.
+  - `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0`: engine 148, mcp 110, export 52, motif 75, backend 45, web 217.
+- What failed or surprised:
+  - `aws amplify list-apps` showed one app already in the account, `tab-net-terms`, from another project. I listed names only and will not touch it.
+- Surprise:
+  - The web tests could import the backend's TypeScript directly (`../../../backend/src/core`), with its NodeNext `.js` import paths, and vitest resolved them with no config. So Property 1 compares against the real backend code, not a copy of it.
+- Spec versus vibe note: spec. The decision to switch on `PROD` instead of only "no `VITE_API_BASE`" came from the gap analysis: without it, dev and the motif-client tests would have silently lost the backend path.
+- Evidence: `apps/web/src/lib/motif-local.ts`, `apps/web/test/motif-local.property.test.ts`, `apps/web/test/motif-local.test.tsx`, `.kiro/specs/deploy-static/`.
 ### Template
 
 ```
