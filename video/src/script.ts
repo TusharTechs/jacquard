@@ -119,21 +119,21 @@ export const SCENES: readonly Scene[] = [
     id: "kiro",
     title: "How Kiro built it",
     start: 86,
-    end: 152,
+    end: 152.9,
     parts: [
-      { text: "I built it with Kiro, spec first. Each feature went from requirements to properties to tasks: nine specs, ninety-six property-based tests.", start: 86.4, end: 96.0 },
+      { text: "I built it with Kiro, spec first. Each feature went from requirements to properties to tasks: nine specs, ninety-nine property-based tests.", start: 86.4, end: 96.0 },
       { text: "Steering kept every weaving fact labelled.", start: 96.4, end: 99.4 },
       { text: "Three hooks guarded the work, and Kiro surprised me:", start: 100.6, end: 104.6 },
       { text: "none of them fired until I trusted the workspace.", start: 104.8, end: 108.8 },
       { text: "Then the tests surprised me. A lattice test proved the design document's arithmetic wrong, not the code.", start: 109.1, end: 116.4 },
       { text: "A planted bug shrank to a two-pick counterexample.", start: 116.7, end: 120.2 },
       { text: "A property caught a mirrored paisley border that had lost every figure, on its first run.", start: 120.5, end: 127.4 },
-      { text: "Custom agents audited the work through our own MCP server. Chrome DevTools and AWS Documentation MCP servers helped Kiro check the app and deploy it to Amplify.", start: 127.7, end: 139.3 },
-      { text: "I shipped a Power and ran Kiro CLI headless on my machine.", start: 139.6, end: 144.8 },
-      { text: "One thing Kiro missed: the woven cloth did not show the design until I looked.", start: 145.1, end: 151.6 },
+      { text: "Custom agents audited the work through our own MCP server. Chrome DevTools and AWS Documentation MCP servers helped Kiro check the app and deploy it to Amplify.", start: 127.7, end: 140.2 },
+      { text: "I shipped a Power and ran Kiro CLI headless on my machine.", start: 140.5, end: 145.7 },
+      { text: "One thing Kiro missed: the woven cloth did not show the design until I looked.", start: 146.0, end: 152.5 },
     ],
     claims: [
-      { text: "9 specs, 96 property-based tests, 3 hooks, 5 custom agents, 4 MCP servers (3 third-party, 1 our own).", label: "tally", source: "KIRO_JOURNEY.md, Running tally" },
+      { text: "9 specs, 99 property-based tests, 3 hooks, 5 custom agents, 4 MCP servers (3 third-party, 1 our own).", label: "tally", source: "KIRO_JOURNEY.md, Running tally" },
       { text: "Hooks did not fire until the workspace was trusted.", label: "journal", source: "KIRO_JOURNEY.md, 2026-11-16 (hooks.v2.executionDisabledUntrustedWorkspace)" },
       { text: "The lattice example test proved the design note for 5.7 wrong.", label: "journal", source: "KIRO_JOURNEY.md, weave-engine waves 13 and 14" },
       { text: "A planted off-by-one shrank to a plan of 2 picks and 1 end.", label: "journal", source: "KIRO_JOURNEY.md, Planted-bug check" },
@@ -145,33 +145,33 @@ export const SCENES: readonly Scene[] = [
       { text: "The user's review found the woven cloth did not show the design.", label: "journal", source: "KIRO_JOURNEY.md, studio-experience wave 5" },
     ],
     beats: [
-      { at: 86, until: 96.2, kind: "repo", ref: "spec-chain", note: "Requirement 2.7, Property 3 and task 1.5 of .kiro/specs/motif-builder, then the tally: 9 specs, 96 property-based tests, 3 hooks, 5 agents, 4 MCP servers." },
+      { at: 86, until: 96.2, kind: "repo", ref: "spec-chain", note: "Requirement 2.7, Property 3 and task 1.5 of .kiro/specs/motif-builder, then the tally: 9 specs, 99 property-based tests, 3 hooks, 5 agents, 4 MCP servers." },
       { at: 96.2, until: 100.4, kind: "repo", ref: "steering", note: "One line of weaving-domain.md, large: the handloom line with its [sourced, S2, S3] label." },
       { at: 100.4, until: 104.7, kind: "clip", ref: "hooks", note: "hook-runs.log lines (guard fired, save-hook result: typecheck=0 test=0) and the Run Command Hook panels, enlarged." },
       { at: 104.7, until: 109.0, kind: "repo", ref: "trust", note: "The log line hooks.v2.executionDisabledUntrustedWorkspace, large, from the first frame." },
       { at: 109.0, until: 116.5, kind: "clip", ref: "lattice", note: "The sub-agent's Input required panel: the design's lattice note is wrong for 24 picks." },
       { at: 116.5, until: 120.4, kind: "repo", ref: "planted-bug", note: "The planted bug's shrunk counterexample from the journal: 2 picks, 1 end." },
       { at: 120.4, until: 127.6, kind: "repo", ref: "paisley", note: "Property 2's counterexample (seed 6102) beside the fixed paisley border." },
-      { at: 127.6, until: 139.5, kind: "clip", ref: "agents-mcp", note: "Kiro driving Chrome through the Chrome DevTools MCP server; the custom agents that audited through jacquard-weave; the MCP servers; the Amplify deploy." },
-      { at: 139.5, until: 145.0, kind: "repo", ref: "power-cli", note: "The loom Power and the local Kiro CLI run's VERDICT: PASS; on screen: the CI run needs a paid Kiro API key." },
-      { at: 145.0, until: 152, kind: "still", ref: "cloth-before-after", note: "The Weave Step before the review (tag phase-polish) and after it (Cloth view)." },
+      { at: 127.6, until: 140.4, kind: "clip", ref: "agents-mcp", note: "Kiro driving Chrome through the Chrome DevTools MCP server; the custom agents that audited through jacquard-weave; the MCP servers; the Amplify deploy." },
+      { at: 140.4, until: 145.9, kind: "repo", ref: "power-cli", note: "The loom Power and the local Kiro CLI run's VERDICT: PASS; on screen: the CI run needs a paid Kiro API key." },
+      { at: 145.9, until: 152.9, kind: "still", ref: "cloth-before-after", note: "The Weave Step before the review (tag phase-polish) and after it (Cloth view)." },
     ],
   }),
   scene({
     id: "close",
     title: "Honest close",
-    start: 152,
-    end: 168,
+    start: 152.9,
+    end: 168.9,
     parts: [
-      { text: "The card format is a configurable profile, not yet tested on a working loom.", start: 152.4, end: 158.6 },
-      { text: "The site is live and the code is open source; the links are on screen.", start: 159.0, end: 165.6 },
-      { text: "Built with Kiro.", start: 165.9, end: 167.5 },
+      { text: "The card format is a configurable profile, not yet tested on a working loom.", start: 153.3, end: 159.5 },
+      { text: "The site is live and the code is open source; the links are on screen.", start: 159.9, end: 166.5 },
+      { text: "Built with Kiro.", start: 166.8, end: 168.4 },
     ],
     claims: [
       { text: "The card format is a configurable loom profile and has not been tested on a working loom.", label: "framing rule", source: "product.md, Framing rules" },
       { text: "The code is open source.", label: "licence", source: "LICENSE (MIT, an OSI-approved licence)" },
     ],
-    beats: [{ at: 152, until: 168, kind: "title", ref: "close", note: "Live URL, repository (MIT), Built with Kiro, on card stock." }],
+    beats: [{ at: 152.9, until: 168.9, kind: "title", ref: "close", note: "Live URL, repository (MIT), Built with Kiro, on card stock; small text: Narration: synthetic voice (Kokoro-82M)." }],
   }),
 ];
 
@@ -179,6 +179,8 @@ export const DURATION = SCENES[SCENES.length - 1]!.end;
 
 export const LIVE_URL = "https://main.d28e9v65r7sow0.amplifyapp.com";
 export const REPO_URL = "https://github.com/TusharTechs/jacquard";
+/** On the end card of both cuts (demo-video 9.8). */
+export const NARRATION_CREDIT = "Narration: synthetic voice (Kokoro-82M)";
 
 export function wordCount(text: string): number {
   const clean = text.replace(/\s+/g, " ").trim();

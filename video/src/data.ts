@@ -1,7 +1,7 @@
 // Data the compositions read from public/data (written by scripts/prepare-assets.ts), loaded once
 // with delayRender so no frame renders before it arrives.
 import { useEffect, useState } from "react";
-import { continueRender, delayRender, staticFile } from "remotion";
+import { continueRender, delayRender, getInputProps, staticFile } from "remotion";
 
 export interface CardHole {
   readonly x: number;
@@ -80,4 +80,12 @@ export function useData(): Data | null {
     });
   }, [handle]);
   return data;
+}
+
+/**
+ * Stems of the mix, each on unless a render passes it as false in --props: the loudness check
+ * mutes the voice ({"voice":false}); the sync check keeps only the voice ({"music":false,"effects":false}).
+ */
+export function mixOn(stem: "voice" | "music" | "effects"): boolean {
+  return getInputProps()[stem] !== false;
 }

@@ -25,3 +25,10 @@ Never used: `media/journey/autopilot/`, the long recordings in `media/journey` (
 - `prepare-assets.ts` fails the build if the repo excerpts or `problem.json` contain `/Users/`, `techtush`, `@192`, `Tushar Agarwal` or the 42,000-cards figure (`42[,.]?000`).
 - The same patterns were searched over `video/src`, `video/public/data` and `script.md`: no match.
 - The 42,000-cards figure is not shown or said anywhere in the video.
+
+## Final renders (synthetic narration, 2026-11-24)
+
+- `video/out/jacquard-demo.mp4` (168.9 s) and `video/out/jacquard-demo-vertical.mp4` (44.4 s) were checked at 1 frame every 2 s (contact sheets: 85 and 23 frames). Every frame shows the app, repo files rendered by Remotion, or the crops listed above. No home-directory path, user name, host name, email address, AWS account id, ARN or Amplify console URL. The only URLs are the live amplifyapp.com address and the GitHub repository.
+- After that check the tally chip and line 14 changed from 96 to 99 property-based tests; the frame at 95 s was checked again.
+- New on screen: the end card's "Narration: synthetic voice (Kokoro-82M)", in both cuts.
+- The voice is generated locally (`video/voice/tts/`); nothing was sent to a cloud service. Model weights are cached in `~/.cache/jacquard-tts`, outside git.

@@ -1,6 +1,6 @@
 # Implementation Plan: demo-video
 
-All 6 correctness properties have their own property test task. Every property test task is required.
+All 9 correctness properties have their own property test task. Every property test task is required.
 
 ## Tasks
 
@@ -32,6 +32,16 @@ All 6 correctness properties have their own property test task. Every property t
   - [x] 5.3 Write property test: **Property 4: A line fits its window, at most 5 % faster, or is reported** — **Validates: Requirements 8.4**
   - [x] 5.4 Write property test: **Property 5: Trimming never cuts the speech** — **Validates: Requirements 8.3, 8.4**
   - [x] 5.5 Write property test: **Property 6: Each line's speech starts at its part's start** — **Validates: Requirements 8.3, 8.6**
+- [x] 6. Synthetic narration (Tushar's change of plan, 2026-11-24)
+  - [x] 6.1 Spec: 2.7, 8.1, 8.2, 8.6 and Requirement 9; Decision log rows
+    - _Requirements: 2.7, 9.1 to 9.9_
+  - [x] 6.2 `voice/tts/` uv project (pinned, lock committed), `tts.py`, `models.json`; voice samples; `src/tts.ts`, `scripts/tts.ts`; all 26 lines with transcript check
+    - _Requirements: 9.1 to 9.4_
+  - [x] 6.3 Voice assembly with sentence timing, `src/voice-timing.ts`, timed captions and `.srt`, sync check, end card and README credit, Vertical_Cut parts
+    - _Requirements: 9.5 to 9.9_
+  - [x] 6.4 Write property test: **Property 7: The speed stays in range and never slows a line only to fill time** — **Validates: Requirements 9.3**
+  - [x] 6.5 Write property test: **Property 8: Captions follow the voice and keep the narration** — **Validates: Requirements 9.6**
+  - [x] 6.6 Write property test: **Property 9: The Vertical_Cut holds the chosen lines in 45 s** — **Validates: Requirements 9.9**
 - [ ] 4. Final (after Tushar's review)
   - [ ] 4.1 Final Main_Cut, `.srt`, Vertical_Cut
     - _Requirements: 2.6, 7.2_
@@ -41,5 +51,5 @@ All 6 correctness properties have their own property test task. Every property t
 ## Task Dependency Graph
 
 ```json
-{ "waves": [ { "id": 0, "tasks": ["1.1", "1.2", "1.3", "1.4", "1.5"] }, { "id": 1, "tasks": ["2.1", "2.2", "2.3"] }, { "id": 2, "tasks": ["3.1", "3.2"] }, { "id": 3, "tasks": ["5.1", "5.2", "5.3", "5.4", "5.5"] }, { "id": 4, "tasks": ["4.1", "4.2"] } ] }
+{ "waves": [ { "id": 0, "tasks": ["1.1", "1.2", "1.3", "1.4", "1.5"] }, { "id": 1, "tasks": ["2.1", "2.2", "2.3"] }, { "id": 2, "tasks": ["3.1", "3.2"] }, { "id": 3, "tasks": ["5.1", "5.2", "5.3", "5.4", "5.5"] }, { "id": 4, "tasks": ["6.1", "6.2", "6.3", "6.4", "6.5", "6.6"] }, { "id": 5, "tasks": ["4.1", "4.2"] } ] }
 ```

@@ -1,4 +1,4 @@
-// Voice assembly (demo-video Requirement 8), the pure part: one recorded line per narration part,
+// Voice assembly (demo-video Requirement 8), the pure part: one line file per narration part,
 // numbered 01 to the last in order through the video. Each line's silence is trimmed, the line is
 // fitted to its part's window (at most 5 % faster, pitch kept, or it fails), normalised, and placed
 // so its speech starts at the part's start. The ffmpeg steps (decode, time-stretch, loudness) are
@@ -134,6 +134,16 @@ export interface Placed {
   readonly tempo: number;
   /** Seconds from the start of the video where the speech starts (the part's start). */
   readonly at: number;
+  /** Where the speech ends, after any stretch. */
+  readonly end: number;
+  /** Each sentence's speech, in video seconds, when the line came with sentence ranges. */
+  readonly sentences: readonly { readonly start: number; readonly end: number }[];
+}
+
+/** A sample range [start, end) of one sentence in a line's recording. */
+export interface SampleRange {
+  readonly start: number;
+  readonly end: number;
 }
 
 export type Assembly =
@@ -144,12 +154,16 @@ export type Assembly =
  * Trims, fits, normalises and places every line (Property 6). Nothing is written when any line
  * overruns; the result lists them all. `inputs` are mono at VOICE_RATE, one per line, in order.
  */
-export function assembleVoice(inputs: readonly { readonly line: VoiceLine; readonly samples: Float32Array }[], processors: Processors, duration: number): Assembly {
+export function assembleVoice(
+  inputs: readonly { readonly line: VoiceLine; readonly samples: Float32Array; readonly sentences?: readonly SampleRange[] }[],
+  processors: Processors,
+  duration: number,
+): Assembly {
   const rate = VOICE_RATE;
   const pad = Math.round(PAD_SECONDS * rate);
-  const planned: { line: VoiceLine; clip: Float32Array; lead: number; speech: number; fit: Fit }[] = [];
+  const planned: { line: VoiceLine; clip: Float32Array; lead: number; speech: number; fit: Fit; sentences: { start: number; end: number }[] }[] = [];
   const overruns: Overrun[] = [];
-  for (const { line, samples } of inputs) {
+  for (const { line, samples, sentences = [] } of inputs) {
     const bounds = trimBounds(samples, rate);
     if (bounds === null) {
       overruns.push({ line, speech: 0 });
@@ -160,7 +174,12 @@ export function assembleVoice(inputs: readonly { readonly line: VoiceLine; reado
     const speech = (bounds.end - bounds.start) / rate;
     const fit = planFit(speech, line.window);
     if (fit.kind === "overrun") overruns.push({ line, speech });
-    planned.push({ line, clip: samples.slice(from, to), lead: bounds.start - from, speech, fit });
+    // Each sentence's own speech, in seconds after the line's speech starts (before any stretch).
+    const spans = sentences.flatMap((range) => {
+      const inner = trimBounds(samples.slice(range.start, range.end), rate);
+      return inner === null ? [] : [{ start: (range.start + inner.start - bounds.start) / rate, end: (range.start + inner.end - bounds.start) / rate }];
+    });
+    planned.push({ line, clip: samples.slice(from, to), lead: bounds.start - from, speech, fit, sentences: spans });
   }
   const silent = overruns.filter((item) => item.speech === 0);
   if (silent.length > 0) return { ok: false, overruns: silent, message: `Silent recording${silent.length === 1 ? "" : "s"}: ${silent.map((item) => item.line.name).join(", ")}. Re-record ${silent.length === 1 ? "it" : "them"}.` };
@@ -168,7 +187,7 @@ export function assembleVoice(inputs: readonly { readonly line: VoiceLine; reado
 
   const track = new Float32Array(Math.round(duration * rate));
   const placed: Placed[] = [];
-  for (const { line, clip, lead, speech, fit } of planned) {
+  for (const { line, clip, lead, speech, fit, sentences } of planned) {
     const stretched = fit.tempo > 1 ? processors.stretch(clip, fit.tempo) : clip;
     const shaped = processors.normalise(stretched);
     const leadAfter = Math.round(lead / fit.tempo);
@@ -177,7 +196,8 @@ export function assembleVoice(inputs: readonly { readonly line: VoiceLine; reado
       const at = offset + index;
       if (at >= 0 && at < track.length) track[at] = track[at]! + shaped[index]!;
     }
-    placed.push({ line, speech, tempo: fit.tempo, at: line.start });
+    const at = (seconds: number): number => line.start + Math.max(0, Math.min(speech, seconds)) / fit.tempo;
+    placed.push({ line, speech, tempo: fit.tempo, at: line.start, end: at(speech), sentences: sentences.map((span) => ({ start: at(span.start), end: at(span.end) })) });
   }
   return { ok: true, track, placed };
 }
@@ -211,11 +231,11 @@ export function encodeWav(samples: Float32Array, rate: number = VOICE_RATE): Uin
 
 const sceneTitle = (id: SceneId): string => SCENES.find((scene) => scene.id === id)!.title;
 
-/** video/voice/RECORDING.md, generated from Script_Data (Requirement 8.2). */
+/** video/voice/RECORDING.md, generated from Script_Data (Requirements 8.2, 9.4). */
 export function recordingMarkdown(lines: readonly VoiceLine[] = voiceLines()): string {
-  let out = `# Recording the narration\n\nGenerated from \`video/src/script.ts\` by \`pnpm --filter @jacquard/video script\`. Edit the source, not this file.\n\n`;
-  out += `Record one file per line: \`video/voice/lines/01.wav\` to \`${lines[lines.length - 1]!.file}\` (${lines.length} lines). Any sample rate, mono or stereo. Then run \`pnpm --filter @jacquard/video voice\`.\n\n`;
-  out += `## Tips\n\n`;
+  let out = `# The narration lines\n\nGenerated from \`video/src/script.ts\` by \`pnpm --filter @jacquard/video script\`. Edit the source, not this file.\n\n`;
+  out += `One file per line: \`video/voice/lines/01.wav\` to \`${lines[lines.length - 1]!.file}\` (${lines.length} lines), then \`pnpm --filter @jacquard/video voice\` assembles them. The narration is a synthetic voice (Kokoro-82M, run locally): \`pnpm --filter @jacquard/video tts\` writes every file from the text below. To use a person's recording for a line instead, record it with the tips below and overwrite its file (any sample rate, mono or stereo).\n\n`;
+  out += `## Tips for recording a line\n\n`;
   out += `- Record in a quiet room. Switch off fans and notifications; soft furnishings help.\n`;
   out += `- A phone or laptop mic is fine. Keep it about 20 cm from your mouth, a little to one side so the p and b sounds do not pop.\n`;
   out += `- Read at an easy pace. Each line has a target: the seconds its captions are on screen (planned at ${WORDS_PER_MINUTE} words a minute). Speech up to ${Math.round((MAX_STRETCH - 1) * 100)} % longer is sped up to fit, pitch kept; anything longer stops the script, which lists the line numbers, their lengths and their targets. Words are never cut.\n`;

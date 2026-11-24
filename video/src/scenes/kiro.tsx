@@ -8,7 +8,7 @@ import { Chip, Code, Enter, Heading, Panel, Stock } from "../parts";
 import { COLOURS, FONTS, FPS } from "../theme";
 
 /** KIRO_JOURNEY.md, "Running tally", 2026-11-24 (demo-video wave 0). */
-export const TALLY = { specs: 9, properties: 96, hooks: 3, agents: 5, mcp: 4 } as const;
+export const TALLY = { specs: 9, properties: 99, hooks: 3, agents: 5, mcp: 4 } as const;
 
 function Label({ children }: { readonly children: ReactNode }) {
   return <div style={{ fontFamily: FONTS.mono, fontSize: 26, color: COLOURS.inkMuted, letterSpacing: 0.2 }}>{children}</div>;
@@ -178,7 +178,7 @@ function Paisley({ excerpts }: { readonly excerpts: Excerpts }) {
 /** The agents that ran the phase audits (KIRO_JOURNEY.md, Running tally: Custom agents). */
 const AUDITORS: readonly string[] = ["weave-auditor", "design-reviewer"];
 
-/** 127.6 to 139.5: custom agents audited through our own MCP server; Kiro driving Chrome through DevTools. */
+/** 127.6 to 140.4: custom agents audited through our own MCP server; Kiro driving Chrome through DevTools. */
 function AgentsMcp({ excerpts }: { readonly excerpts: Excerpts }) {
   return (
     <Stock>
@@ -222,7 +222,7 @@ function AgentsMcp({ excerpts }: { readonly excerpts: Excerpts }) {
   );
 }
 
-/** 139.5 to 145.0: the Power and the local Kiro CLI run. */
+/** 140.4 to 145.9: the Power and the local Kiro CLI run. */
 function PowerCli({ excerpts }: { readonly excerpts: Excerpts }) {
   return (
     <Stock>
@@ -247,7 +247,7 @@ function PowerCli({ excerpts }: { readonly excerpts: Excerpts }) {
   );
 }
 
-/** 145.0 to 152: what Kiro missed. The cloth before and after the review. */
+/** 145.9 to 152.9: what Kiro missed. The cloth before and after the review. */
 function ClothBeforeAfter() {
   return (
     <Stock>
@@ -277,9 +277,9 @@ const PARTS: readonly { readonly at: number; readonly until: number; readonly re
   { at: 109.0, until: 116.5, render: () => <Lattice /> },
   { at: 116.5, until: 120.4, render: (excerpts) => <Planted excerpts={excerpts} /> },
   { at: 120.4, until: 127.6, render: (excerpts) => <Paisley excerpts={excerpts} /> },
-  { at: 127.6, until: 139.5, render: (excerpts) => <AgentsMcp excerpts={excerpts} /> },
-  { at: 139.5, until: 145.0, render: (excerpts) => <PowerCli excerpts={excerpts} /> },
-  { at: 145.0, until: 152, render: () => <ClothBeforeAfter /> },
+  { at: 127.6, until: 140.4, render: (excerpts) => <AgentsMcp excerpts={excerpts} /> },
+  { at: 140.4, until: 145.9, render: (excerpts) => <PowerCli excerpts={excerpts} /> },
+  { at: 145.9, until: 152.9, render: () => <ClothBeforeAfter /> },
 ];
 
 export function KiroScene({ origin, excerpts }: { readonly origin: number; readonly excerpts: Excerpts }) {

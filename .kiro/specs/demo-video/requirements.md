@@ -32,7 +32,7 @@ Code location: `video/`, a new workspace package `@jacquard/video` (Remotion com
 4. "How Kiro built it" SHALL cover specs (requirements to properties to tasks), steering, hooks, custom agents, MCP (jacquard-weave, Chrome DevTools, AWS Documentation), property-based tests, the Power, the local Kiro CLI run (saying that API keys need a paid plan), and the Amplify deploy driven by Kiro, built around 3 or 4 "Surprise" moments from `KIRO_JOURNEY.md`.
 5. THE close SHALL say the card format has not been tested on a working loom, that the motif step is a builder, not AI, and show the Live_URL, the repo and "Built with Kiro".
 6. Captions SHALL be burned in from the same text as the narration, and an `.srt` SHALL be generated from it (Property 2).
-7. Until Tushar's recording exists, the narration track SHALL be silent and captions shown. No text-to-speech in any render.
+7. The narration SHALL be a synthetic voice made locally with Kokoro-82M from Script_Data's words, unchanged (first person, Tushar's script), as Tushar chose on 2026-11-24; it SHALL be disclosed on the end card and in the README (Requirement 9). Until the voice track exists, the narration track SHALL be silent and captions shown.
 
 ### Requirement 3: Capture of the live site
 
@@ -63,12 +63,22 @@ Code location: `video/`, a new workspace package `@jacquard/video` (Remotion com
 2. AFTER the review: the final Main_Cut, the `.srt`, the Vertical_Cut, a journal entry with a "Surprise" heading, commit (source only), push, tag `phase-video`.
 
 ### Requirement 8: Voice assembly from recorded lines
-1. Tushar SHALL record one file per narration part: `video/voice/lines/NN.wav`, where NN is the part's number in order through the whole video (01 to the last), at any sample rate, mono or stereo. These files SHALL be gitignored.
-2. `video/voice/RECORDING.md` SHALL be generated from Script_Data: a numbered list of every part with its exact text and target seconds, and recording tips (quiet room, phone or laptop mic about 20 cm away, an easy pace, 1 s of silence before and after, re-record a line by overwriting its file).
+1. THE narration SHALL be one file per narration part: `video/voice/lines/NN.wav`, where NN is the part's number in order through the whole video (01 to the last), at any sample rate, mono or stereo, made by the synthetic voice (Requirement 9) or recorded by a person. These files SHALL be gitignored.
+2. `video/voice/RECORDING.md` SHALL be generated from Script_Data: a numbered list of every part with its exact text and target seconds, and tips for recording a line by hand (quiet room, phone or laptop mic about 20 cm away, an easy pace, 1 s of silence before and after, re-record a line by overwriting its file).
 3. `pnpm --filter @jacquard/video voice` SHALL trim leading and trailing silence from each line, normalise the voice to −16 LUFS, place each line so its speech starts at its part's start, and write `public/audio/voice.wav` at 48 kHz.
 4. IF a line is longer than its part's window, THEN it SHALL be sped up by at most 5 % without a change of pitch; IF it still does not fit, THEN the script SHALL fail, list every such line's number, length and window, and write nothing. Words SHALL never be cut (Properties 4 and 5).
 5. AFTER assembly, the script SHALL set `assets.voice` to true and run the loudness check against the real voice track: in every part, the rest of the mix at least 18 dB under the voice.
-6. Tests SHALL cover the placement (Property 6) and the overrun report, with synthetic tones as input. No text-to-speech anywhere.
+6. Tests SHALL cover the placement (Property 6) and the overrun report, with synthetic tones as input (the tests need no speech model).
+### Requirement 9: Synthetic narration
+1. THE voice SHALL be Kokoro-82M (Apache-2.0), run locally: a Python 3.12 venv made with uv under `video/voice/tts/`, exact pinned versions each published at least 14 days before 2026-11-24, the lockfile committed; weights from `hexgrad/Kokoro-82M` on Hugging Face at a pinned revision, cached outside git. No cloud TTS, account, API key or AWS service.
+2. 3 or 4 English voices SHALL be tried on lines 01, 07, 18 and 21 (`video/out/voice-samples/`, gitignored), and one voice used for all lines; the choice and the reason SHALL be in the journal.
+3. `pnpm --filter @jacquard/video tts` SHALL write `voice/lines/01.wav` to the last from Script_Data's text, sentence by sentence, never word by word, with pronunciation overrides where needed (JACQUARD and jacquard "juh-KARD", Kiro "KEER-oh", WIF "wiff", MCP, AWS and CLI as letters, and any other word heard wrong), at a speed per line between 0.9 and 1.05, preferring natural pace over filling the window.
+4. EACH generated line SHALL be transcribed with a local speech-recognition model at a pinned revision and compared with its script text; a line whose transcript differs in more than punctuation SHALL be fixed and made again. Each line's match and length SHALL be logged.
+5. IF lines overrun after the 5 % stretch, THEN time SHALL come from the gaps between parts and the music-only moments, with the beats moved with it; the Main_Cut MAY grow to at most 2:55. Words SHALL never be cut.
+6. THE burned-in captions and the `.srt` SHALL be timed to where each line, and each sentence, is actually spoken after trimming.
+7. A 960x540 sync check SHALL log the caption-to-voice offset at every line start, each at most 0.2 s. The final Main_Cut SHALL be 1920x1080, 30 fps, H.264, about −16 LUFS integrated, with the rest of the mix at least 18 dB under the voice in every line.
+8. THE end card SHALL say, in small text, "Narration: synthetic voice (Kokoro-82M)"; the README SHALL have a Credits line naming Kokoro-82M and its Apache-2.0 licence.
+9. THE Vertical_Cut (1080x1920, 45 s or less) SHALL use lines 01, 03 to 04, 06 to 07, 11 to 12 and 26, with burned-in captions, the Live_URL on the last card, and the same voice.
 ## Decision log
 
 | Q | Answer | Label |
@@ -81,7 +91,7 @@ Code location: `video/`, a new workspace package `@jacquard/video` (Remotion com
 | "cards are punched by hand" | `product.md` names card punchers (card cutters) who turn a design into a physical card set; the narration says that and no more. Flagged for review. | [decision] |
 | Problem visuals | Point paper and a punched card drawn from the real engine and export output (`@jacquard/export` `pointPaperSvg` and `cardSheetSvg`) for a gallery design, not invented graphics. | [decision] |
 | Music level | The voice is mixed to about −16 LUFS; the score under narration is at most −34 LUFS (18 dB lower), checked with ffmpeg's EBU R128 meter on the rendered music stem. Until the voice exists, the check uses the −16 LUFS target. | [decision] |
-| Narration voice | First person (Tushar records it). The builder is not a weaver; no line implies weaving expertise or loom testing. | [decision] |
+| Narration voice | First person (Tushar's script). The builder is not a weaver; no line implies weaving expertise or loom testing. | [decision] |
 | Vertical_Cut content | A 40-second edit: the problem line, the peacock built and woven, the Cloth view, the close; captions from the same Script_Data cues. | [decision] |
 | The agents line (second review) | "Custom agents audited the work through our own MCP server. Chrome DevTools and AWS Documentation MCP servers helped Kiro check the app and deploy it to Amplify." (Tushar's wording, 27 words, 11.6 s at 140 wpm). The 1.6 s comes from the Kiro scene's spare: gaps after it are 0.3 s and the last part ends at 151.6 s; the Kiro narration is 140 words. | [decision] |
 | Why one file per part? | A single continuous take does not line up with the timed captions or the ducking windows (Tushar's second review). Each part is its own file, placed at its part's start. | [decision] |
@@ -89,3 +99,11 @@ Code location: `video/`, a new workspace package `@jacquard/video` (Remotion com
 | Normalising and stretching | Each line to −16 LUFS (ffmpeg `ebur128`, then a gain and a −1 dBFS look-ahead limiter with delay compensation), so separately recorded lines match. Time-stretch with ffmpeg `atempo` (pitch kept). | [decision] |
 | Loudness check with the real voice | Per part: the voice track's loudness in the part's window against a render of the Main_Cut with the voice muted (`--props={"voice":false}`, `--codec=wav`), which holds the score, the effects and the app's sound. | [decision] |
 | Music margin under narration | 3 dB (the score at −21 dB under narration; it was 2 dB). With tone lines the 2 dB margin left line 01 at 16.5 dB and line 11 at 17.9 dB: the score stem is about 1 dB over −16 LUFS there, plus the card clack and the app's loom sound. The clack is now at 0.3 and the app's sound at 0.35; every part is then at least 19.2 dB under. | [decision] |
+| Narration voice: synthetic | Kokoro-82M, Apache-2.0, chosen by Tushar on 2026-11-24, disclosed on the end card and in the README. | [decision] |
+| Speech recognition for the check | faster-whisper 1.2.1 with `Systran/faster-whisper-medium.en` at revision a29b04bd (MIT), int8 on the CPU, no prompt (the transcript must come from the audio, not the script). Audio is decoded with ffmpeg, because faster-whisper's own decoder does not work with the locked PyAV 19. | [decision] |
+| Package age | `[tool.uv] exclude-newer = 2026-11-10` in `voice/tts/pyproject.toml`, so no package in the lock (124) was published in the 14 days before 2026-11-24; the direct dependencies are pinned exactly. `en-core-web-sm` 3.8.0 (2024) is a direct wheel URL from explosion/spacy-models, which the age filter does not cover. | [decision] |
+| What counts as a matching transcript | The same words after lower case, numbers as words, and punctuation, hyphens and spacing dropped. Also accepted, and logged per line: British or American spelling of the same word (stylised/stylized, labelled/labeled) and one homophone pair the transcriber cannot tell apart (too/two, for "too" only). When a whole line differs, each sentence is transcribed on its own and must match its sentence: the transcriber rewrote "the tests" as "the test" from the next sentence's "a lattice test". | [decision] |
+| Speed | Natural pace (1.0) when a line fits; just fast enough to fit, at most 1.05, when it does not; a line over 170 wpm is slowed towards 160 wpm, at least 0.9. Kokoro's af_heart speaks most lines at 185 to 230 wpm at 1.0, so most lines are at 0.9. | [decision] |
+| Pause between sentences | None added: Kokoro ends and starts each sentence with about 0.75 s of silence between them; 0.35 s more gave 1.1 s pauses. | [decision] |
+| Takes | A seed per line (its number) makes each take repeatable; a line that fails the check is made again with new seeds at the same speed, then at nearby speeds. | [decision] |
+| Overruns | None after the 5 % stretch. Line 21 (12.45 s at natural pace) was given 0.9 s of line 22's spare window instead of being sped up: 21 ends at 140.2 s, 22 starts at 140.5 s; the agents and Power beats moved with them. The Main_Cut stays 2:48. | [decision] |

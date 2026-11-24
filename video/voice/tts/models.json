@@ -1,0 +1,14 @@
+{
+  "kokoro": {
+    "repo": "hexgrad/Kokoro-82M",
+    "revision": "f3ff3571791e39611d31c381e3a41a3af07b4987",
+    "licence": "Apache-2.0",
+    "files": ["config.json", "kokoro-v1_0.pth"],
+    "voices": "voices/{voice}.pt"
+  },
+  "whisper": {
+    "repo": "Systran/faster-whisper-medium.en",
+    "revision": "a29b04bd15381511a9af671baec01072039215e3",
+    "licence": "MIT"
+  }
+}

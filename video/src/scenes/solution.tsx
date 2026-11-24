@@ -1,6 +1,7 @@
 // Scene 2, a working solution (0:21 to 1:26): the Playwright capture of the live site, cut to the
 // narration by SOLUTION_EDIT. Real UI only; nothing is drawn over it.
 import { Audio, Freeze, OffthreadVideo, Sequence, staticFile } from "remotion";
+import { mixOn } from "../data";
 import { SOLUTION_EDIT } from "../edit";
 import type { Segment } from "../edit";
 import { Stock } from "../parts";
@@ -29,7 +30,7 @@ export function SolutionScene({ origin, appVolume = 0.35 }: { readonly origin: n
       {SOLUTION_EDIT.map((segment) => (
         <Sequence key={segment.at} from={Math.round((segment.at - origin) * FPS)} durationInFrames={Math.round((segment.until - segment.at) * FPS)}>
           <Footage segment={segment} />
-          {segment.audio === true ? <Audio src={staticFile(AUDIO)} trimBefore={Math.round(segment.from * FPS)} volume={appVolume} /> : null}
+          {segment.audio === true && mixOn("effects") ? <Audio src={staticFile(AUDIO)} trimBefore={Math.round(segment.from * FPS)} volume={appVolume} /> : null}
         </Sequence>
       ))}
     </Stock>

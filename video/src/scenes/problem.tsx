@@ -2,6 +2,7 @@
 // gallery design, its lift plan from @jacquard/engine, its first cards laid out by
 // @jacquard/export's cardSheetLayout, and the one float the engine reports over the limit.
 import { Audio, Sequence, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { mixOn } from "../data";
 import type { CardData, ProblemData } from "../data";
 import { Stock } from "../parts";
 import { COLOURS, FONTS, FPS } from "../theme";
@@ -62,7 +63,7 @@ function CardChain({ data }: { readonly data: ProblemData }) {
       {cards.map((card, index) => (
         <Sequence key={card.number} from={index * every} durationInFrames={Math.round(1.2 * fps)}>
           {/* 0.3: under line 01 the rest of the mix must stay 18 dB under the voice (8.5). */}
-          <Audio src={staticFile("audio/clack.wav")} volume={0.3} />
+          {mixOn("effects") ? <Audio src={staticFile("audio/clack.wav")} volume={0.3} /> : null}
         </Sequence>
       ))}
     </Stock>
@@ -121,7 +122,7 @@ function RowToCard({ data }: { readonly data: ProblemData }) {
       </div>
       {Array.from({ length: steps }, (_, step) => (
         <Sequence key={step} from={Math.round(0.4 * fps) + step * every} durationInFrames={Math.round(1.2 * fps)}>
-          <Audio src={staticFile("audio/tick.wav")} volume={0.9} />
+          {mixOn("effects") ? <Audio src={staticFile("audio/tick.wav")} volume={0.9} /> : null}
         </Sequence>
       ))}
     </Stock>

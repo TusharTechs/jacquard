@@ -1,0 +1,21 @@
+# Local synthetic narration for the demo video (demo-video Requirement 9): Kokoro-82M for speech,
+# faster-whisper for the transcript check. Exact pins; uv resolves nothing published after
+# 2026-11-10 (14 days before 2026-11-24). Weights come from Hugging Face at pinned revisions
+# (voice/tts/models.json) into a cache outside git. No cloud service, account or key.
+[project]
+name = "jacquard-tts"
+version = "0.0.0"
+requires-python = "==3.12.*"
+dependencies = [
+  "kokoro==0.9.4",
+  "misaki[en]==0.9.4",
+  "torch==2.15.0",
+  "soundfile==0.14.0",
+  "numpy==2.5.4",
+  "faster-whisper==1.2.1",
+  "en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl",
+]
+
+[tool.uv]
+package = false
+exclude-newer = "2026-11-10T00:00:00Z"

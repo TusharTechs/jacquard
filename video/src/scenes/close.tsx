@@ -1,7 +1,7 @@
 // Scene 4, the honest close (2:32 to 2:48): what is not tested, what the motif step is, the links,
 // and "Built with Kiro" in text. No logos.
 import { Enter, Heading, Stock } from "../parts";
-import { LIVE_URL, REPO_URL } from "../script";
+import { LIVE_URL, NARRATION_CREDIT, REPO_URL } from "../script";
 import { COLOURS, FONTS } from "../theme";
 
 export function CloseScene({ compact = false }: { readonly compact?: boolean }) {
@@ -28,6 +28,10 @@ export function CloseScene({ compact = false }: { readonly compact?: boolean }) 
           <div style={{ fontFamily: FONTS.display, fontSize: compact ? 52 : 60, fontWeight: 600, color: COLOURS.brassStrong, marginTop: 50 }}>Built with Kiro</div>
         </Enter>
       </div>
+      {/* The voice is synthetic, and the end card says so for its whole length (demo-video 9.8). */}
+      <Enter delay={12} style={{ position: "absolute", left: compact ? 70 : 160, top: compact ? 1180 : 790 }}>
+        <div style={{ fontFamily: FONTS.mono, fontSize: 26, color: COLOURS.inkMuted }}>{NARRATION_CREDIT}</div>
+      </Enter>
     </Stock>
   );
 }

@@ -1,5 +1,6 @@
-// Voice assembly (demo-video Requirement 8), with synthetic tones as the recorded lines; no speech
-// and no text-to-speech. Properties 4 to 6 and examples for the overrun report and RECORDING.md.
+// Voice assembly (demo-video Requirement 8), with synthetic tones as the line files: the tests need
+// no speech model (the narration itself is Kokoro-82M, Requirement 9). Properties 4 to 6 and
+// examples for the overrun report and RECORDING.md.
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

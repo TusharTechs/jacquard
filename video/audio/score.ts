@@ -7,6 +7,7 @@
 // The effects (card clack, hook tick, shuttle whoosh, reed thud) use the app's own loom patches.
 import * as Tone from "tone";
 import { LOOM_PATCHES } from "../../apps/web/src/lib/loom-sound-patches.ts";
+import { SCENES } from "../src/script.ts";
 
 export interface SectionPlan {
   readonly start: number;
@@ -21,11 +22,15 @@ const BPM = 72;
 const BEAT = 60 / BPM;
 
 /** Sections follow the scene windows in src/script.ts (Problem, Solution, Kiro, Close). */
+const SCENE_AT = (id: string): { start: number; end: number } => {
+  const scene = SCENES.find((item) => item.id === id)!;
+  return { start: scene.start, end: scene.end };
+};
 export const SECTIONS: readonly SectionPlan[] = [
-  { start: 0, end: 21, root: "D2", figure: ["A3", "D4", "F#4", "E4"], density: 0.5 },
-  { start: 21, end: 86, root: "D2", figure: ["D4", "F#4", "A4", "B4", "A4", "F#4", "E4", "F#4"], density: 1 },
-  { start: 86, end: 152, root: "G2", figure: ["B3", "D4", "E4", "G4", "A4", "G4", "E4", "D4"], density: 1 },
-  { start: 152, end: 168, root: "D2", figure: ["A3", "D4", "E4", "F#4", "D4"], density: 0.5 },
+  { ...SCENE_AT("problem"), root: "D2", figure: ["A3", "D4", "F#4", "E4"], density: 0.5 },
+  { ...SCENE_AT("solution"), root: "D2", figure: ["D4", "F#4", "A4", "B4", "A4", "F#4", "E4", "F#4"], density: 1 },
+  { ...SCENE_AT("kiro"), root: "G2", figure: ["B3", "D4", "E4", "G4", "A4", "G4", "E4", "D4"], density: 1 },
+  { ...SCENE_AT("close"), root: "D2", figure: ["A3", "D4", "E4", "F#4", "D4"], density: 0.5 },
 ];
 
 /** Schedules the score on the offline transport. Call inside Tone.Offline. */

@@ -28,6 +28,10 @@ That handlooms still weave from punched cards is stated in published sources; we
 - District Varanasi, Government of Uttar Pradesh, [Banaras Brocades and Sarees](https://varanasi.nic.in/district-produce/banarasi-saree/) (GI product page): the sarees are woven on the conventional Banaras hand loom jacquard.
 - The Times of India, 20 June 2023, [a handwoven Banarasi installation in India's new Parliament building](https://timesofindia.indiatimes.com/life-style/fashion/buzz/32-feet-long-handwoven-installation-by-tilfi-banaras-on-display-at-indias-new-parliament-building/articleshow/101104214.cms), translated onto the loom with Jacquard punch cards.
 
+## Credits
+
+- Demo video narration: a synthetic voice, Kokoro-82M (hexgrad, Apache-2.0 licence), run locally (`video/voice/tts/`). The words are the builder's own script.
+
 ## Licence
 
 MIT, see `LICENSE`.

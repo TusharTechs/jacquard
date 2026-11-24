@@ -50,6 +50,9 @@ media/**/*.mkv
 video/public/
 # Tushar's recorded narration lines (demo-video 8.1); voice/RECORDING.md is committed
 video/voice/lines/*.wav
+video/voice/lines/*.json
+# The synthetic voice's Python venv (demo-video 9.1); pyproject.toml and uv.lock are committed
+video/voice/tts/.venv/
 video/capture/frames/
 video/test-results/
 video/playwright-report/

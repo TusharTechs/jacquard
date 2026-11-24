@@ -1,24 +1,25 @@
 // Compositions (demo-video design, "Remotion"): Main (1920x1080, 30 fps) and Vertical (1080x1920,
 // at most 45 s, parts of Main with its own captions).
-import { AbsoluteFill, Audio, Composition, Sequence, Series, getInputProps, staticFile } from "remotion";
-import { useData } from "./data";
+import { AbsoluteFill, Audio, Composition, Sequence, Series, staticFile } from "remotion";
+import { mixOn, useData } from "./data";
 import { VERTICAL_DURATION, VERTICAL_PARTS } from "./edit";
-import { cuesForParts } from "./cues";
+import { cuesForTimedParts } from "./cues";
 import type { Cue } from "./cues";
 import { waitForFonts } from "./fonts";
 import { dbToGain, musicGainDb } from "./mix";
 import { Stock } from "./parts";
-import { DURATION, SCENES } from "./script";
+import { DURATION, LIVE_URL, NARRATION_CREDIT, SCENES } from "./script";
+import { VOICE_TIMING } from "./voice-timing";
 import { Captions } from "./scenes/captions";
 import { CloseScene } from "./scenes/close";
 import { KiroScene } from "./scenes/kiro";
 import { ProblemScene } from "./scenes/problem";
 import { SolutionScene } from "./scenes/solution";
-import { FPS, MAIN, VERTICAL } from "./theme";
+import { COLOURS, FONTS, FPS, MAIN, VERTICAL } from "./theme";
 
 waitForFonts();
 
-const CUES: readonly Cue[] = cuesForParts(SCENES);
+const CUES: readonly Cue[] = cuesForTimedParts(SCENES, VOICE_TIMING);
 const WINDOWS = SCENES.map((scene) => scene.voice);
 const scene = (id: string) => SCENES.find((item) => item.id === id)!;
 
@@ -43,10 +44,10 @@ function MainContent({ captions = true }: { readonly captions?: boolean }) {
       </Sequence>
       {captions ? <Captions cues={CUES} /> : null}
       {/* The score, ducked under every narration window (Property 3). */}
-      <Audio src={staticFile("audio/score.wav")} volume={(frame) => dbToGain(musicGainDb(frame / FPS, WINDOWS))} />
+      {mixOn("music") ? <Audio src={staticFile("audio/score.wav")} volume={(frame) => dbToGain(musicGainDb(frame / FPS, WINDOWS))} /> : null}
       {/* Tushar's recording, once it exists (demo-video 2.7, 8.3); until then the voice is silent.
           `--props='{"voice":false}'` mutes it for the loudness check's render (8.5). */}
-      {data.assets.voice && getInputProps()["voice"] !== false ? <Audio src={staticFile("audio/voice.wav")} /> : null}
+      {data.assets.voice && mixOn("voice") ? <Audio src={staticFile("audio/voice.wav")} /> : null}
     </AbsoluteFill>
   );
 }
@@ -88,7 +89,15 @@ function VerticalContent() {
       <div style={{ position: "absolute", left: 70, right: 70, top: 270, fontFamily: '"Instrument Sans Variable", sans-serif', fontSize: 40, lineHeight: 1.3 }}>
         Punch cards for handlooms, built with Kiro
       </div>
-      <Captions cues={VERTICAL_CUES} size={50} bottom={330} />
+      {/* The last part is the end card: the live URL and the narration credit, large enough to read. */}
+      <Sequence from={Math.round((VERTICAL_DURATION - (VERTICAL_PARTS[VERTICAL_PARTS.length - 1]!.to - VERTICAL_PARTS[VERTICAL_PARTS.length - 1]!.from)) * FPS)}>
+        <div style={{ position: "absolute", left: 70, right: 70, top: 1190, fontFamily: FONTS.mono }}>
+          <div style={{ fontSize: 40, color: COLOURS.walnut }}>{LIVE_URL.replace("https://", "")}</div>
+          <div style={{ fontSize: 28, color: COLOURS.inkMuted, marginTop: 18 }}>{NARRATION_CREDIT}</div>
+        </div>
+      </Sequence>
+      {/* 42 px keeps a 42-character caption line on one line inside the box at 1080 wide. */}
+      <Captions cues={VERTICAL_CUES} size={42} bottom={330} />
     </Stock>
   );
 }
