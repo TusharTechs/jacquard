@@ -12,6 +12,10 @@ Labels: **[convention]** standard weaving practice; **[sourced]** stated in a pu
 ## Sources
 
 - **[S1]** *Jacquard Machines: Instruction Paper*, Lowell Textile School. American School of Correspondence, Chicago, copyright 1909. Project Gutenberg ebook #50532. Read by the user outside Kiro; quotes relayed by the user. Cite it in code comments as `S1` with the quote.
+- **[S2]** District Varanasi, Government of Uttar Pradesh, "Banaras Brocades and Sarees" (GI-registered product page, quoting *A Compendium of Geographical Indications (GI) II: Handicrafts of India*, p. 1165), https://varanasi.nic.in/district-produce/banarasi-saree/ , fetched by Kiro on 2026-11-24. States that the sarees are decorated with designs in zari, names kalga and bel among the floral and foliate motifs, describes "jali" as a net-like pattern, and says they are woven on the conventional Banaras hand loom jacquard.
+- **[S3]** "32 feet long blueprint, handwoven Banarasi installation on display at India's new Parliament building", *The Times of India*, 20 June 2023, https://timesofindia.indiatimes.com/life-style/fashion/buzz/32-feet-long-handwoven-installation-by-tilfi-banaras-on-display-at-indias-new-parliament-building/articleshow/101104214.cms , fetched by Kiro on 2026-11-24. Reports a handwoven Banarasi textile translated onto the loom with Jacquard punch cards (naksha-pattas).
+- **[S4]** "Buta", *Encyclopaedia Britannica*, https://www.britannica.com/art/buta , fetched by Kiro on 2026-11-24. Describes buta as an ornamental motif of Mughal Indian art, a floral spray with stylised leaves and flowers, used in textiles among other arts.
+- Handlooms still weaving from punched cards: **[sourced, S2, S3]** (a modern handloom in Varanasi with a jacquard, and a 2023 handwoven piece made from Jacquard punch cards). Not checked by us on a working loom.
 
 ## Glossary
 

@@ -21,7 +21,7 @@ const SUBJECT_LABELS: Readonly<Record<BuilderSubject, string>> = {
   lattice: "lattice",
 };
 
-/** "single butta" is the builder's name for one motif in the repeat [to verify]. */
+/** "single butta": buta is a motif name [sourced, S4]; using it for one motif in the repeat [to verify]. */
 const LAYOUT_LABELS: Readonly<Record<BuilderLayout, string>> = {
   single: "single butta",
   border: "border",

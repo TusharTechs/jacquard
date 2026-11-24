@@ -4,6 +4,7 @@ import { SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "../ui/button";
 
+// "Handlooms still use them": [sourced, S2 and S3 in .kiro/steering/weaving-domain.md].
 export const FRAMING_LINE =
   "Punch cards are dead as a computing medium. Handlooms still use them, and JACQUARD helps designers and card punchers make them.";
 

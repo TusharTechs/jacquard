@@ -166,8 +166,10 @@ export const BUILDER_COLOURS: readonly BuilderColour[] = [
 
 /**
  * Other names for colours. These and the other word tables below are words to match in a
- * description, collected without a source; their textile meanings (for example zari, madder) have
- * not been checked with weavers [to verify].
+ * description. Where a textile word has a published source it is cited (S2 to S4 in
+ * .kiro/steering/weaving-domain.md); the rest have not been checked [to verify].
+ * zari: Banaras sarees are "decorated with intricate designs using zari" [sourced, S2]; matching
+ * it to the gold yarn colour is our choice [decision]. madder: [to verify].
  */
 const COLOUR_ALIASES: Readonly<Record<string, string>> = {
   ivory: "cream",
@@ -220,7 +222,12 @@ const SUBJECT_COLOURS: Readonly<Record<BuilderSubject, readonly string[]>> = {
   lattice: ["green", "maroon", "gold"],
 };
 
-/** Subject words, with English, Hindi and textile names matched as written [to verify]. */
+/**
+ * Subject words, with English, Hindi and textile names matched as written.
+ * kalga: a Banaras floral and foliate motif name [sourced, S2]; reading it as paisley [to verify].
+ * jali: "a net-like pattern" [sourced, S2], read as lattice. jaal: [to verify]. Other Hindi names
+ * (kamal, mor, hathi, phool, kalka, ambi, keri): [to verify].
+ */
 const SUBJECT_WORDS: Readonly<Record<string, BuilderSubject>> = {
   lotus: "lotus",
   kamal: "lotus",
@@ -329,7 +336,10 @@ const SIZE_WORDS: Readonly<Record<string, BuilderSize>> = {
   huge: "large",
 };
 
-/** Layout words; "butta" and "buta" are matched as a single motif [to verify]. */
+/**
+ * Layout words. buta: an ornamental motif, a floral spray [sourced, S4]; reading "buta" and the
+ * spelling "butta" as one motif in the repeat is our choice [to verify].
+ */
 const LAYOUT_WORDS: Readonly<Record<string, BuilderLayout>> = {
   single: "single",
   butta: "single",

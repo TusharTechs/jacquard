@@ -8,6 +8,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { parseStep } from "./lib/route";
 import { useReducedMotion } from "./lib/reduced-motion";
 
+// "Handlooms still use it": [sourced, S2 and S3 in .kiro/steering/weaving-domain.md].
 export const OPENING_LINE = "In 1804, a loom read punch cards. Computers borrowed the idea. Handlooms still use it.";
 export const OPENING_KEY = "jacquard.openingSeen";
 /** Total time on screen, ms (Decision log: line in by 0.4 s, held to 2.8 s, lights up 3.0 to 3.4 s, gone at 3.6 s). */

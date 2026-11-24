@@ -1,6 +1,6 @@
 # loom: a Kiro Power for Jacquard punch cards
 
-Punch cards are dead as a computing medium, but handlooms still weave from them. This Power helps a designer turn a pattern into a lift plan and a punch-card set from inside Kiro.
+Punch cards are dead as a computing medium, but handlooms still weave from them (sources in the repository README). This Power helps a designer turn a pattern into a lift plan and a punch-card set from inside Kiro.
 
 The card format is a configurable loom profile and has not been tested on a working loom. The Power assists the designer and the card puncher; it does not replace them.
 

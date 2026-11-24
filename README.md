@@ -1,6 +1,6 @@
 # JACQUARD
 
-Punch cards are dead as a computing medium. Handlooms still use them, and JACQUARD helps designers and card punchers make them: describe or sketch a motif, edit it on point paper, check the floats, watch a stylised 3D loom weave it, and print the punch-card set.
+Punch cards are dead as a computing medium. Handlooms still use them ([sources](#sources)), and JACQUARD helps designers and card punchers make them: describe or sketch a motif, edit it on point paper, check the floats, watch a stylised 3D loom weave it, and print the punch-card set.
 
 **Live site:** https://main.d28e9v65r7sow0.amplifyapp.com
 
@@ -20,6 +20,13 @@ The model path is built but off: `backend/` proxies motif requests to Amazon Bed
 
 - `pnpm install`, `pnpm typecheck`, `pnpm test`
 - `scripts/deploy-web.sh`: build, test and deploy the static site to AWS Amplify Hosting (us-west-2), with the security and cache headers in `scripts/amplify-custom-headers.yml`.
+
+## Sources
+
+That handlooms still weave from punched cards is stated in published sources; we have not checked it on a working loom:
+
+- District Varanasi, Government of Uttar Pradesh, [Banaras Brocades and Sarees](https://varanasi.nic.in/district-produce/banarasi-saree/) (GI product page): the sarees are woven on the conventional Banaras hand loom jacquard.
+- The Times of India, 20 June 2023, [a handwoven Banarasi installation in India's new Parliament building](https://timesofindia.indiatimes.com/life-style/fashion/buzz/32-feet-long-handwoven-installation-by-tilfi-banaras-on-display-at-indias-new-parliament-building/articleshow/101104214.cms), translated onto the loom with Jacquard punch cards.
 
 ## Licence
 
