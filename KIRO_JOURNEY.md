@@ -19,6 +19,7 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 ---
 
 ## Status for Tushar
+Demo video, 2026-11-24: **approved and tagged `phase-video`** (a617fd5). The voice is af_heart. Main_Cut 168.9 s, Vertical_Cut 44.9 s, both in `video/out/` (local, gitignored).
 Demo video, final review applied, 2026-11-24 (commit d7bcdcb): **not tagged `phase-video`, waiting for you.**
 - Narration: 157 wpm on average (it was 175), 138 s of speech in the 169 s cut, 0.33 to 0.36 s between sentences. Voice: af_heart. Nine short lines still fill only 74 to 83 % of their windows at the 0.8 floor; am_michael would fill them better, at a lower grade.
 - Files: `video/out/jacquard-demo.mp4` (168.9 s) and `video/out/jacquard-demo-vertical.mp4` (44.9 s, rebuilt for a phone).
@@ -2089,6 +2090,15 @@ No property test failed in this session: rewritten Properties 7 and 9 passed on 
 - What failed or surprised: nothing new since the entry above. No property test failed in this session.
 - Spec versus vibe note: none for this entry.
 - Evidence: commits d7bcdcb and 4b798af on `main`.
+### 2026-11-24 — demo-video approved and tagged phase-video
+- Surface: Kiro IDE, autopilot, closing the phase after Tushar approved the final review.
+- Goal: record the voice decision and tag the approved commit.
+- Kiro features used: spec `demo-video` (tag at the end of the phase); steering `autopilot.md` (tag and push at the end of a phase), `journey.md`.
+- Model / credits (start → end):
+- What worked: Tushar kept af_heart. It has Kokoro's top quality grade (A), and am_michael's is C+. Short lines that finish early read as a natural pause. Tag `phase-video` is on a617fd5, the approved `main`, with no file changed first, and it is pushed to origin. Final cuts: Main_Cut 168.9 s (1920x1080, −16.2 LUFS), Vertical_Cut 44.9 s (1080x1920, −16.3 LUFS). Narration 157 wpm on average, captions within 0.033 s of the voice. All 727 tests passed at the tagged commit.
+- What failed or surprised: nothing in this step.
+- Spec versus vibe note: none for this entry.
+- Evidence: tag `phase-video` → a617fd5; the final review entry above (commit d7bcdcb, journal 4b798af).
 ### Template
 
 ```
