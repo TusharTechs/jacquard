@@ -1,3 +1,4 @@
-# Lighthouse 13.6.0 on the Live_URL after deployment job 5 (2026-11-24)
-mobile: performance 98, accessibility 100, best practices 100
+# Lighthouse 13.6.0 on the Live_URL after deployment job 6 (2026-11-24)
+mobile: performance 99, accessibility 100, best practices 100
 desktop: performance 100, accessibility 100, best practices 100
+(after job 5: mobile 98/100/100, desktop 100/100/100)

@@ -1,4 +1,4 @@
-# curl -sI on the Live_URL after deployment job 4 (2026-11-24T07:50Z)
+# curl -sI on the Live_URL after deployment job 6 (2026-11-24T08:40Z)
 
 ## /
 HTTP/2 200 
@@ -18,7 +18,7 @@ strict-transport-security: max-age=31536000; includeSubDomains
 x-content-type-options: nosniff
 referrer-policy: strict-origin-when-cross-origin
 
-## /assets/index-BG95pvzp.js
+## /assets/index-I4UsMKrL.js
 HTTP/2 200 
 permissions-policy: camera=(), microphone=(), geolocation=()
 cache-control: public, max-age=31536000, immutable

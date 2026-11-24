@@ -164,7 +164,11 @@ export const BUILDER_COLOURS: readonly BuilderColour[] = [
   { name: "brown", hex: "#6b4226" },
 ];
 
-/** Other names for colours. */
+/**
+ * Other names for colours. These and the other word tables below are words to match in a
+ * description, collected without a source; their textile meanings (for example zari, madder) have
+ * not been checked with weavers [to verify].
+ */
 const COLOUR_ALIASES: Readonly<Record<string, string>> = {
   ivory: "cream",
   natural: "cream",
@@ -216,6 +220,7 @@ const SUBJECT_COLOURS: Readonly<Record<BuilderSubject, readonly string[]>> = {
   lattice: ["green", "maroon", "gold"],
 };
 
+/** Subject words, with English, Hindi and textile names matched as written [to verify]. */
 const SUBJECT_WORDS: Readonly<Record<string, BuilderSubject>> = {
   lotus: "lotus",
   kamal: "lotus",
@@ -324,6 +329,7 @@ const SIZE_WORDS: Readonly<Record<string, BuilderSize>> = {
   huge: "large",
 };
 
+/** Layout words; "butta" and "buta" are matched as a single motif [to verify]. */
 const LAYOUT_WORDS: Readonly<Record<string, BuilderLayout>> = {
   single: "single",
   butta: "single",

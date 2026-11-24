@@ -127,9 +127,11 @@ describe("saving the design (5.1, 5.5, 5.7)", () => {
     expect(within(section("Motif")).getByRole("list", { name: "Motif palette" }).querySelectorAll("li")).toHaveLength(3);
     expect(setupSymmetry()).toBe("mirrorBoth");
     expect((screen.getByRole("button", { name: "Undo" }) as HTMLButtonElement).disabled).toBe(true);
+    expect(textOf(section("Motif"))).toContain("Design restored from this browser.");
 
     act(() => (screen.getAllByRole("button", { name: "Start from a blank grid" })[0] as HTMLButtonElement).click());
     expect(window.localStorage.getItem(SAVED_DESIGN_KEY)).toBeNull();
+    expect(textOf(section("Motif"))).not.toContain("Design restored from this browser.");
   });
 
   it("is off unless asked for, so tests share no state (5.7)", async () => {

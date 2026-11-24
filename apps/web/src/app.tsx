@@ -155,6 +155,8 @@ export function App({ deferHiddenSteps = false, persist = false }: AppProps = {}
   const [weaves, setWeaves] = useState<WeaveAssignment>(() => (saved !== null ? saved.weaves : defaultWeaves(WEAVE_SLOTS)));
   const [palette, setPalette] = useState<string[] | null>(() => (saved?.palette == null ? null : [...saved.palette]));
   const [started, setStarted] = useState(saved !== null);
+  // True while the grid is a design restored from this browser and not yet replaced (5.1).
+  const [restored, setRestored] = useState(saved !== null);
   const [cellSize, setCellSizeRaw] = useState(START_CELL);
   const [fix, setFix] = useState<FixState>({ status: "none" });
   // The Step in the URL, or the saved Step when the URL names none (motif-builder 5.1).
@@ -501,6 +503,7 @@ export function App({ deferHiddenSteps = false, persist = false }: AppProps = {}
     setWeaves(opened.weaves);
     setGalleryOpen(opened.galleryOpen);
     setStarted(true);
+    setRestored(false);
     setLayer("violations");
     setRevealKey((value) => value + 1);
     requestAnimationFrame(() => viewportRef.current?.scrollIntoView?.({ block: "nearest" }));
@@ -523,8 +526,11 @@ export function App({ deferHiddenSteps = false, persist = false }: AppProps = {}
   arriveRef.current = arrive;
 
   const startBlank = (): void => {
-    // Start from a blank grid also forgets the saved design (motif-builder 5.5).
+    // Start from a blank grid also forgets the saved design (motif-builder 5.5), and the motif
+    // panel's label no longer describes the grid.
     if (persist) clearSavedDesign(browserStorage());
+    setRestored(false);
+    motif.reset();
     setStarted(true);
     arrive(setup.repeat.ends, setup.profile, setup.repeatAcross);
     if (!(size.ends === setup.repeat.ends && size.picks === setup.repeat.picks && allZero(design))) {
@@ -538,10 +544,19 @@ export function App({ deferHiddenSteps = false, persist = false }: AppProps = {}
   // ---- Saving (motif-builder 5.1, 5.5): 400 ms after the last change and when the page is hidden.
   // An all-blank grid is not saved: there is nothing to bring back.
   const saveNow = useRef<() => void>(() => undefined);
+  // Said once per visit when the browser will not keep the design.
+  const saveWarned = useRef(false);
   saveNow.current = () => {
     const storage = browserStorage();
-    if (allZero(design)) clearSavedDesign(storage);
-    else saveDesign(storage, { design, setup, palette, weaves, yarns: yarnChoice, step });
+    if (allZero(design)) {
+      clearSavedDesign(storage);
+      return;
+    }
+    const outcome = saveDesign(storage, { design, setup, palette, weaves, yarns: yarnChoice, step });
+    if (outcome !== "saved" && !saveWarned.current) {
+      saveWarned.current = true;
+      say("This design is not saved in this browser (storage is full or blocked). Export a WIF file to keep it.");
+    }
   };
   useEffect(() => {
     if (!persist) return;
@@ -572,7 +587,10 @@ export function App({ deferHiddenSteps = false, persist = false }: AppProps = {}
         return {
           kind: "invalidMotif",
           code: result.error.code,
-          message: "The suggested motif could not be turned into a design. Try again, or change the description. Your design is unchanged and you can keep editing it by hand.",
+          message:
+            response.source === "builder"
+              ? "The motif builder's drawing does not fit this loom setup. Change a chip, the description or the repeat. Your design is unchanged and you can keep editing it by hand."
+              : "The suggested motif could not be turned into a design. Try again, or change the description. Your design is unchanged and you can keep editing it by hand.",
         };
       }
       dispatchEditor({ type: "replace", design: result.value.design });
@@ -592,6 +610,7 @@ export function App({ deferHiddenSteps = false, persist = false }: AppProps = {}
       setGalleryOpen(null);
       setPalette(result.value.palette);
       setStarted(true);
+      setRestored(false);
       // Bring the new design into view, as "Start from a blank grid" does (on a phone the point
       // paper sits below the setup and motif panels). Focus stays where it is.
       requestAnimationFrame(() => viewportRef.current?.scrollIntoView?.({ block: "nearest" }));
@@ -834,7 +853,7 @@ export function App({ deferHiddenSteps = false, persist = false }: AppProps = {}
           <strong>You are offline.</strong>
           <span>
             {localMotif
-              ? "The editor, the float check and the stand-in motifs keep working."
+              ? "The editor, the float check and the motif builder keep working."
               : "The editor and the float check keep working. Generating a motif needs the network."}
           </span>
         </div>
@@ -855,6 +874,7 @@ export function App({ deferHiddenSteps = false, persist = false }: AppProps = {}
             onStartBlank={startBlank}
             onOpenGallery={focusGallery}
             focusRequest={motifFocus}
+            restored={restored}
           />
             </>
           ) : null}

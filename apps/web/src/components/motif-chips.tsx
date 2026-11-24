@@ -4,7 +4,7 @@
 // (1.7); the panel clears overrides when the text changes.
 import type { BuilderLayout, BuilderSize, BuilderSubject, MotifDescription, PlanOverrides, Symmetry } from "@jacquard/motif";
 import { BUILDER_COLOURS, BUILDER_LAYOUTS, BUILDER_SIZES, BUILDER_SUBJECTS, COUNT_RANGES, FIGURE_SUBJECTS, picksSymmetric } from "@jacquard/motif";
-import { Fragment } from "react";
+import { Hint } from "./ui/hint";
 
 const SUBJECT_LABELS: Readonly<Record<BuilderSubject, string>> = {
   lotus: "lotus",
@@ -21,6 +21,7 @@ const SUBJECT_LABELS: Readonly<Record<BuilderSubject, string>> = {
   lattice: "lattice",
 };
 
+/** "single butta" is the builder's name for one motif in the repeat [to verify]. */
 const LAYOUT_LABELS: Readonly<Record<BuilderLayout, string>> = {
   single: "single butta",
   border: "border",
@@ -118,7 +119,7 @@ export function MotifChips({ description, overrides, onChange, maxColours, disab
     },
     {
       key: "colours",
-      label: "Motif colours",
+      label: "Colour count, with the ground",
       value: String(plan.colours.length),
       options: colourCounts.map((count) => ({ value: String(count), text: `${count} colours` })),
       set: (value) => ({ ...overrides, colourCount: Number(value) }),
@@ -153,9 +154,13 @@ export function MotifChips({ description, overrides, onChange, maxColours, disab
   return (
     <div className="motif-chips">
       <div role="group" aria-label="What the motif builder understood" className="chip-row">
-        <span className="chip-row-label small">Understood:</span>
+        <span className="chip-row-label small">
+          Understood:{" "}
+          <Hint topic="the chips">Each part is a menu: change it to steer the motif. Typing in the box starts again from your words.</Hint>
+        </span>
         {chips.map((chip, index) => (
-          <Fragment key={chip.key}>
+          // A separator stays on the line of the chip it comes before.
+          <span key={chip.key} className="chip-item">
             {index > 0 ? (
               <span className="chip-separator" aria-hidden="true">
                 ·
@@ -175,10 +180,10 @@ export function MotifChips({ description, overrides, onChange, maxColours, disab
                 </option>
               ))}
             </select>
-          </Fragment>
+          </span>
         ))}
       </div>
-      <div className="small muted chip-notes" aria-live="polite">
+      <div className="small muted chip-notes">
         {description.fellBack ? <p>No subject word was found, so this is a rosette. Choose a subject above, or name one.</p> : null}
         <p>
           {description.understood.length > 0 ? `Words used: ${description.understood.join(", ")}.` : "No words used yet."}

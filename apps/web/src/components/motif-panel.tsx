@@ -12,7 +12,7 @@ import type { MotifRequestControls } from "../lib/use-motif-request";
 import { useMotifBuilder } from "../lib/use-motif-builder";
 import type { SetupState } from "../state/setup-state";
 import { setupLimits } from "../state/setup-state";
-import { MotifChips } from "./motif-chips";
+import { MotifChips, chipSummary } from "./motif-chips";
 import { Button } from "./ui/button";
 import { Field } from "./ui/field";
 import { Panel } from "./ui/panel";
@@ -80,6 +80,8 @@ export interface MotifPanelProps {
    * in-browser stand-in (deploy-static 1.4, motif-builder 3.1).
    */
   readonly localStandIn?: boolean;
+  /** True while the grid is a design restored from this browser (motif-builder 5.1). */
+  readonly restored?: boolean;
   /** Set by the point paper's empty state: open the describe or upload tab and focus it. */
   readonly focusRequest?: { readonly kind: "text" | "sketch"; readonly id: number } | null;
 }
@@ -87,12 +89,15 @@ export interface MotifPanelProps {
 /** Failures where sending the same thing again will not help: the wording says "Generate again". */
 const GENERATE_AGAIN: ReadonlySet<MotifFailureKind> = new Set<MotifFailureKind>(["invalidMotif", "request"]);
 
-export function MotifPanel({ setup, online, request, paletteColours, paletteFromGallery = false, onStartBlank, onOpenGallery, focusRequest = null, localStandIn = false }: MotifPanelProps) {
+export function MotifPanel({ setup, online, request, paletteColours, paletteFromGallery = false, onStartBlank, onOpenGallery, focusRequest = null, localStandIn = false, restored = false }: MotifPanelProps) {
   const [tab, setTab] = useState<"text" | "sketch">("text");
   const [prompt, setPromptRaw] = useState("");
   // Chip edits on top of the text; typing clears them (motif-builder 1.7).
   const [overrides, setOverrides] = useState<PlanOverrides>({});
   const [builderError, setBuilderError] = useState<string | null>(null);
+  // True while Generate waits for the builder chunk (a first visit on a slow network).
+  const [building, setBuilding] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
   const setPrompt = (text: string): void => {
     setPromptRaw(text);
     setOverrides({});
@@ -127,6 +132,15 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
     () => (builder === null || prompt.trim() === "" ? null : builder.describe(prompt, builderOptions)),
     [builder, prompt, builderOptions],
   );
+  // One short announcement after typing pauses, instead of one per keystroke.
+  useEffect(() => {
+    if (description === null) return;
+    const timer = setTimeout(
+      () => setAnnouncement(`${description.fellBack ? "No subject word found, so a rosette. " : ""}Understood: ${chipSummary(description)}.`),
+      800,
+    );
+    return () => clearTimeout(timer);
+  }, [description]);
   const promptLength = codePoints(prompt);
   const promptTooLong = promptLength > PROMPT_LIMIT;
   const loading = state.status === "loading";
@@ -166,7 +180,13 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
   /** The motif builder: words to a motif, in the browser (motif-builder 3.1, 3.5). */
   const buildLocally = async (text: string): Promise<void> => {
     setBuilderError(null);
-    const module = builder ?? (await loadBuilder());
+    if (building) return;
+    let module = builder;
+    if (module === null) {
+      setBuilding(true);
+      module = await loadBuilder();
+      setBuilding(false);
+    }
     if (module === null) {
       setBuilderError("The motif builder did not load. Check your connection and try again; you can keep editing the grid by hand.");
       return;
@@ -236,7 +256,8 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
   const paletteTitle = paletteFromGallery ? "Palette of the gallery example" : "Motif palette";
 
   let status: PanelStatus = "ready";
-  if (state.status === "idle") status = "empty";
+  // A restored design, or a description being typed on the static build, is past the empty state.
+  if (state.status === "idle" && !restored && !(localStandIn && prompt.trim() !== "")) status = "empty";
   else if (state.status === "loading") status = "loading";
   else if (state.status === "error") status = "error";
 
@@ -246,7 +267,7 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
       hint="For example: a lotus with four petals on a plain ground."
       error={promptTooLong ? `Shorten the description to ${PROMPT_LIMIT} characters or fewer.` : undefined}
       aside={
-        <span className="mono" aria-live="polite">
+        <span className="mono" aria-live={promptLength >= PROMPT_LIMIT - 50 ? "polite" : "off"}>
           {promptLength}/{PROMPT_LIMIT}
         </span>
       }
@@ -272,7 +293,27 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
     <div className="stack">
       {describeTab}
       {localStandIn && description !== null ? (
-        <MotifChips description={description} overrides={overrides} onChange={setOverrides} maxColours={maxColours} disabled={loading} />
+        <MotifChips
+          description={description}
+          overrides={overrides}
+          onChange={(next) => {
+            setOverrides(next);
+            setBuilderError(null);
+          }}
+          maxColours={maxColours}
+          disabled={loading}
+        />
+      ) : null}
+      {localStandIn && building ? (
+        <div role="status">
+          <p className="small">Loading the motif builder…</p>
+          <div className="progress" aria-hidden="true" />
+        </div>
+      ) : null}
+      {localStandIn ? (
+        <p className="sr-only" aria-live="polite">
+          {announcement}
+        </p>
       ) : null}
       {builderError === null ? null : (
         <p className="field-error" role="alert">
@@ -381,6 +422,14 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
       }
     >
       <div className="stack">
+        {restored && state.status === "idle" ? (
+          <div className="note" role="status">
+            <p>Design restored from this browser.</p>
+            <Button small variant="quiet" onClick={onStartBlank}>
+              Start from a blank grid
+            </Button>
+          </div>
+        ) : null}
         {state.status === "cancelled" ? (
           <div className="note" role="status">
             <p>{state.message}</p>
@@ -432,8 +481,8 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
           ]}
         />
         <div className="state-actions">
-          <Button variant="primary" onClick={generate} disabled={loading || blockedReason !== null} aria-describedby={hintId}>
-            {loading ? "Generating…" : "Generate motif"}
+          <Button variant="primary" onClick={generate} disabled={loading || building || blockedReason !== null} aria-describedby={hintId}>
+            {loading || building ? "Generating…" : "Generate motif"}
           </Button>
         </div>
         <p className="small muted">
@@ -442,7 +491,10 @@ export function MotifPanel({ setup, online, request, paletteColours, paletteFrom
           ) : (
             <>
               <span id={hintId}>
-                <span className="mono">{setup.colourCount}</span> colours · <span className="mono">{setup.repeat.ends}×{setup.repeat.picks}</span>
+                <span className="mono">{localStandIn && tab === "text" && description !== null ? description.plan.colours.length : setup.colourCount}</span> colours ·{" "}
+                <span className="mono">
+                  {setup.repeat.ends}×{setup.repeat.picks}
+                </span>
               </span>{" "}
               <Hint topic="generating a motif">
                 {localStandIn
