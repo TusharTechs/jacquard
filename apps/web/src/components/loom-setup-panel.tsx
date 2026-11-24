@@ -8,6 +8,7 @@ import type { Symmetry } from "@jacquard/motif";
 import { PROFILE_NAMES, SYMMETRIES, resolveProfile, setupLimits } from "../state/setup-state";
 import type { ProfileName, SetupAction, SetupState } from "../state/setup-state";
 import { NumberSetting } from "./number-setting";
+import { Term } from "./term";
 import { Field } from "./ui/field";
 import { Hint } from "./ui/hint";
 import { Panel } from "./ui/panel";
@@ -96,6 +97,7 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = tr
             value={setup.repeat.ends}
             min={limits.ends.min}
             max={limits.ends.max}
+            hint={<><Term name="end">Ends</Term> across. From <span className="mono">{limits.ends.min}</span> to <span className="mono">{limits.ends.max}</span>.</>}
             onCommit={(ends) => onChange({ type: "setRepeatEnds", ends })}
           />
           <NumberSetting
@@ -103,6 +105,7 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = tr
             value={setup.repeat.picks}
             min={limits.picks.min}
             max={limits.picks.max}
+            hint={<><Term name="pick">Picks</Term> up. From <span className="mono">{limits.picks.min}</span> to <span className="mono">{limits.picks.max}</span>.</>}
             onCommit={(picks) => onChange({ type: "setRepeatPicks", picks })}
           />
         </div>
@@ -142,7 +145,9 @@ export function LoomSetupPanel({ setup, onChange, repeatAcrossMessage, open = tr
               onChange={(event) => onChange({ type: "setRepeatAcross", repeatAcross: event.target.checked })}
             />
             <label className="field-label switch-label" htmlFor={switchId}>
-              Repeat across all <span className="mono">{profile.hookCount}</span> hooks
+              <span>
+                Repeat across all <span className="mono">{profile.hookCount}</span> hooks
+              </span>
             </label>
             <Hint topic="repeat across">Off: hooks past the repeat width stay down. On: the repeat fills every hook.</Hint>
           </div>

@@ -31,6 +31,8 @@ export interface CardsStepProps {
   /** True while the float check still describes an older design than the one on the grid. */
   readonly checking: boolean;
   readonly onAutoFix: () => void;
+  /** True while the Cards Step is on screen: a card punches its holes only where it is seen. */
+  readonly visible?: boolean;
 }
 
 function plural(count: number, one: string, many: string): string {
@@ -49,11 +51,14 @@ export function CardsStep({
   violationCount,
   checking,
   onAutoFix,
+  visible = true,
 }: CardsStepProps) {
   const built = useMemo(() => (plan === null ? null : buildCards(plan, profile)), [plan, profile]);
   const cards = built !== null && built.ok ? built.value.cards : null;
   const [printing, setPrinting] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  // "Auto-fix and print": print once the fixed plan is the one in use.
+  const printAfterFix = useRef(false);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
   // Like the export panel (simulate-and-export 6.2): never print long floats without asking.
   const gated = violationCount > 0 && planSource !== "fixed";
@@ -74,6 +79,13 @@ export function CardsStep({
     flushSync(() => setPrinting(true));
     window.print();
   }, []);
+  useEffect(() => {
+    if (!printAfterFix.current) return;
+    if (planSource === "fixed" && !checking) {
+      printAfterFix.current = false;
+      printNow();
+    }
+  }, [planSource, checking, printNow]);
   const print = (): void => {
     if (checking) return;
     if (gated) {
@@ -144,7 +156,7 @@ export function CardsStep({
               {plural(violationCount, "float violation", "float violations")} in the lift plan. Print asks first.
             </p>
           ) : null}
-          <CardChain cards={cards} profile={profile} />
+          <CardChain cards={cards} profile={profile} visible={visible} />
         </div>
       ) : null}
       {printing ? (
@@ -166,10 +178,15 @@ export function CardsStep({
               variant="primary"
               onClick={() => {
                 setConfirm(false);
+                printAfterFix.current = true;
                 onAutoFix();
+                // If auto-fix cannot fix the plan, nothing prints; the float check says why.
+                setTimeout(() => {
+                  printAfterFix.current = false;
+                }, 1000);
               }}
             >
-              Run auto-fix
+              Auto-fix and print
             </Button>
             <Button
               onClick={() => {

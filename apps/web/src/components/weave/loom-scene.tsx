@@ -1,6 +1,10 @@
 // The 3D Jacquard loom (studio-experience Requirement 6), a lazy chunk with three, r3f and drei.
-// Stylised, not to scale. Everything that moves is read from the loom model each frame:
-// - brass hooks, one per card position in rows of hooksPerCardRow, rise by hookHeight();
+// Stylised, not to scale, and not a model of a working loom [decision]: the frame, head, square
+// card cylinder, comber board, reed and shuttle are drawn to explain the cards, not to describe a
+// real machine. Everything that moves is read from the loom model each frame:
+// - brass hooks, one per card position in rows of hooksPerCardRow, rise by hookHeight() [decision:
+//   the head mirrors the card layout; card rows run across the head and slots front to back, a
+//   quarter turn from the card on the cylinder; row placement on real cards stays [to verify]];
 // - harness cords and warp ends follow their hooks, so the shed opens exactly where the card lifts;
 // - the card chain shows the engine's cards in lacing order, the current card on the cylinder;
 // - the shuttle crosses in the shuttle Phase, the reed beats in the beat Phase;
@@ -14,7 +18,7 @@ import type { YarnColours } from "@jacquard/export";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import type { MutableRefObject } from "react";
 import * as THREE from "three";
-import { clothTexture, hookHeight, loomFrame } from "../../lib/loom-model";
+import { cardStrip, clothTexture, hookHeight, loomFrame } from "../../lib/loom-model";
 import type { LoomModel } from "../../lib/loom-model";
 
 // ---- Layout (scene units, stylised) ----
@@ -81,7 +85,10 @@ function walnutTexture(): THREE.CanvasTexture {
   return texture;
 }
 
-/** One card face, painted from the engine's cardRows: card stock, lacing holes, number, holes. */
+/**
+ * One card face, painted from the engine's cardRows: card stock, number, holes, and two lacing
+ * holes at each end (schematic [decision]; card dimensions are not in S1).
+ */
 function paintCard(canvas: HTMLCanvasElement, card: Card, profile: LoomProfile, current: boolean): void {
   const rows = cardRows(card, profile);
   const slots = profile.hooksPerCardRow;
@@ -158,7 +165,7 @@ function Frame() {
   }
   return (
     <group>
-      {/* Tall posts carrying the Jacquard head, short posts at the back and front. */}
+      {/* Stylised frame [decision]: tall posts carry the head, short posts at the back and front. */}
       {posts.map((position) => (
         <Wood key={position.join()} position={position} size={[0.16, 4.3, 0.16]} />
       ))}
@@ -174,14 +181,14 @@ function Frame() {
       <Wood position={[0, 4.3, HEDDLE_Z]} size={[4.36, 0.16, 0.2]} />
       <Wood position={[0, WARP_Y - 0.06, BACK_Z]} size={[4.2, 0.14, 0.18]} />
       <Wood position={[0, WARP_Y - 0.08, FRONT_Z]} size={[4.2, 0.16, 0.2]} />
-      {/* The head: top, sides and needle board, open at the front so the hooks show. */}
+      {/* The head [decision, stylised]: top, sides and a bottom board, open at the front so the hooks show. */}
       <Wood position={[0, HEAD.top, (HEAD.back + HEAD.front) / 2]} size={[HEAD.right - HEAD.left + 0.16, 0.08, HEAD.front - HEAD.back]} />
       <Wood position={[0, HEAD.bottom, (HEAD.back + HEAD.front) / 2]} size={[HEAD.right - HEAD.left + 0.16, 0.06, HEAD.front - HEAD.back]} />
       {[HEAD.left - 0.04, HEAD.right + 0.04].map((x) => (
         <Wood key={x} position={[x, (HEAD.top + HEAD.bottom) / 2, (HEAD.back + HEAD.front) / 2]} size={[0.08, HEAD.top - HEAD.bottom, HEAD.front - HEAD.back]} />
       ))}
       <Wood position={[0, (HEAD.top + 4.3) / 2, (HEAD.back + HEAD.front) / 2]} size={[0.1, 4.3 - HEAD.top, 0.1]} />
-      {/* Comber board: spreads the harness cords across the warp. */}
+      {/* A board that spreads the harness cords across the warp, like a comber board [decision, stylised]. */}
       <Wood position={[0, COMBER_Y, HEDDLE_Z]} size={[WARP_WIDTH + 0.3, 0.05, 0.26]} />
     </group>
   );
@@ -322,7 +329,8 @@ function Loom({ model, yarns, timeRef, playing, t, active }: SceneProps) {
       if (mesh.instanceColor !== null) mesh.instanceColor.needsUpdate = true;
     }
 
-    // Harness cords (hook to comber board to heddle) and warp ends (back beam to heddle to fell).
+    // Harness cords (hook to the spreading board to the heddle) and warp ends (back beam to heddle to
+    // fell), drawn so a lifted hook visibly lifts its end [decision, stylised].
     const cords = cordGeometry.getAttribute("position") as THREE.BufferAttribute;
     const cordTint = cordGeometry.getAttribute("color") as THREE.BufferAttribute;
     const warp = warpGeometry.getAttribute("position") as THREE.BufferAttribute;
@@ -372,14 +380,18 @@ function Loom({ model, yarns, timeRef, playing, t, active }: SceneProps) {
       cloth.texture.offset.y = (frame.woven - model.pickCount) / Math.max(1, model.pickCount);
     }
 
-    // Card cylinder: a quarter turn per card. Chain: cards slide one place in the advance Phase.
+    // Card cylinder, drawn square [decision, stylised]: a quarter turn per card. Chain: cards slide
+    // one place in the advance Phase, in lacing order from the engine's nextCard (cardStrip).
     if (cylinder.current !== null) cylinder.current.rotation.z = -(frame.pick + frame.advance) * (Math.PI / 2);
+    // The chain around the current card, in lacing order; a short set shows each card once.
+    const strip = cardStrip(model.pickCount, frame.pick, CARDS_BEFORE, CARDS_AFTER);
+    const lead = strip.indexOf(frame.pick);
     if (painted.current !== frame.pick) {
       painted.current = frame.pick;
       pool.forEach((slot, index) => {
-        const offset = index - CARDS_BEFORE;
-        const card = ((frame.pick + offset) % model.pickCount + model.pickCount) % model.pickCount;
-        const current = offset === 0;
+        const card = strip[index - CARDS_BEFORE + lead];
+        if (card === undefined) return;
+        const current = card === frame.pick;
         if (slot.painted !== card || slot.current !== current) {
           paintCard(slot.canvas, model.cards[card]!, profile, current);
           slot.painted = card;
@@ -391,13 +403,15 @@ function Loom({ model, yarns, timeRef, playing, t, active }: SceneProps) {
     pool.forEach((_, index) => {
       const node = cardMeshes.current[index];
       if (node === null || node === undefined) return;
+      const card = strip[index - CARDS_BEFORE + lead];
+      node.visible = card !== undefined;
+      if (card === undefined) return;
       const place = index - CARDS_BEFORE + (1 - frame.advance);
       const gap = cardHeight + 0.035;
       const fold = Math.abs(place);
       node.position.set(CYLINDER.x + CYLINDER.size / 2 + 0.012 + fold * 0.035, CYLINDER.y - place * gap, CYLINDER.z);
       // Fold about the card's long axis, alternating, like a folded chain; then face the camera side.
       node.rotation.set((Math.round(place) % 2 === 0 ? 1 : -1) * Math.min(0.22, fold * 0.08), Math.PI / 2, 0, "YXZ");
-      node.visible = model.pickCount > 1 || index === CARDS_BEFORE;
     });
   });
 
@@ -541,6 +555,7 @@ export default function LoomScene({ model, yarns, timeRef, playing, t, active, o
           <OrbitControls
             target={[0.25, 2.3, -0.3]}
             enablePan={false}
+            enableZoom={false}
             minDistance={4}
             maxDistance={14}
             minPolarAngle={0.6}

@@ -105,7 +105,7 @@ describe("cards step", () => {
     expect(print).toHaveBeenCalledTimes(1);
     expect(textOf(document.querySelector(".print-sheet")!)).toContain("which has 3 float violations");
     fireEvent.click(screen.getByRole("button", { name: "Print cards" }));
-    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Run auto-fix" }));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Auto-fix and print" }));
     expect(onAutoFix).toHaveBeenCalledTimes(1);
     expect(print).toHaveBeenCalledTimes(1);
   });

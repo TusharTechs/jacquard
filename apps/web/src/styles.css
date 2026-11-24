@@ -1645,9 +1645,16 @@ kbd {
   font-weight: 600;
 }
 
-/* On Check the float check panel is beside the grid, so the toolbar's compact summary would repeat it. */
-.studio-stage[data-step="check"] .toolbar-floats {
-  display: none;
+/* On wide screens Check has the float check beside the grid, so the toolbar's summary would repeat it.
+   On narrow screens the panel is below the grid, so the summary stays. */
+@media (min-width: 1024px) {
+  .studio-stage[data-step="check"] .toolbar-floats {
+    display: none;
+  }
+  /* The setup is always open here, and the top bar chip already shows its summary. */
+  .setup-details > .setup-summary {
+    display: none;
+  }
 }
 
 /* ---------- Weave Step: the 3D loom (studio-experience Requirements 6, 7) ---------- */
@@ -1745,9 +1752,10 @@ kbd {
   color: var(--ink-muted);
 }
 
+/* Card numbers are numbers: monospace (design-language.md, type). */
 .loom-card-number {
   color: var(--ink);
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   font-size: 2rem;
   font-weight: 600;
   line-height: 1.1;
@@ -2059,7 +2067,7 @@ kbd {
 }
 
 .chain-number {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   font-size: 1.5rem;
   font-weight: 600;
 }

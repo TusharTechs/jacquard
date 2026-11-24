@@ -113,6 +113,30 @@ describe("studio shell", () => {
   });
 });
 
+describe("one primary action per Step (3.1, 3.2)", () => {
+  it("Continue is secondary on an empty grid and primary once there is a plan", async () => {
+    render(<App />);
+    const next = (): HTMLButtonElement => screen.getByRole("button", { name: /^Continue to / }) as HTMLButtonElement;
+    expect(next().className).not.toContain("btn-primary");
+    fireEvent.click(await waitFor(() => screen.getByRole("button", { name: "Open example: Temple stripe" })));
+    await waitFor(() => expect(next().className).toContain("btn-primary"));
+  });
+
+  it("Continue is secondary on Design while auto-fix is waiting", async () => {
+    render(<App />);
+    fireEvent.click(await waitFor(() => screen.getByRole("button", { name: "Open example: Peacock butta" })));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Continue to Check" }).className).not.toContain("btn-primary"));
+  });
+
+  it("Continue to Cards hands focus to Print cards", async () => {
+    render(<App />);
+    fireEvent.click(await waitFor(() => screen.getByRole("button", { name: "Open example: Temple stripe" })));
+    openStep("Weave");
+    fireEvent.click(screen.getByRole("button", { name: "Continue to Cards" }));
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("button", { name: "Print cards" })));
+  });
+});
+
 describe("deferred Steps (14.2)", () => {
   it("mounts the current Step first, a visited Step at once, and the rest in idle time", async () => {
     render(<App deferHiddenSteps />);

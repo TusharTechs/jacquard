@@ -1,9 +1,10 @@
 // Feature: studio-experience, Property 2: Cloth growth matches the lift plan pick for pick
 // For the same inputs and any t1 <= t2: woven(t1) <= woven(t2); woven(t) is pick before the end of
 // the beat and pick + 1 after; woven(pickCount) = pickCount. clothTexture(model, woven) holds, for
-// each pick below woven, the RGBA of clothModel's colour for every hook, and alpha 0 for every
-// other pick; on a profile with wovenFaceDown false a texel is the warp colour exactly when
-// plan.lifts[pick][hook].
+// each pick below woven, the RGBA of clothModel's colour of the side facing up on the loom (the
+// face, or the back when wovenFaceDown) for every hook, and alpha 0 for every other pick; and on
+// every profile a texel is the warp colour exactly when plan.lifts[pick][hook], so the cloth shows
+// warp exactly where the hooks the camera sees rise.
 // Validates: Requirements 9.4, 9.5, 6.3
 import * as fc from "fast-check";
 import { clothModel } from "@jacquard/export";
@@ -43,7 +44,7 @@ describe("Feature: studio-experience, Property 2: Cloth growth matches the lift 
               expect(frame.woven).toBe(fraction >= PHASE_ENDS.beat ? frame.pick + 1 : frame.pick);
             }
             expect(loomFrame(model, plan.pickCount).woven).toBe(plan.pickCount);
-            const face = clothModel(plan, profile, yarns, "face");
+            const face = clothModel(plan, profile, yarns, profile.wovenFaceDown ? "back" : "face");
             expect(face.ok).toBe(true);
             if (!face.ok) return;
             const woven = loomFrame(model, sorted[sorted.length - 1]!).woven;
@@ -55,7 +56,7 @@ describe("Feature: studio-experience, Property 2: Cloth growth matches the lift 
                 if (pick < woven) {
                   const cell = face.value[pick]![hook]!;
                   expect([data[offset], data[offset + 1], data[offset + 2], data[offset + 3]]).toEqual([...rgb(cell.colour), 255]);
-                  if (!profile.wovenFaceDown && yarns.warp[0] !== yarns.weft[0]) {
+                  if (yarns.warp[0] !== yarns.weft[0]) {
                     const showsWarp = data[offset] === rgb(yarns.warp[0]!)[0] && data[offset + 1] === rgb(yarns.warp[0]!)[1] && data[offset + 2] === rgb(yarns.warp[0]!)[2];
                     expect(showsWarp).toBe(plan.lifts[pick]![hook]!);
                   }

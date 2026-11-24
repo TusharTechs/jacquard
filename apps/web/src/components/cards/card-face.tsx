@@ -1,5 +1,6 @@
 // One punch card drawn flat (studio-experience 6.4, 7.2, 12.1): card stock with rounded corners,
-// two lacing holes at each end, the card number at the numbered end, and the hole grid from the
+// two lacing holes at each end (schematic [decision]; card dimensions are not in S1), the card
+// number at the numbered end, and the hole grid from the
 // engine's cardRows: punched holes show the background through, unpunched positions are faint
 // rings. The card lies with its long side across: card row r is column r (row 0 nearest the
 // numbered end, [to verify]), slot 0 at the top [sourced, S1].
@@ -71,7 +72,7 @@ export function CardFace({ card, profile, pitch = 8, current = false, className,
       data-punched={punched}
     >
       <rect x={0.5} y={0.5} width={width - 1} height={height - 1} rx={pitch * 0.6} className="card-stock" />
-      {/* Lacing holes: two at each end. */}
+      {/* Lacing holes: two at each end, schematic [decision]. */}
       {[height * 0.28, height * 0.72].map((cy) => (
         <g key={cy}>
           <circle cx={pitch * 0.75} cy={cy} r={lace} className="card-lace" />

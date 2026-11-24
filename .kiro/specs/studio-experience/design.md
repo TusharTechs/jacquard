@@ -85,7 +85,7 @@ The playing clock lives in the scene: `useFrame` advances a ref by `dt × speed 
 - Frame: walnut boxes (uprights, top beam, breast beam, back beam), `meshStandardMaterial` walnut, roughness 0.7.
 - Jacquard head: a walnut box on the top beam; brass hooks as one `InstancedMesh`, one instance per card position, columns across x by card row, depth by slot; spare positions dimmed. Each frame sets instance `y = base + rise × hookHeight` (Property 1).
 - Harness and warp: one `LineSegments` per group; per figuring hook a cord from the hook to the comber board and a warp end from the back beam to the heddle to the fell. Heddle height follows the hook (6.3).
-- Card cylinder and chain: a square prism turning a quarter turn in the advance Phase; a pool of 9 card planes in a loop below it, each with a `CanvasTexture` painted by `paintCard(canvas, card, profile)` from `cardRows`; when the pick changes the textures shift and only the new card is painted (6.4).
+- Card cylinder and chain: a square prism turning a quarter turn in the advance Phase; a pool of 8 card planes (2 read, the current one, 5 to come) taken from `cardStrip`, each with a `CanvasTexture` painted by `paintCard(canvas, card, profile)` from `cardRows`; when the pick changes the textures shift and only the new card is painted (6.4).
 - Shuttle: a wooden boat shape crossing the shed in the shuttle Phase, alternating direction by pick. Reed: a bar that swings in the beat Phase.
 - Cloth: a plane from the fell to the breast beam with a `DataTexture` (`hookCount × pickCount`, RGBA, nearest) filled by `clothTexture(model, woven)`; only rows that change are rewritten (Property 2).
 
@@ -147,7 +147,7 @@ For random designs, weaves and profiles (`holeMeans` `lift` and `noLift`, spare 
 
 ### Property 2: Cloth growth matches the lift plan pick for pick
 
-For the same inputs and any `t1 ≤ t2`: `woven(t1) ≤ woven(t2)`; `woven(t)` is `pick` before the end of the beat and `pick + 1` after; `woven(pickCount) = pickCount`. `clothTexture(model, woven)` holds, for each pick below `woven`, the RGBA of `clothModel`'s colour for every hook, and alpha 0 for every other pick; on a profile with `wovenFaceDown` false a texel is the warp colour exactly when `plan.lifts[pick][hook]`.
+For the same inputs and any `t1 ≤ t2`: `woven(t1) ≤ woven(t2)`; `woven(t)` is `pick` before the end of the beat and `pick + 1` after; `woven(pickCount) = pickCount`. `clothTexture(model, woven)` holds, for each pick below `woven`, the RGBA of `clothModel`'s colour of the side facing up on the loom (face, or back when `wovenFaceDown`) for every hook, and alpha 0 for every other pick; on every profile a texel is the warp colour exactly when `plan.lifts[pick][hook]`.
 **Validates: Requirements 9.4, 9.5, 6.3**
 
 ### Property 3: Loom time maps to card and phase

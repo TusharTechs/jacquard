@@ -651,7 +651,35 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
   };
   const nextStep = STEPS[STEPS.indexOf(step) + 1];
   const stepAnnouncement = stepAnnounced.current ? `${STEP_LABELS[step]} step` : "";
-  const railNext = nextStep === undefined ? null : { label: `Continue to ${STEP_LABELS[nextStep]}`, run: () => goTo(nextStep) };
+  // Continue is the Step's primary action unless the Step has a more pressing one: a start action on
+  // an empty grid, or Auto-fix while violations stand (one primary per Step, 3.1, 3.2).
+  const violationsOpen = check.ok && check.violations.length > 0 && fixed === null;
+  const continuePrimary = !(paperStatus === "empty" || planInUse === null || ((step === "design" || step === "check") && violationsOpen));
+  const railNext =
+    nextStep === undefined
+      ? null
+      : {
+          label: `Continue to ${STEP_LABELS[nextStep]}`,
+          step: nextStep,
+          primary: continuePrimary,
+          // The Continue button leaves on the last Step, so focus goes to the Step's own action.
+          run: () =>
+            goTo(
+              nextStep,
+              nextStep === "cards"
+                ? () => {
+                    window.scrollTo?.({ top: 0 });
+                    requestAnimationFrame(() => {
+                      const target =
+                        document.querySelector<HTMLElement>(".area-cards .panel-actions button") ??
+                        railLinks.current.get("cards") ??
+                        null;
+                      target?.focus();
+                    });
+                  }
+                : undefined,
+            ),
+        };
 
   return (
     <Tooltip.Provider delayDuration={300}>
@@ -916,6 +944,7 @@ export function App({ deferHiddenSteps = false }: AppProps = {}) {
             violationCount={check.ok ? check.violations.length : 0}
             checking={checking}
             onAutoFix={runAutoFix}
+            visible={step === "cards"}
           />
           <ExportPanel
             lead={false}

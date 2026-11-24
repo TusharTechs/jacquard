@@ -65,7 +65,7 @@ export function Dialog({ open, title, onClose, children, closeLabel = "Close", f
             </div>
             <div className="dialog-body">{children}</div>
             <div className="dialog-footer">
-              <Button variant="primary" onClick={onClose}>
+              <Button onClick={onClose}>
                 {closeLabel}
               </Button>
             </div>

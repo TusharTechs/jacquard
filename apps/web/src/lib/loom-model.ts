@@ -24,7 +24,7 @@ export interface LoomModel {
   readonly cards: readonly Card[];
   /** lifted[card][hook]: the figuring hooks that card lifts, read back through decodeCards. */
   readonly lifted: readonly (readonly boolean[])[];
-  /** cloth[pick][hook]: the face of the cloth (export clothModel). */
+  /** cloth[pick][hook]: the side of the cloth facing up on the loom, the side the 3D view shows (export clothModel). */
   readonly cloth: readonly (readonly ClothCell[])[];
 }
 
@@ -44,7 +44,7 @@ export interface LoomFrame {
   readonly shuttle: number;
   /** Reed swing towards the cloth, 0 to 1. */
   readonly reed: number;
-  /** Card chain advance, 0 to 1 (a quarter turn of the cylinder). */
+  /** Card chain advance, 0 to 1 (a quarter turn of the drawn square cylinder; stylised [decision]). */
   readonly advance: number;
 }
 
@@ -55,7 +55,9 @@ export function buildLoomModel(
 ): Result<LoomModel, EngineError | ExportError> {
   const built = buildCards(plan, profile);
   if (!built.ok) return err(built.error);
-  const cloth = clothModel(plan, profile, yarns, "face");
+  // The side facing up on the loom, where a lifted end shows warp: the face unless the profile
+  // weaves face down (`wovenFaceDown`), in which case it is the back.
+  const cloth = clothModel(plan, profile, yarns, profile.wovenFaceDown ? "back" : "face");
   if (!cloth.ok) return err(cloth.error);
   const lifted: boolean[][] = [];
   for (const card of built.value.cards) {

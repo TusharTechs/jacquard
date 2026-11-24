@@ -21,7 +21,7 @@ export interface StepRailProps {
   /** Called when the pointer rests on a Step, so its code can load early. */
   readonly onPrefetch?: (step: Step) => void;
   /** The current Step's primary action, or null on the last Step. */
-  readonly next: { readonly label: string; readonly run: () => void } | null;
+  readonly next: { readonly label: string; readonly run: () => void; readonly step: Step; readonly primary: boolean } | null;
   /** Lets the app move focus to a rail link when the Step it was in is hidden. */
   readonly linkRef?: (step: Step, node: HTMLAnchorElement | null) => void;
 }
@@ -68,7 +68,13 @@ export function StepRail({ step, status, statusText, onSelect, onPrefetch, next,
         </ol>
       </nav>
       {next === null ? null : (
-        <Button variant="primary" className="rail-next" onClick={next.run}>
+        <Button
+          variant={next.primary ? "primary" : "secondary"}
+          className="rail-next"
+          onClick={next.run}
+          onPointerEnter={() => onPrefetch?.(next.step)}
+          onFocus={() => onPrefetch?.(next.step)}
+        >
           {next.label}
           <ArrowRight aria-hidden="true" size={18} />
         </Button>

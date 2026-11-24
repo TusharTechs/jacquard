@@ -19,6 +19,23 @@ Keep a running tally at the bottom. Numbers the judges responded to last year: c
 ---
 
 ## Status for Tushar
+Updated 2026-11-24 at the end of the `studio-experience` phase (tag `phase-polish`). Earlier status (Phases B to H) follows below this update and still applies.
+
+**What was built in this phase** (spec `.kiro/specs/studio-experience/`, 16 requirements, 7 properties, all tasks checked)
+- A Studio with a step rail Design → Check → Weave → Cards (one primary action per Step, "Continue" in the rail, Step in the URL), Radix dialog, tooltip, menu and slider, sonner toasts, lucide icons, Tailwind v4 tokens, Fraunces / Instrument Sans / IBM Plex Mono via Fontsource. Help paragraphs became labels plus Hints.
+- The showpiece: a lazy 3D Jacquard loom (three, @react-three/fiber, @react-three/drei) in the Weave Step. It lifts exactly the hooks the current card lifts (Property 1) and the cloth grows pick by pick from the lift plan (Property 2). Play, pause, scrub, step, 4 speeds, a flat current card and a card strip, and procedural tone sound that is off until switched on.
+- A one-screen Opening (3.6 s, once, skippable) with your line, the purposeful Moments (motif reveal, bounded violation pulse, auto-fix placing its flips, card punching), and a Cards Step with a laced card chain and a gated print stylesheet.
+- Lighthouse on the production build: performance mobile 92 / desktop 100 (`#/weave` mobile 95); accessibility 100 and best practices 100 on Design, Weave and Cards. Screenshots: `media/polish/` (13 files, 3.6 MB, committed).
+- No file under `packages/` or `backend/` changed. Tests: 623 passing, `pnpm typecheck` and `pnpm test` both `EXIT_CODE=0`.
+
+**Please look at**
+1. **Your second brief replaced the first mid-phase.** Wave 0 had already added gsap, lenis, driver.js, cmdk, a second theme and a story stub; all were removed (first row of the spec's Decision log).
+2. **Framing:** the Opening shows your line ("In 1804, punch cards were the first programs…"), which does not say "dead as a computing medium" as `product.md` asks for the first line. The Studio's top bar, the first text that stays, still opens with it. Say if you want the Opening line changed.
+3. **Steering changed:** `.kiro/steering/design-language.md` now allows Moments up to 1.5 s, a display serif, one theme and the Opening as the only Kiroween nod. Review that it says what you want.
+4. **Not built:** a command palette (I judged it adds a second way to do everything). Left as they are, with reasons in the Decision log: a shorter gallery toast, focus after opening an example on a phone, empty-state actions in the float check and simulator, raw shadow colours and canvas colours not read from tokens, the teal focus ring next to brass, and the "Weave per region" heading (existing tests name it).
+5. **Still open from earlier:** deploy on AWS (needs your approval), Bedrock access, making the repository public, the WIF check in another weaving program, the hand-woven swatch. The 3D loom is stylised and not tested against a working loom, and the app says so.
+
+### Earlier status (end of the autopilot run, 2026-11-16)
 
 Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md`). Phases B, C, D, F, G and H are done as far as the agent can take them. Tags `phase-B`, `phase-C`, `phase-D`, `phase-F`, `phase-G` and `phase-H` are pushed. E was skipped as you asked. The last run had every package passing: 574 tests, `pnpm typecheck` and `pnpm test` both `EXIT_CODE=0`.
 
@@ -1585,6 +1602,37 @@ Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md
   - The `lighthouse_audit` tool also scores an "Agentic Browsing" category (llms.txt, an ARD manifest). I left it alone: it is not one of the three categories the brief names.
 - Spec versus vibe note: spec. The 90 bar in 14.2 made me measure before optimising. Lighthouse's long-task list pointed at the hidden Steps rendering at start-up, not at the gallery check I had suspected.
 - Evidence: `apps/web/test/scans.test.ts`, `apps/web/src/components/ui/lazy-motion.tsx`, `apps/web/src/app.tsx` (`deferHiddenSteps`), `media/polish/`.
+### 2026-11-24 — studio-experience phase end: weave-auditor and design-reviewer; tag phase-polish
+- Surface: IDE
+- Goal: Run the end-of-phase reviews over the whole phase, fix what they find, and tag `phase-polish`.
+- Kiro features used: custom agents `weave-auditor` (1 run, MCP tools `build_lift_plan`, `check_floats`, `build_cards`, `decode_cards`, `list_profiles`) and `design-reviewer` (1 run, 19 findings); MCP chrome-devtools (checked the fixes on the dev and preview builds); spec `studio-experience` (Decision log, design.md Property 2 wording).
+- Model / credits (start → end):
+- What worked:
+  - weave-auditor: no float or round-trip failure. Temple stripe on profile 120 round-tripped through cards exactly; cards 1 and 10 matched the plan. A custom `holeMeans: "noLift"` profile with 4 spare hooks round-tripped too. Its findings, all fixed:
+    - The 3D card chain used its own modulo, so sets of 2 to 7 cards repeated. It now takes cards from `cardStrip` (engine `nextCard`) and hides unused planes.
+    - The 3D cloth always used the face. It now shows the side facing up on the loom (`back` when `wovenFaceDown`). Property 2 now checks this on every profile; design.md is updated to match.
+    - Seven unlabelled loom statements in scene and card comments (square cylinder, comber board, a "needle board" naming clash with S1, frame, lacing holes, the head layout) now carry `[decision]` or `[to verify]`.
+  - design-reviewer, fixed:
+    - Continue is secondary on an empty grid, without a plan, and while auto-fix waits (one primary per Step).
+    - Continue to Cards hands focus to Print cards instead of `<body>`.
+    - Dialog close buttons are secondary. The print gate's action is "Auto-fix and print" and prints once the fixed plan is in use.
+    - On phones the toolbar's violation summary is back on Check.
+    - The card punch Moment now plays on the first real view of Cards (it was spent while the Step was hidden).
+    - End and pick tooltips are on the repeat fields and the Weave scrubber.
+    - "Repeat across all240hooks" spacing is fixed.
+    - Wheel zoom on the 3D view is off, so the page scrolls.
+    - Continue prefetches the loom.
+    - Card numbers are in the mono face.
+    - The duplicate setup summary is hidden on wide screens.
+  - Answered in the Decision log, not changed: the point paper's gallery button focusing the gallery (an existing test asserts it); the "Weave per region" heading (existing tests); and findings 10, 11, 14, 17, 18 (listed in the Status for Tushar).
+  - 3 new shell tests (Continue variant, focus after Continue to Cards). `pnpm typecheck` `EXIT_CODE=0`; `pnpm test` `EXIT_CODE=0`: engine 148, mcp 110, export 52, motif 75, backend 45, web 193. Screenshots retaken from the final preview build.
+- What failed or surprised:
+  - The first retake of `media/polish/` showed the old UI after I had rebuilt. The served chunk was current, and a fresh profile with a cache-busting query rendered the fixes, so the puppeteer profile was holding stale files. I did not find the exact cause. The script now uses a new profile per run and logs the state it captures.
+  - My first fix for the punch Moment computed `punch` during render. It was still lost on the next re-render, and the browser check (`card-face-punch` present at 100 ms, gone at 1.2 s) only passed after the punch became state held for 820 ms.
+- Surprise:
+  - Two reviewers working from the same commits found different classes of bug. weave-auditor caught a repeated card in the 3D chain for short sets, using the MCP tools and reading code. design-reviewer caught a lost focus and a Moment that never played. No test covered either.
+- Spec versus vibe note: spec. The Decision log held the reasons for each finding left unfixed, so the status for the user is a list of rows rather than a memory.
+- Evidence: commits on `main` after `f03e127`, tag `phase-polish`, `.kiro/specs/studio-experience/requirements.md` (Decision log), `media/polish/`.
 ### Template
 
 ```
@@ -1605,13 +1653,13 @@ Written 2026-11-16 at the end of the autopilot run (`.kiro/steering/autopilot.md
 
 | Item | Count | Notes |
 |---|---|---|
-| Specs (feature / bugfix) | 5 / 0 | weave-engine (34 properties), weave-mcp (16), motif-input (14), simulate-and-export (11), kiro-product (no properties; snapshot and config tests). All tasks checked. Spec findings fixed during tasks: weave-mcp design on SDK array arguments; motif-input speck performance, 1.3 and 4.6 wording, dev-script note; simulate-and-export profile-check order (Property 11), file table, WIF layout block; kiro-product gallery Decision log row. No bugfix spec yet (needs the user's WIF or swatch result) |
-| Property-based tests / bugs they caught | 75 / 0 | Engine 34, mcp 16, motif 14, export 11 (68 `*.property.test.ts` files). No property found a product bug. Failures on test mistakes: engine P32, P33; mcp P4 (`__proto__`), P6 (outcome label), P15 (null-prototype snapshot); motif P12 (over-long prompt generator was not over-long). Planted-bug checks (not counted): engine checkFloats off-by-one; mcp none; motif speck tie and orientation; backend secret leak (P13); web redo clearing (P14); export seven planted bugs, all caught |
-| Tests (files / tests) | engine 35 / 148; mcp 22 / 110; export 15 / 52; motif 16 / 75; backend 4 / 45; web 16 / 144 | 574 tests; last run after Phase G, all `EXIT_CODE=0` |
+| Specs (feature / bugfix) | 6 / 0 | weave-engine (34 properties), weave-mcp (16), motif-input (14), simulate-and-export (11), kiro-product (no properties; snapshot and config tests), studio-experience (7 properties; rewritten once after the user's second brief; one spec correction, 7.5 open shed). All tasks checked. Spec findings fixed during tasks: weave-mcp design on SDK array arguments; motif-input speck performance, 1.3 and 4.6 wording, dev-script note; simulate-and-export profile-check order (Property 11), file table, WIF layout block; kiro-product gallery Decision log row. No bugfix spec yet (needs the user's WIF or swatch result) |
+| Property-based tests / bugs they caught | 82 / 0 | Engine 34, mcp 16, motif 14, export 11, web studio-experience 7 (plus the web editor property from motif-input). No property found a product bug. Failures on test mistakes: engine P32, P33; mcp P4 (`__proto__`), P6 (outcome label), P15 (null-prototype snapshot); motif P12 (over-long prompt generator was not over-long). Planted-bug checks (not counted): engine checkFloats off-by-one; mcp none; motif speck tie and orientation; backend secret leak (P13); web redo clearing (P14); export seven planted bugs, all caught |
+| Tests (files / tests) | engine 35 / 148; mcp 22 / 110; export 15 / 52; motif 16 / 75; backend 4 / 45; web 27 / 193 | 623 tests; last run at the end of studio-experience, all `EXIT_CODE=0` |
 | Hooks | 3 | Earlier counts as before. Since 13:00Z on Nov 16 (autopilot), block-engine-fixture-edits checked 286 file-tool calls (149 `fs_write`, 136 `str_replace`, 1 `fs_append`) and blocked none; no engine file was edited in that time, so the save hook had nothing to run on. journey-entry-on-stop also fired inside a Kiro CLI headless run |
 | Steering files | 7 | 5 always-on (product, tech, structure, journey, autopilot), 2 file-matched (weaving-domain for `packages/engine/**`, design-language for `apps/web/**`) |
-| Custom agents | 5 | journey-scribe (named as the writer of the weave-mcp spec-phase entries; not invoked during the autopilot run); weave-auditor (5 runs, Phases B, C, D, F, G: 5 unlabelled-loom-fact findings in total (C 2, D 1, F 2), 0 float or round-trip errors); design-reviewer (5 runs, Phases C, D, F, G twice: 15 + 11 + 12 + 15 + 3 findings, all fixed); release-runner (created, used only by the release-check workflow, not yet run); spec-checker (1 local headless run, VERDICT: PASS) |
-| MCP servers (third-party / our own) | 2 / 1 | jacquard-weave (ours; used by weave-auditor in every review), chrome-devtools (used for 360 px checks in Phases C, D, G), context7 (registered, not used) |
+| Custom agents | 5 | journey-scribe (named as the writer of the weave-mcp spec-phase entries; not invoked during the autopilot run); weave-auditor (6 runs, Phases B, C, D, F, G and studio-experience: 12 unlabelled-loom-fact findings in total (C 2, D 1, F 2, polish 7), 0 float or round-trip errors; polish also 3 card-display findings, fixed); design-reviewer (9 runs: Phases C, D, F, G twice: 15 + 11 + 12 + 15 + 3 findings, all fixed; studio-experience waves 1 to 3 and the phase end: 33 + 26 + 21 + 19 findings, fixed or answered in the Decision log); release-runner (created, used only by the release-check workflow, not yet run); spec-checker (1 local headless run, VERDICT: PASS) |
+| MCP servers (third-party / our own) | 2 / 1 | jacquard-weave (ours; used by weave-auditor in every review), chrome-devtools (360 px checks in Phases C, D, G; 1440x900 and 390x844 screenshots and `lighthouse_audit` in studio-experience), context7 (registered, not used) |
 | Powers (used / shipped) | 0 / 1 | `power/` (loom): plugin.json, mcp.json, 2 skills, bundled server; tested by `power.test.ts` from a folder outside the repo. Not yet installed in a fresh workspace (user's step) |
 | Workflows | 1 | `.kiro/workflows/release-check.workflow.json`; not yet run (workflows are off by default) |
 | CLI headless runs in CI | 0 (1 local) | `.github/workflows/kiro-spec-check.yml` is guarded by `KIRO_CI_ENABLED`; one local run of the same command, VERDICT: PASS |

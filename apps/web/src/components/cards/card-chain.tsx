@@ -19,13 +19,15 @@ export const CHAIN_AFTER = 15;
 export interface CardChainProps {
   readonly cards: readonly Card[];
   readonly profile: LoomProfile;
+  /** False while the Step is hidden: nothing counts as seen, so the first real view punches. */
+  readonly visible?: boolean;
 }
 
 function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`;
 }
 
-export function CardChain({ cards, profile }: CardChainProps) {
+export function CardChain({ cards, profile, visible = true }: CardChainProps) {
   const reduced = useReducedMotion();
   const [selected, setSelected] = useState(0);
   const seen = useRef(new Set<number>());
@@ -39,10 +41,17 @@ export function CardChain({ cards, profile }: CardChainProps) {
   const index = Math.min(selected, Math.max(0, count - 1));
   const card = cards[index];
   // The first time a card is shown large it punches its holes; later it just appears.
-  const punch = !reduced && card !== undefined && !seen.current.has(index);
+  // The card being punched, held for the Moment's 800 ms so a re-render does not cut it short.
+  const [punching, setPunching] = useState<number | null>(null);
   useEffect(() => {
-    if (card !== undefined) seen.current.add(index);
-  }, [card, index]);
+    if (!visible || card === undefined || seen.current.has(index)) return;
+    seen.current.add(index);
+    if (reduced) return;
+    setPunching(index);
+    const timer = setTimeout(() => setPunching((current) => (current === index ? null : current)), 820);
+    return () => clearTimeout(timer);
+  }, [card, index, visible, reduced]);
+  const punch = punching === index;
   // Keep the selected card in the middle of the chain: on selection, and when the chain first gets
   // a width (it is laid out while its Step is hidden). Only the chain scrolls, never the page.
   const listRef = useRef<HTMLOListElement | null>(null);
@@ -101,7 +110,7 @@ export function CardChain({ cards, profile }: CardChainProps) {
           label={`Card ${card.number} of ${count}, ${plural(holes, "hole", "holes")} punched`}
         />
         <figcaption className="chain-caption">
-          <span className="chain-number">Card {card.number}</span>{" "}
+          <span className="chain-number mono">Card {card.number}</span>{" "}
           <span className="mono muted">
             of {count} · {plural(holes, "hole", "holes")} punched · weaves pick {card.index}
           </span>

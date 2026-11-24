@@ -18,6 +18,7 @@ import type { Speed } from "../../lib/loom-transport";
 import type { LoomSound } from "../../lib/loom-sound";
 import { useReducedMotion } from "../../lib/reduced-motion";
 import { CardFace } from "../cards/card-face";
+import { Term } from "../term";
 import { PLAN_LINES } from "../simulator-panel";
 import type { PlanSource } from "../simulator-panel";
 import { Button } from "../ui/button";
@@ -391,7 +392,7 @@ export function WeaveStep({ plan, planSource, profile, yarns, violationCount, vi
               {pickCount < 2 ? null : (
                 <div className="loom-scrub">
                   <span className="field-label" id={labelId}>
-                    Pick
+                    <Term name="pick">Pick</Term>
                   </span>
                   <Slider.Root
                     className="slider"
