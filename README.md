@@ -7,7 +7,7 @@
 
 <p align="center"><b>Punch cards are dead as a computing medium. Handlooms still weave from them. JACQUARD helps designers and card punchers design, check, weave and print them.</b></p>
 
-| | |
+| Link | Where |
 |---|---|
 | Live app | https://main.d28e9v65r7sow0.amplifyapp.com |
 | Demo video (2 min 49 s) | https://youtu.be/kInqm4saNN0 |
@@ -113,42 +113,60 @@ Counted in the repo on 2026-11-24.
 
 ## Architecture
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="media/brand/architecture-dark.png">
+  <img alt="Architecture: in the browser, apps/web calls packages/motif, packages/export and packages/engine, and motif and export call the engine. The engine is wrapped by the jacquard-weave MCP server in packages/mcp, which Kiro's custom agents call and the loom Power bundles. A dashed arrow from the browser leads to the backend Lambda proxy to Amazon Bedrock, used only when VITE_API_BASE is set; it is built and tested but switched off." src="media/brand/architecture-light.png" width="853">
+</picture>
+
+<details><summary>Mermaid source</summary>
+
 ```mermaid
-flowchart LR
+flowchart TB
   subgraph Browser["Browser: the Studio, a static site on AWS Amplify Hosting"]
     UI["apps/web<br/>Design, Check, Weave, Cards"]
     MO["packages/motif<br/>motif builder, sketch to grid"]
-    EN["packages/engine<br/>lift plan, float check, auto-fix, cards"]
     EX["packages/export<br/>card sheets, point paper, WIF"]
+    EN["packages/engine<br/>lift plan, float check, auto-fix, cards"]
     UI --> MO
-    UI --> EN
     UI --> EX
+    UI --> EN
     MO --> EN
     EX --> EN
   end
-  BE["backend<br/>Lambda proxy to Amazon Bedrock<br/>built and tested, switched off"]
-  UI -. "only when VITE_API_BASE is set" .-> BE
-  subgraph KiroSide["Kiro"]
-    AG["custom agents<br/>weave-auditor"]
-    MCP["packages/mcp<br/>jacquard-weave MCP server"]
-    PW["power<br/>loom Power: bundled server and 2 skills"]
+  BE["backend/<br/>Lambda proxy to Amazon Bedrock<br/>built and tested, switched off"]
+  Browser -. "only with VITE_API_BASE" .-> BE
+  MCP["packages/mcp<br/>jacquard-weave MCP server"]
+  EN -- "wrapped by" --> MCP
+  subgraph KiroSide["Kiro (development)"]
+    AG["custom agents<br/>weave-auditor calls its tools"]
+    PW["power/<br/>loom Power bundles it, 2 skills"]
   end
-  AG --> MCP
-  PW --> MCP
-  MCP --> EN
+  MCP --> AG
+  MCP --> PW
 ```
+
+</details>
 
 Everything the live site does runs in the browser: there is no server call. The engine is pure TypeScript with no runtime dependencies, and the same input always gives the same bytes.
 
 From a description to the outputs:
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="media/brand/data-flow-dark.png">
+  <img alt="Data flow from top to bottom: Description, Motif builder, Point paper, Lift plan, Float check, Auto-fix, then three outputs side by side: Loom simulation, Card set and WIF file." src="media/brand/data-flow-light.png" width="630">
+</picture>
+
+<details><summary>Mermaid source</summary>
+
 ```mermaid
-flowchart LR
+flowchart TB
   D["Description"] --> MB["Motif builder"] --> PP["Point paper"] --> LP["Lift plan"] --> FC["Float check"] --> AF["Auto-fix"]
   AF --> SIM["Loom simulation"]
   AF --> CS["Card set"]
   AF --> WIF["WIF file"]
 ```
+
+</details>
 
 ## Run it locally
 

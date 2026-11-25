@@ -1,0 +1,22 @@
+flowchart TB
+  subgraph Browser["Browser: the Studio, a static site on AWS Amplify Hosting"]
+    UI["apps/web<br/>Design, Check, Weave, Cards"]
+    MO["packages/motif<br/>motif builder, sketch to grid"]
+    EX["packages/export<br/>card sheets, point paper, WIF"]
+    EN["packages/engine<br/>lift plan, float check, auto-fix, cards"]
+    UI --> MO
+    UI --> EX
+    UI --> EN
+    MO --> EN
+    EX --> EN
+  end
+  BE["backend/<br/>Lambda proxy to Amazon Bedrock<br/>built and tested, switched off"]
+  Browser -. "only with VITE_API_BASE" .-> BE
+  MCP["packages/mcp<br/>jacquard-weave MCP server"]
+  EN -- "wrapped by" --> MCP
+  subgraph KiroSide["Kiro (development)"]
+    AG["custom agents<br/>weave-auditor calls its tools"]
+    PW["power/<br/>loom Power bundles it, 2 skills"]
+  end
+  MCP --> AG
+  MCP --> PW

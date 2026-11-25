@@ -2161,6 +2161,21 @@ No property test failed in this session: rewritten Properties 7 and 9 passed on 
 - What failed or surprised: nothing. No test ran in this session; only `KIRO_JOURNEY.md` changed.
 - Spec versus vibe note: none for this entry.
 - Evidence: `git log --oneline -1` before this entry → c8a667f.
+### 2026-11-25 — README diagrams as images; links table header
+- Surface: Kiro IDE.
+- Goal: fix two README parts that displayed badly on the public GitHub page: the Mermaid diagrams under Architecture were cut off in GitHub's 180 px frame, and the links table opened with an empty header row.
+- Kiro features used: steering `tech.md` (EXIT_CODE rule, normal push), `journey.md`; MCP server chrome-devtools (after the push, to check the page on GitHub; see the session report).
+- Model / credits (start → end):
+- What worked:
+  - The diagrams' source is now `media/brand/architecture.mmd` and `media/brand/data-flow.mmd`. `video/scripts/diagrams.ts` renders each at 2x in a light and a dark version (app colours from `video/src/theme.ts`, Instrument Sans), with mermaid 12.3.0 from a temp folder (`MERMAID_JS`), not a repo dependency: `architecture-{light,dark}.png` 1706x1890 and `data-flow-{light,dark}.png` 1259x1325.
+  - README.md shows each with a `<picture>` element (dark source for `prefers-color-scheme: dark`), alt text that describes the diagram, and the same Mermaid code in a collapsed `<details>` block. The links table header is now "Link | Where".
+  - Checks: 87 relative links and anchors in README, 0 bad; the 4 new PNGs have only IHDR, IDAT and IEND chunks and no path; `scripts/check-no-account-id.sh` exit 0; `pnpm typecheck` TYPECHECK_EXIT_CODE=0 (the video tsconfig includes `scripts/`); `pnpm test` TEST_EXIT_CODE=0, 727 tests.
+- What failed or surprised:
+  - The first render was not usable: the "wraps" arrow from the MCP server ran through the Browser box title, labels wrapped at mermaid's default width, and the data flow was 1388 px wide (too small at GitHub's 880 px). Second try: the edge labels "used by" and "bundled in" ran together, a dashed arrow ran through the Browser box, and a two-row data flow hid which box led to Float check. The third layout puts the MCP server and the Kiro box under the Browser box, starts the Bedrock arrow at the box edge, and draws the data flow top to bottom. Mermaid's drop shadow blurred the dark version, so the script turns it off.
+  - The file reader returned a cached older image after one re-render; I viewed copies under new names after that.
+  - The data-flow image is 1259 px wide, below the ~1600 px the brief suggested, because the top-to-bottom layout is narrow; it is shown at 630 px.
+- Spec versus vibe note: vibe; no spec covers the README.
+- Evidence: `media/brand/*.mmd`, `media/brand/architecture-*.png`, `media/brand/data-flow-*.png`, `video/scripts/diagrams.ts`, `README.md`.
 ### Template
 
 ```
