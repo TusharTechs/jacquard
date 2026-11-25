@@ -2139,6 +2139,19 @@ No property test failed in this session: rewritten Properties 7 and 9 passed on 
 - What failed or surprised: nothing new since the entry above. No test ran after the push; the last full run (repo and fresh clone) passed 727 tests.
 - Spec versus vibe note: none for this entry.
 - Evidence: `git log --oneline -2` → c7779b0, 2afe8de.
+### 2026-11-25 — History cleaned; GitHub repo recreated and settings applied
+- Surface: Kiro IDE.
+- Goal: record the history clean-up done before going public, apply the repository settings and check the remote matches.
+- Kiro features used: steering `tech.md` (EXIT_CODE rule, normal push), `journey.md`. No spec, hook output, agent, MCP tool or property test.
+- Model / credits (start → end):
+- What worked:
+  - The user cleaned the history with a git filter-branch script run outside Kiro: the AWS account ID removed from old journal entries; home-folder paths painted over in four screenshots in `media/journey/`; `research/` and the generated video script removed from every commit; commit emails changed to GitHub's no-reply address; cited commit IDs updated to the new ones. Every commit ID changed.
+  - The GitHub repo `TusharTechs/jacquard` was recreated empty and the cleaned history pushed. It is still private.
+  - Settings applied with `gh repo edit`, using the TusharTechs token for each command only (the active gh account was not switched): description, homepage (the live URL) and 20 topics. Read back with `gh api`: all three match, licence MIT.
+  - Ref check: after `git fetch origin` (exit 0), `main` and `origin/main` are both 008ca7e; `git ls-remote --tags origin` lists 11 tags, each pointing at the same commit as the local tag.
+- What failed or surprised: nothing. The social preview image still has to be uploaded in the web UI.
+- Spec versus vibe note: none for this entry.
+- Evidence: `gh api repos/TusharTechs/jacquard` output in the session report; `git ls-remote --tags origin`.
 ### Template
 
 ```
